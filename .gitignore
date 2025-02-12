@@ -1,0 +1,8 @@
+**.exe
+**.pdb
+**.rdbg
+**.code-workspace
+**.vscode
+**/ols.json
+/scripts/
+.build/

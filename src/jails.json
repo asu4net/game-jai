@@ -1,0 +1,9 @@
+{
+    "local_modules": [
+        "modules"
+    ],
+    "roots": [
+        "game.jai"
+    ],
+    "build_root": "game.jai"
+}
