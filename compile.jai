@@ -6,10 +6,13 @@ OUTPUT_PATH     ::"./bin";
 BUILD_FILE      ::"./src/game.jai";
 
 
-#run build();
+#run compile();
 
-build :: () {
+compile :: () {
 
+    compile_shaders();
+
+    log("Compiling game...");   
     w := compiler_create_workspace("Game Debug");
 
     if !w {
@@ -31,3 +34,4 @@ build :: () {
 #import "Basic";
 #import "Compiler";
 String :: #import "String";
+#load "compile_shaders.jai";

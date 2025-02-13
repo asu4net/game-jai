@@ -6,3 +6,4 @@
 **/ols.json
 /scripts/
 .build/
+**.spv

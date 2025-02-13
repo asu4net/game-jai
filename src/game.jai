@@ -24,6 +24,10 @@
 // Using RTX from Vulkan:
 // https://iorange.github.io/
 
+// #scope_file
+// #scope_export
+// #scope_module
+
 #import "Basic";
 #import "String";
 #import "Vulkan";
