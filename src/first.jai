@@ -17,10 +17,12 @@ main :: () {
     window_width, window_height = Simp.get_render_dimensions(my_window);
 
     Simp.set_render_target(my_window, .LEFT_HANDED);
+    Simp.set_projection_type(.ORTHO_SCREEN);
 
     my_init_fonts();
 
     quit := false;
+
 
     while !quit {
         Input.update_window_events();
@@ -67,14 +69,16 @@ draw_one_frame :: () {
         p.x = cast(float) (window_width  / 2);
         p.y = cast(float) (window_height / 2);
         
+        p -= .{0, 200};
+
         w := Vector2.{b, 0};  // Solo afecta la X
         h := Vector2.{0, b};  // Solo afecta la Y
-        
+
         p0 := p - w - h;  // Esquina superior izquierda
         p1 := p + w - h;  // Esquina superior derecha
         p2 := p + w + h;  // Esquina inferior derecha
         p3 := p - w + h;  // Esquina inferior izquierda
-        
+
         Simp.immediate_quad(p0, p1, p2, p3, Vector4.{1, 0, 0, 1});
     }
 

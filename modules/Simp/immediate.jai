@@ -2,6 +2,11 @@
 // So that immediate rendering is threadsafe, we add its state to the Context.
 //
 
+Projection_Type :: enum {
+    ORTHO_SCREEN;
+    ORTHO_WORLD;
+}
+
 Immediate_State :: struct {
     current_window_info: Window_Info;
 
@@ -13,6 +18,7 @@ Immediate_State :: struct {
     vertices: [MAX_VERTICES] Immediate_Vertex;
 
     specific: Backend_Platform_Specific;
+    projection_type : Projection_Type = Projection_Type.ORTHO_SCREEN;
 
     coordinate_system := Simp_Coordinate_System.RIGHT_HANDED;
 
@@ -415,14 +421,44 @@ immediate_set_2d_projection :: (render_target_width: s32, render_target_height: 
     }
 
     m: Matrix4 = ---;
-    if context.simp.coordinate_system == .LEFT_HANDED {
-        m = orthographic_projection_matrix(0, cast(float) render_target_width*1, cast(float) render_target_height, 0, -1.0, 1.0);
-    } else {
-        m = orthographic_projection_matrix(0, cast(float) render_target_width*1, 0, cast(float) render_target_height, -1.0, 1.0);
+
+    if context.simp.projection_type == {
+        
+        case .ORTHO_SCREEN; {
+            if context.simp.coordinate_system == .LEFT_HANDED {
+                m = orthographic_projection_matrix(0, cast(float) render_target_width*1, cast(float) render_target_height, 0, -1.0, 1.0);
+            } else {
+                m = orthographic_projection_matrix(0, cast(float) render_target_width*1, 0, cast(float) render_target_height, -1.0, 1.0);
+            }
+        }
+        case .ORTHO_WORLD; {
+            //TODO: Handle right handed
+            aspect : float32 = xx (render_target_width / render_target_height);
+            size   : float32 = 1000; //TODO: Handle this.
+            limit := aspect * size;
+            m = orthographic_projection_matrix(-limit, limit, size, -size, 0.1, 1000);
+
+            matrix4_look_at_from_fru :: (eye: Vector3, front: Vector3, right: Vector3, up: Vector3, flip_z_axis := true) -> Matrix4 {
+                        
+	            f, s, u := front, right, up;
+	            f = normalize(f);
+	            s = normalize(s);
+	            u = normalize(u);
+	            fe := dot(f, eye);
+
+	            return .{
+	            	+s.x, +s.y, +s.z, -dot(s, eye),
+	            	+u.x, +u.y, +u.z, -dot(u, eye),
+	            	-f.x, -f.y, -f.z, ifx flip_z_axis then +fe else -fe,
+	            	   0,    0,    0, 1,
+	            };
+            }
+
+            m = m * matrix4_look_at_from_fru(.{ 0, 0, -3 }, front = .{0, 0, 1}, right = .{1, 0, 0}, up = .{0, 1, 0});
+        }
     }
-
+    
     backend_tweak_projection_matrix(*m);
-
     set_parameter(shader, "projection", m);
 }
 

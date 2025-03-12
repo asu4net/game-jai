@@ -178,6 +178,11 @@ update_window :: (window: Window_Type) {
     }
 }
 
+set_projection_type :: (projection_type : Projection_Type) {
+    CheckInit();
+    context.simp.projection_type = projection_type;
+}
+
 draw_text :: (font: *Dynamic_Font, x: s64, y: s64,
               text: string, color := Vector4.{1,1,1,1}, effects: Font_Effects = 0) -> width: s64 {
     // @Cleanup: generate_quads should return quads in a threadsafe way?
