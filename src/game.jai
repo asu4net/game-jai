@@ -1,22 +1,17 @@
+
 Game :: struct {
     window : Window;
 }
 
-#add_context game: Game;
-
-main :: () {
-
+init_game :: (game : *Game) {
     path := path_strip_filename(get_path_of_running_executable());
     set_working_directory(path);
-
-    window := *context.game.window;
-
-    init_window(window);
-    defer finish_window(window);
+    init_window(*game.window);
+    defer finish_window(*game.window);
     
     glClearColor(1, 0, 0, 1);
 
-    while keep_window_opened(window) {
+    while keep_window_opened(*window) {
         glViewport(0, 0, xx window.width, xx window.height);
         glClear(GL_COLOR_BUFFER_BIT);
     }
@@ -24,6 +19,4 @@ main :: () {
 
 #scope_file
 
-#import "GL";
-#import "System";
-#load "window.jai";
+#load "window.jai"
