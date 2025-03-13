@@ -17,12 +17,12 @@ create_sdl_window :: (title: *u8, x: s32, y: s32, w: s32, h: s32, flags: SDL_Win
 
 destroy_sdl_window :: (window: *SDL_Window) {
     assert(window != null);
-    InitializeSDL();
+    assert(sdl_initialized());
+    state := context.sdl;
     assert(state.window_count > 0);
     state.window_count -= 1;
-    if state.window_count == 0 {
-        FinishSDL();
-    }
+    SDL_DestroyWindow(window);
+    FinishSDL();
 }
 
 #scope_file
@@ -42,7 +42,7 @@ InitializeSDL :: () #expand {
 }
 
 FinishSDL :: () #expand {
-    `state := *context.sdl;
-    state.initialized = false;
+    if context.sdl.window_count > 0 then return; 
+    context.sdl.initialized = false;
     SDL_Quit();
 }
