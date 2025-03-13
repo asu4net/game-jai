@@ -31,6 +31,12 @@ destroy_sdl_window :: (window: *SDL_Window) {
 
 #add_context sdl : SDLContext;
 
+can_finish :: () -> bool {
+    assert(sdl_initialized());
+    state := context.sdl;
+    return state.window_count == 0;
+}
+
 InitializeSDL :: () #expand {
 
     `state := *context.sdl;
@@ -42,7 +48,7 @@ InitializeSDL :: () #expand {
 }
 
 FinishSDL :: () #expand {
-    if context.sdl.window_count > 0 then return; 
+    if !can_finish() then return; 
     context.sdl.initialized = false;
     SDL_Quit();
 }
