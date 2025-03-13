@@ -8,20 +8,14 @@ Window :: struct {
     keep_opened : bool;
 }
 
-init_window :: (
-      window : *Window, 
-      title  : string = "Game", 
-      width  : s32    = 1280, 
-      height : s32    = 720, 
-      v_sync : bool   = true //TODO: Implement
-) -> bool {
+init_window :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync := true) -> bool {
+
     assert(!is_window_initialized(window));
     
-    SDL_FLAGS    :: SDL_INIT_VIDEO;
     WINDOW_POS   :: SDL_WINDOWPOS_UNDEFINED;
     WINDOW_FLAGS :: SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
     
-    SDL_Init(SDL_FLAGS);
+    InitializeSDL();
 
     window.handle = SDL_CreateWindow(title.data, WINDOW_POS, WINDOW_POS, xx width, xx height, WINDOW_FLAGS);
 
@@ -32,10 +26,9 @@ init_window :: (
     }
 
     window.title  = title;
-    window.width  = width;
-    window.height = height;
+    window.width  = xx width;
+    window.height = xx height;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
 
     window.gl_context = SDL_GL_CreateContext(window.handle);
 
@@ -68,6 +61,7 @@ close_window :: (window : *Window) {
 
 keep_window_opened :: (window : *Window) -> bool {
     assert(is_window_initialized(window));
+    SDL_GL_MakeCurrent(window.handle, window.gl_context);
     SDL_GL_SwapWindow(window.handle);
     poll_events(window);
     //TODO: Time
@@ -77,7 +71,7 @@ keep_window_opened :: (window : *Window) -> bool {
 finish_window :: (window : *Window) {
     assert(is_window_initialized(window));
     SDL_DestroyWindow(window);
-    SDL_Quit();
+    FinishSDL();
     window.* = .{};
 }
 
@@ -88,16 +82,43 @@ finish_window :: (window : *Window) {
 #import "SDL";
 #import "GL";
 
+//TODO: Separate window count, add asserts on sdl finish and end, make it part of the context.
+// add func to create and destroy window
+// add time functionality.
+// basically make sdl context a struct, in a separate file and make it a singleton living in the context. auto inittt.
+window_count := 0;
+sdl_initialized := false;
+
+InitializeSDL :: () #expand {
+    window_count += 1;
+    if sdl_initialized then return;
+    SDL_FLAGS :: SDL_INIT_VIDEO;
+    SDL_Init(SDL_FLAGS);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
+    sdl_initialized = true;
+}
+
+FinishSDL :: () #expand {
+    window_count -= 1;
+    if window_count > 0 return;
+    assert(window_count == 0);
+    assert(sdl_initialized);
+    window_count = 0;
+    sdl_initialized = false;
+    SDL_Quit();
+}
+
 poll_events :: (window : *Window) {
     assert(is_window_initialized(window));
     event : SDL_Event;
     while SDL_PollEvent(*event) {
         if event.type == {
-            case SDL_QUIT;
-                window.keep_opened = false;
             case SDL_KEYUP;
                 if event.key.keysym.sym == SDLK_ESCAPE window.keep_opened = false;
             case SDL_WINDOWEVENT;
+                if event.window.event == SDL_WINDOWEVENT_CLOSE {
+                    window.keep_opened = false;
+                }
                 if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED {
                     window.width  = event.window.data1;
                     window.height = event.window.data2;
