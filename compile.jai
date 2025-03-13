@@ -1,6 +1,8 @@
 // see the Default_Metaprogram in modules
 // another option tprint("%./bin", #filepath);
 
+//TODO: Copy SDL dll on comptime depending on the operating system.
+
 EXECUTABLE_NAME :: "game";
 OUTPUT_PATH     ::"./bin";
 BUILD_FILE      ::"./src/first.jai";

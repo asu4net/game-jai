@@ -15,9 +15,7 @@ init_window :: (window : *Window, title := "Game", width := 1280, height := 720,
     WINDOW_POS   :: SDL_WINDOWPOS_UNDEFINED;
     WINDOW_FLAGS :: SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
     
-    InitializeSDL();
-
-    window.handle = SDL_CreateWindow(title.data, WINDOW_POS, WINDOW_POS, xx width, xx height, WINDOW_FLAGS);
+    window.handle = create_sdl_window(title.data, WINDOW_POS, WINDOW_POS, xx width, xx height, WINDOW_FLAGS);
 
     if window.handle == null {
         log("Could not create window: %\n", to_string(SDL_GetError()));
@@ -70,8 +68,7 @@ keep_window_opened :: (window : *Window) -> bool {
 
 finish_window :: (window : *Window) {
     assert(is_window_initialized(window));
-    SDL_DestroyWindow(window);
-    FinishSDL();
+    destroy_sdl_window(window);
     window.* = .{};
 }
 
@@ -79,34 +76,8 @@ finish_window :: (window : *Window) {
 
 #import "Basic";
 #import "String";
-#import "SDL";
 #import "GL";
-
-//TODO: Separate window count, add asserts on sdl finish and end, make it part of the context.
-// add func to create and destroy window
-// add time functionality.
-// basically make sdl context a struct, in a separate file and make it a singleton living in the context. auto inittt.
-window_count := 0;
-sdl_initialized := false;
-
-InitializeSDL :: () #expand {
-    window_count += 1;
-    if sdl_initialized then return;
-    SDL_FLAGS :: SDL_INIT_VIDEO;
-    SDL_Init(SDL_FLAGS);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
-    sdl_initialized = true;
-}
-
-FinishSDL :: () #expand {
-    window_count -= 1;
-    if window_count > 0 return;
-    assert(window_count == 0);
-    assert(sdl_initialized);
-    window_count = 0;
-    sdl_initialized = false;
-    SDL_Quit();
-}
+#load "sdl.jai";
 
 poll_events :: (window : *Window) {
     assert(is_window_initialized(window));
