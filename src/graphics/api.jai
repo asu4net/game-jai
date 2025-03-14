@@ -139,13 +139,11 @@ set_depth_test_enabled :: (enabled : bool = true) {
     glDisable(GL_DEPTH_TEST);
 }
 
-/*
 draw_elements :: (vao : *Vertex_Array, element_count : u32) {
     bind(vao);
-    gDrawElements(GL_TRIANGLES, xx element_count, GL_UNSIGNED_INT, null);
+    glDrawElements(GL_TRIANGLES, xx element_count, GL_UNSIGNED_INT, null);
     unbind(vao);
 }
-*/
 
 #scope_file
 

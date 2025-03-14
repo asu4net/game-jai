@@ -31,3 +31,4 @@ main :: () {
 #load "graphics/texture.jai";
 #load "graphics/shader.jai";
 #load "graphics/api.jai";
+#load "graphics/buffer_object.jai";
