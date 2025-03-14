@@ -46,9 +46,9 @@ set_constant_matrix4 :: (using shader : *Shader, name : string, value : Matrix4)
     glUniformMatrix4fv(location, 1, false, *value.floats[0]);
 }
 
-set_constant_sampler2d :: (using shader : *Shader, name : string, value : [] s32) {
+set_constant_sampler2d :: (using shader : *Shader, name : string, value : [] s32, count : s32) {
     location := get_constant_location(shader, name);
-    glUniform1iv(location, xx value.count, value.data);
+    glUniform1iv(location, xx count, value.data);
 }
 
 set_constant_int :: (using shader : *Shader, name : string, value : s32) {

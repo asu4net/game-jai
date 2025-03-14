@@ -140,7 +140,7 @@ set_depth_test_enabled :: (enabled : bool = true) {
 }
 
 draw_elements :: (vao : *Vertex_Array, element_count : u32) {
-    bind(vao);
+    //bind(vao);
     glDrawElements(GL_TRIANGLES, xx element_count, GL_UNSIGNED_INT, null);
     unbind(vao);
 }

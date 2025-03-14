@@ -28,7 +28,4 @@ main :: () {
 #import "GL" (DUMP_GL_ERRORS = true);
 #import "System";
 #load "window.jai";
-#load "graphics/texture.jai";
-#load "graphics/shader.jai";
-#load "graphics/api.jai";
-#load "graphics/buffer_object.jai";
+#load "graphics/draw_2d.jai";
