@@ -10,7 +10,7 @@ Window :: struct {
 
 init_window :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync := true) -> bool {
 
-    assert(!is_window_initialized(window));
+    assert(!is_window_init(window));
     
     WINDOW_POS   :: SDL_WINDOWPOS_UNDEFINED;
     WINDOW_FLAGS :: SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
@@ -47,18 +47,18 @@ init_window :: (window : *Window, title := "Game", width := 1280, height := 720,
     return true;
 }
 
-is_window_initialized :: (window : *Window) -> bool {
+is_window_init :: (window : *Window) -> bool {
     assert(window != null);
     return window.initialized;
 }
 
 close_window :: (window : *Window) {
-    assert(is_window_initialized(window));
+    assert(is_window_init(window));
     window.keep_opened = false;
 }
 
 keep_window_opened :: (window : *Window) -> bool {
-    assert(is_window_initialized(window));
+    assert(is_window_init(window));
     SDL_GL_MakeCurrent(window.handle, window.gl_context);
     SDL_GL_SwapWindow(window.handle);
     poll_events(window);
@@ -66,8 +66,8 @@ keep_window_opened :: (window : *Window) -> bool {
     return window.keep_opened;
 }
 
-finish_window :: (window : *Window) {
-    assert(is_window_initialized(window));
+fini_window :: (window : *Window) {
+    assert(is_window_init(window));
     destroy_sdl_window(window);
     window.* = .{};
 }
@@ -76,11 +76,11 @@ finish_window :: (window : *Window) {
 
 #import "Basic";
 #import "String";
-#import "GL";
+#import "GL" (DUMP_GL_ERRORS = true);
 #load "sdl.jai";
 
 poll_events :: (window : *Window) {
-    assert(is_window_initialized(window));
+    assert(is_window_init(window));
     event : SDL_Event;
     while SDL_PollEvent(*event) {
         if event.type == {

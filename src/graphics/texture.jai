@@ -1,7 +1,3 @@
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//:Texture2D
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 Min_Filter :: enum {
     LINEAR;
     NEAREST;
@@ -22,7 +18,7 @@ Texture_Coordinate :: enum {
     V;
 }
 
-Texture2D :: struct {
+Texture :: struct {
     id : u32;
     width : u32;
     height : u32;
@@ -35,31 +31,7 @@ Texture2D :: struct {
     image_path : string;
 }
 
-set_mag_filter :: (texture_id : u32, mag_filter : Mag_Filter) {
-    if mag_filter == {
-        case .LINEAR;  glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        case .NEAREST; glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    }
-}
-
-set_min_filter :: (texture_id : u32, min_filter : Min_Filter) {
-    if min_filter == {
-        case .LINEAR;  glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        case .NEAREST; glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    }
-}
-
-set_wrap_mode :: (texture_id : u32, texture_coordinate : Texture_Coordinate, wrap_mode : Wrap_Mode) {
-    coord := ifx texture_coordinate == .U then GL_TEXTURE_WRAP_S else GL_TEXTURE_WRAP_T;
-    if wrap_mode == {
-        case .REPEAT; glTextureParameteri(texture_id, cast(u32) coord, GL_REPEAT);
-        case .CLAMP_TO_EDGE; glTextureParameteri(texture_id, cast(u32) coord, GL_CLAMP_TO_EDGE);
-    }
-}
-
-texture_upload_to_gpu :: (texture : *Texture2D) {
-    using texture;
-
+upload_texture_to_gpu :: (using texture : *Texture) {
     assert(id == 0);
     
     data_format     : u32 = GL_ZERO;
@@ -89,8 +61,7 @@ texture_upload_to_gpu :: (texture : *Texture2D) {
     glTextureSubImage2D(id, 0, 0, 0, width, height, data_format, GL_UNSIGNED_BYTE, pixel_data.data);
 }
 
-texture_2d_init_as_white :: (texture : *Texture2D) {
-    using texture;
+init_white_texture :: (using texture : *Texture) {
     width = 1;
     height = 1;
     channels = 4;
@@ -98,18 +69,17 @@ texture_2d_init_as_white :: (texture : *Texture2D) {
     for i : 0..4 {
         pixel_data[i] = 255;
     }
-    texture_upload_to_gpu(texture);
+    upload_texture_to_gpu(texture);
 }
 
-texture_2d_init_form_path :: (
-    texture  : *Texture2D, 
+init_texture_from_path :: (
+    texture  : *Texture, 
     path     : string, 
     mag      : Mag_Filter = .NEAREST,
     min      : Min_Filter = .NEAREST,
     wrap_u   : Wrap_Mode  = .REPEAT,
     wrap_v   : Wrap_Mode  = .REPEAT
 ) {
-    
     using texture;
     
     mag_filter = mag;
@@ -135,11 +105,10 @@ texture_2d_init_form_path :: (
     height   = xx y;
     channels = xx c;
 
-    texture_upload_to_gpu(texture);
+    upload_texture_to_gpu(texture);
 }
 
-texture_2d_finish :: (texture : *Texture2D) {
-    using texture;
+fini_texture :: (using texture : *Texture) {
     assert(id != 0);
     glDeleteTextures(1, *id);
     assert(pixel_data.data != null);
@@ -151,8 +120,7 @@ texture_2d_finish :: (texture : *Texture2D) {
     texture.* = .{};
 }
 
-texture_2d_bind :: (texture : *Texture2D, slot : u32 = 0) {
-    using texture;
+bind :: (using texture : *Texture, slot : u32 = 0) {
     assert(id != 0);
     glBindTextureUnit(slot, id);
 }
@@ -162,3 +130,25 @@ texture_2d_bind :: (texture : *Texture2D, slot : u32 = 0) {
 #import "Basic";
 #import "GL" (DUMP_GL_ERRORS = true);
 #import "stb_image";
+
+set_mag_filter :: (texture_id : u32, mag_filter : Mag_Filter) {
+    if mag_filter == {
+        case .LINEAR;  glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        case .NEAREST; glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+}
+
+set_min_filter :: (texture_id : u32, min_filter : Min_Filter) {
+    if min_filter == {
+        case .LINEAR;  glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        case .NEAREST; glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    }
+}
+
+set_wrap_mode :: (texture_id : u32, texture_coordinate : Texture_Coordinate, wrap_mode : Wrap_Mode) {
+    coord := ifx texture_coordinate == .U then GL_TEXTURE_WRAP_S else GL_TEXTURE_WRAP_T;
+    if wrap_mode == {
+        case .REPEAT; glTextureParameteri(texture_id, cast(u32) coord, GL_REPEAT);
+        case .CLAMP_TO_EDGE; glTextureParameteri(texture_id, cast(u32) coord, GL_CLAMP_TO_EDGE);
+    }
+}

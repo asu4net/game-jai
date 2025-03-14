@@ -12,7 +12,7 @@ main :: () {
     window := *context.game.window;
 
     init_window(window);
-    defer finish_window(window);
+    defer fini_window(window);
 
     glClearColor(1, 0, 0, 1);
 
@@ -25,6 +25,8 @@ main :: () {
 
 #scope_file
 
-#import "GL";
+#import "GL" (DUMP_GL_ERRORS = true);
 #import "System";
 #load "window.jai";
+#load "graphics/texture.jai";
+#load "graphics/shader.jai";
