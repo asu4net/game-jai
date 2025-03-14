@@ -68,16 +68,14 @@ Draw2D_Context :: struct {
     circle_shader      : Shader;
 }
 
-#add_context draw_2d : *Draw2D_Context;
-
 draw_2d_init :: (instance : *Draw2D_Context) {
-    assert(context.draw_2d == null);
+    assert(draw_2d == null);
     assert(instance != null);
     
     set_blending_mode(.ALPHA);
 
-    context.draw_2d = instance;
-    using context.draw_2d;
+    draw_2d = instance;
+    using draw_2d;
     
     projection_view = Matrix4_Identity;
     init_white_texture(*white_texture);
@@ -87,7 +85,7 @@ draw_2d_init :: (instance : *Draw2D_Context) {
     //textures_to_bind[Default_Texture_Slots.ATLAS] = *atlas_texture
     last_texture_slot = xx Default_Texture_Slots.COUNT;
 
-    for i : 0..MAX_TEXTURE_SLOTS {
+    for i : 0..MAX_TEXTURE_SLOTS - 1 {
         texture_slots[i] = xx i;
     }
 
@@ -152,8 +150,8 @@ draw_2d_init :: (instance : *Draw2D_Context) {
 }
 
 draw_2d_finish :: () {
-    using context.draw_2d;
-    assert(context.draw_2d != null);
+    using draw_2d;
+    assert(draw_2d != null);
     fini_texture(*white_texture);
     //texture_2d_finish(*atlas_texture)
 
@@ -165,7 +163,7 @@ draw_2d_finish :: () {
     fini_vertex_buffer(*circle_vbo);
     fini_shader(*circle_shader);
     
-    context.draw_2d.* = .{};
+    draw_2d.* = .{};
 }
 
 draw_2d_begin :: (
@@ -178,8 +176,8 @@ draw_2d_begin :: (
     right    : Vector3  = RIGHT_3D,
     up       : Vector3  = UP_3D
 ) {
-    assert(context.draw_2d != null);
-    using context.draw_2d;
+    assert(draw_2d != null);
+    using draw_2d;
     
     set_viewport(xx viewport.x, xx viewport.y);
     aspect := viewport.x / viewport.y;
@@ -231,8 +229,8 @@ draw_quad :: (
     flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
 )
 {
-    assert(context.draw_2d != null);
-    using context.draw_2d;
+    assert(draw_2d != null);
+    using draw_2d;
 
     assert(quad_count <= MAX_2D_PRIMITIVES_PER_BATCH);
     
@@ -293,7 +291,7 @@ draw_quad :: (
     
     slot := assign_texture_slot(texture);
 
-    for i : 0..VERTICES_PER_2D_PRIMITIVE {
+    for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
         quad_batch[i + quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
             vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
         };
@@ -312,8 +310,8 @@ draw_circle :: (
     entity_id : u32      = 0
 )
 {
-    assert(context.draw_2d != null);
-    using context.draw_2d;
+    assert(draw_2d != null);
+    using draw_2d;
 
     if curr_blending != .ALPHA {
         next_batch();
@@ -343,7 +341,7 @@ draw_circle :: (
     
     default_vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
     
-    for i : 0..VERTICES_PER_2D_PRIMITIVE {
+    for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
 
         vert := *circle_batch[i + circle_count * VERTICES_PER_2D_PRIMITIVE];
         
@@ -367,14 +365,16 @@ draw_circle :: (
 #load "buffer_object.jai";
 #load "primitives.jai";
 
+draw_2d : *Draw2D_Context;
+
 assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
     texture_slot : s32 = xx Default_Texture_Slots.WHITE;
     if texture == null {
         return texture_slot;
     }
 
-    using context.draw_2d;
-    for i : 0..last_texture_slot {
+    using draw_2d;
+    for i : 0..last_texture_slot - 1{
         if textures_to_bind[i].id == texture.id {
             texture_slot = i;
             break;
@@ -392,8 +392,8 @@ assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
 }
 
 start_batch :: () {
-    using context.draw_2d;
-    assert(context.draw_2d != null);
+    using draw_2d;
+    assert(draw_2d != null);
     
     last_texture_slot = xx Default_Texture_Slots.COUNT;
     
@@ -405,15 +405,15 @@ start_batch :: () {
 }
 
 flush :: () {
-    using context.draw_2d;
-    assert(context.draw_2d != null);
+    using draw_2d;
+    assert(draw_2d != null);
     
     if curr_primitive == {
         
         case .NONE; return;
         
         case .QUAD; {
-            for i : 0..last_texture_slot {
+            for i : 0..last_texture_slot - 1 {
                 bind(textures_to_bind[i], xx i);
             }
             bind(*quad_shader);

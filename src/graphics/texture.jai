@@ -66,8 +66,8 @@ init_white_texture :: (using texture : *Texture) {
     height = 1;
     channels = 4;
     assert(pixel_data.data == null);
-    for i : 0..4 {
-        pixel_data[i] = 255;
+    for i : 0..3 {
+        array_add(*pixel_data, 255);
     }
     upload_texture_to_gpu(texture);
 }

@@ -1,5 +1,6 @@
 Game :: struct {
-    window : Window;
+    window  : Window;
+    draw_2d : Draw2D_Context;
 }
 
 #add_context game: Game;
@@ -14,11 +15,15 @@ main :: () {
     init_window(window);
     defer fini_window(window);
 
-    glClearColor(1, 0, 0, 1);
+    set_clear_color(1, 0, 0, 1);
+
+    draw_2d_init(*context.game.draw_2d);
 
     while keep_window_opened(window) {
-
         glViewport(0, 0, xx window.width, xx window.height);
+        draw_2d_begin();
+        draw_quad();
+        draw_2d_end();
         glClear(GL_COLOR_BUFFER_BIT);
     }
 }

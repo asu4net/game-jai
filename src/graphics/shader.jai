@@ -154,7 +154,7 @@ CIRCLE_SHADER_SOURCE :: #string SCOPE
         o_Color = vec4(v_Tint.rgb, alpha);
         o_EntityID = v_EntityID;    
     }
-    #endif FRAGMENT_SHADER
+    #endif //FRAGMENT_SHADER
 SCOPE
 
 get_shader_program :: (shader_text: string) -> GLuint {
