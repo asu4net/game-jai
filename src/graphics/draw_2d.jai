@@ -167,11 +167,11 @@ draw_2d_finish :: () {
 }
 
 draw_2d_begin :: (
-    viewport : Vector2  = Vector2.{ 1920, 1080 }, 
-    eye      : Vector3  = Vector3.{ 0, 0, -1 }, 
-    size     : float32      = 1, 
-    near     : float32      = 0.1,
-    far      : float32      = 1000,
+    viewport : Vector2  = Vector2.{ 1280, 720 }, 
+    eye      : Vector3  = ZERO_3D, 
+    size     : float32  = +1, 
+    near     : float32  = -1,
+    far      : float32  = +1,
     front    : Vector3  = FRONT_3D,
     right    : Vector3  = RIGHT_3D,
     up       : Vector3  = UP_3D

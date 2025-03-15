@@ -156,7 +156,14 @@ add_vertex_buffer :: (using vertex_array : *Vertex_Array, vertex_buffer : *Verte
         if element.type == {
             case .None;
                 assert(false);
-            case Shader_Data_Type.Float; Shader_Data_Type.Float2; Shader_Data_Type.Float3; Shader_Data_Type.Float4; Shader_Data_Type.Mat3; Shader_Data_Type.Mat4; Shader_Data_Type.Sampler2D;
+
+            case .Float;  #through;
+            case .Float2; #through;
+            case .Float3; #through;
+            case .Float4; #through;
+            case .Mat3;   #through;
+            case .Mat4;   #through;
+            case .Sampler2D;
                 glVertexAttribPointer(
                     index, 
                     shader_data_type_to_count(element.type), 
@@ -165,7 +172,12 @@ add_vertex_buffer :: (using vertex_array : *Vertex_Array, vertex_buffer : *Verte
                     xx vertex_buffer.layout.stride,
                     xx element.offset
                 );
-            case Shader_Data_Type.Int; Shader_Data_Type.Int2; Shader_Data_Type.Int3; Shader_Data_Type.Int4; Shader_Data_Type.Bool;
+                
+            case .Int;  #through;
+            case .Int2; #through;
+            case .Int3; #through;
+            case .Int4; #through;
+            case .Bool; 
                 glVertexAttribIPointer(
                     index, 
                     shader_data_type_to_count(element.type), 

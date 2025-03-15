@@ -20,17 +20,15 @@ main :: () {
     draw_2d_init(*context.game.draw_2d);
 
     while keep_window_opened(window) {
-        glViewport(0, 0, xx window.width, xx window.height);
+        clear_screen();
         draw_2d_begin();
         draw_quad();
         draw_2d_end();
-        glClear(GL_COLOR_BUFFER_BIT);
     }
 }
 
 #scope_file
 
-#import "GL" (DUMP_GL_ERRORS = true);
 #import "System";
 #load "window.jai";
 #load "graphics/draw_2d.jai";
