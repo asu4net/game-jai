@@ -1,14 +1,35 @@
-ZERO_2D   :: Vector2.{};
-ONE_2D    :: Vector2.{ 1, 1 };
-UP_2D     :: Vector2.{ 0, 1 };
-RIGHT_2D  :: Vector2.{ 1, 0 };
-ZERO_3D   :: Vector3.{};
-ONE_3D    :: Vector3.{ 1, 1, 1 };
-UP_3D     :: Vector3.{ 0, 1, 0 };
-RIGHT_3D  :: Vector3.{ 1, 0, 0 };
-FRONT_3D  :: Vector3.{ 0, 0, 1 };
-ZERO_4D   :: Vector4.{ 0, 0, 0, 0 };
-ONE_4D    :: Vector4.{ 1, 1, 1, 1 };
+//TODO:
+/*
+- Funciones matematicas para modificar fácilmente los transforms y mover las constantes
+- Leer shaders de ficheros
+- Poder cambiar de shader
+- Dumpear errores de OpenGL
+- Generación de sprite-sheet
+- Meter ImGUI
+- Fuentes y renderizado de texto (Mirar SIMP)
+- Pintado de primitivas de GUI (Mirar SIMP)
+- Renombrar las funciones de begin & end (?)
+- Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
+- Picking
+- Sistema de iluminación: Ambient y Point lights
+*/
+
+ZERO_2D   :: Vector2.{ +0, +0 };
+ONE_2D    :: Vector2.{ +1, +1 };
+UP_2D     :: Vector2.{ +0, +1 };
+RIGHT_2D  :: Vector2.{ +1, +0 };
+LEFT_2D   :: Vector2.{ -1, +0 };
+
+ZERO_3D   :: Vector3.{ +0, +0, +0 };
+ONE_3D    :: Vector3.{ +1, +1, +1 };
+UP_3D     :: Vector3.{ +0, +1, +0 };
+RIGHT_3D  :: Vector3.{ +1, +0, +0 };
+LEFT_3D   :: Vector3.{ -1, +0, +0 };
+FRONT_3D  :: Vector3.{ +0, +0, +1 };
+BACK_3D   :: Vector3.{ +0, +0, -1 };
+
+ZERO_4D   :: Vector4.{ +0, +0, +0, +0 };
+ONE_4D    :: Vector4.{ +1, +1, +1, +1 };
 
 Rect :: struct {
     x: float32; 
