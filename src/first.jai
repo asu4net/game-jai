@@ -14,7 +14,7 @@ main :: () {
 
     init_window(window);
     defer fini_window(window);
-    
+
     set_clear_color(1, 0, 0, 1);
     draw_2d_init(*context.game.draw_2d);
 
@@ -22,7 +22,9 @@ main :: () {
         clear_screen();
         draw_2d_begin(.{ xx window.width, xx window.height });
         draw_quad();
+        draw_circle(tint = .{0, 0, 1, 1});
         draw_2d_end();
+        reset_temporary_storage();
     }
 }
 

@@ -220,7 +220,7 @@ DEFAULT_QUAD_FLAGS :: QuadFlag.AUTOSIZE;
 
 draw_quad :: (
     transform     : Matrix4       = Matrix4_Identity,
-    texture       : *Texture    = null,
+    texture       : *Texture      = null,
     tiling        : Vector2       = .{ 1, 1 },
     blending      : Blending_Mode = .ALPHA,
     sub_tex_rect  : Rect          = .{},
@@ -303,9 +303,9 @@ draw_quad :: (
 
 draw_circle :: (
     transform : Matrix4  = Matrix4_Identity,
-    radius    : float32      = 0.5,
-    thickness : float32      = 0.05,
-    fade      : float32      = 0.01,
+    radius    : float32  = 0.5,
+    thickness : float32  = 0.05,
+    fade      : float32  = 0.01,
     tint      : Vector4  = .{ 1, 1, 1, 1 }, 
     entity_id : u32      = 0
 )
