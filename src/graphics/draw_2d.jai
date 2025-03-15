@@ -380,11 +380,13 @@ draw_circle :: (
 
 #scope_file
 
-#load "texture.jai";
-#load "shader.jai";
-#load "api.jai";
-#load "buffer_object.jai";
-#load "primitives.jai";
+#import, file "texture.jai";
+#import, file "shader.jai";
+#import, file "api.jai";
+#import, file "buffer_object.jai";
+#import, file "primitives.jai";
+#import "Math";
+#import "Basic";
 
 draw_2d : *Draw2D_Context;
 

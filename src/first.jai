@@ -30,6 +30,10 @@ main :: () {
 
 #scope_file
 
+#import "Basic";
 #import "System";
-#load "window.jai";
-#load "graphics/draw_2d.jai";
+#import "String";
+
+#import, file "window.jai";
+#import, file "graphics/draw_2d.jai";
+#import, file "graphics/api.jai";

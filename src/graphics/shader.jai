@@ -60,6 +60,7 @@ set_constant_int :: (using shader : *Shader, name : string, value : s32) {
 
 #import "GL" (DUMP_GL_ERRORS = true);
 #import "Math";
+#import "Basic";
 
 QUAD_SHADER_SOURCE :: #string SCOPE
     #ifdef VERTEX_SHADER        
