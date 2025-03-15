@@ -14,14 +14,13 @@ main :: () {
 
     init_window(window);
     defer fini_window(window);
-
+    
     set_clear_color(1, 0, 0, 1);
-
     draw_2d_init(*context.game.draw_2d);
 
     while keep_window_opened(window) {
         clear_screen();
-        draw_2d_begin();
+        draw_2d_begin(.{ xx window.width, xx window.height });
         draw_quad();
         draw_2d_end();
     }
