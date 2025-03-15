@@ -20,6 +20,7 @@ run_debugger :: () {
     log("%", output_string);
     log_error("%", error_string);
     log("Debugger closed!");
+    set_build_options_dc(.{do_output=false});
 }
 
 #import "Basic";
