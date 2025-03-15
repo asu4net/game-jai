@@ -15,7 +15,7 @@ main :: () {
     init_window(window);
     defer fini_window(window);
 
-    set_clear_color(1, 0, 0, 1);
+    set_clear_color(0.5, 0.5, 0, 1);
     draw_2d_init(*context.game.draw_2d);
 
     while keep_window_opened(window) {

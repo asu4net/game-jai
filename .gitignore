@@ -4,6 +4,5 @@
 **.code-workspace
 **.vscode
 **/ols.json
-/scripts/
 .build/
 **.spv
