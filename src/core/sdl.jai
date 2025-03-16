@@ -28,6 +28,7 @@ destroy_sdl_window :: (window: *SDL_Window) {
 #scope_file
 
 #import "SDL";
+#import "Basic";
 
 #add_context sdl : SDLContext;
 

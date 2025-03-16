@@ -77,7 +77,8 @@ fini_window :: (window : *Window) {
 #import "Basic";
 #import "String";
 #import "GL" (DUMP_GL_ERRORS = true);
-#load "sdl.jai";
+#import, file "sdl.jai";
+#import "SDL";
 
 poll_events :: (window : *Window) {
     assert(is_window_init(window));
