@@ -1,13 +1,13 @@
 //TODO:
 /*
+- Renombrar las funciones de begin & end (?)
+- Generación de sprite-sheet
+- Fuentes y renderizado de texto (Mirar SIMP)
+- Pintado de primitivas de GUI (Mirar SIMP)
 - Leer shaders de ficheros
 - Poder cambiar de shader
 - Dumpear errores de OpenGL
-- Generación de sprite-sheet
 - Meter ImGUI
-- Fuentes y renderizado de texto (Mirar SIMP)
-- Pintado de primitivas de GUI (Mirar SIMP)
-- Renombrar las funciones de begin & end (?)
 - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
 - Picking
 - Sistema de iluminación: Ambient y Point lights
