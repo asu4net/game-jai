@@ -30,9 +30,8 @@ main :: () {
 
 #scope_file
 
-#import "Basic";
 #import "System";
 #import "String";
+#import "Basic";
+#import "Core";
 #import "Graphics";
-
-#import, file "core/window.jai";
