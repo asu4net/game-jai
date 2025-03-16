@@ -1,7 +1,6 @@
 {
     "local_modules": [
-        "src/modules/Core",
-        "src/modules/Graphics"
+        "src/modules"
     ],
     "roots": [
         "src/first.jai"

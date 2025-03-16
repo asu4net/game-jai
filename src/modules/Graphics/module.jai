@@ -1,6 +1,5 @@
 //TODO:
 /*
-- Funciones matematicas para modificar fácilmente los transforms y mover las constantes
 - Leer shaders de ficheros
 - Poder cambiar de shader
 - Dumpear errores de OpenGL

@@ -22,7 +22,7 @@ main :: () {
         clear_screen();
         draw_2d_begin(.{ xx window.width, xx window.height });
         draw_quad();
-        draw_circle(tint = .{0, 0, 1, 1});
+        draw_circle(transform = transfom(RIGHT_3D), tint = .{0, 0, 1, 1});
         draw_2d_end();
         reset_temporary_storage();
     }

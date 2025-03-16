@@ -171,7 +171,7 @@ draw_2d_begin :: (
     aspect := viewport.x / viewport.y;
     limit  := aspect * size;
     projection := orthographic_projection_matrix(-limit, limit, -size, size, near, far);
-    view := matrix4_look_at_from_fru(.{ 0, 0, -3 }, front, right, up);
+    view := look_at(.{ 0, 0, -3 }, front, right, up);
     projection_view = projection * view;
     
     start_batch();
