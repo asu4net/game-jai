@@ -380,14 +380,6 @@ draw_circle :: (
 
 #scope_file
 
-#import, file "texture.jai";
-#import, file "shader.jai";
-#import, file "api.jai";
-#import, file "buffer_object.jai";
-#import, file "primitives.jai";
-#import "Math";
-#import "Basic";
-
 draw_2d : *Draw2D_Context;
 
 assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {

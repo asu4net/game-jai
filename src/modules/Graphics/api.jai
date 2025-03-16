@@ -144,10 +144,3 @@ draw_elements :: (vao : *Vertex_Array, element_count : u32) {
     glDrawElements(GL_TRIANGLES, xx element_count, GL_UNSIGNED_INT, null);
     unbind(vao);
 }
-
-#scope_file
-
-#import "GL" (DUMP_GL_ERRORS = true);
-#import "Math";
-#import "Basic";
-#import, file "buffer_object.jai";

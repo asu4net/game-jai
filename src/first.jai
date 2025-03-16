@@ -33,7 +33,6 @@ main :: () {
 #import "Basic";
 #import "System";
 #import "String";
+#import "Graphics";
 
 #import, file "core/window.jai";
-#import, file "graphics/draw_2d.jai";
-#import, file "graphics/api.jai";

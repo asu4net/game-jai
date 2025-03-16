@@ -6,8 +6,7 @@
 EXECUTABLE_NAME :: "game";
 OUTPUT_PATH     ::"../bin";
 BUILD_FILE      ::"../src/first.jai";
-//SOURCE_PATH     ::"../src/core";
-
+MODULES_PATH     ::"../src/modules";
 
 #run compile();
 
@@ -27,10 +26,10 @@ compile :: () {
     target_options.output_executable_name = EXECUTABLE_NAME;
     target_options.output_path = String.join(#filepath, OUTPUT_PATH);
 
-    //new_import_path : [..] string;
-    //array_copy(*new_import_path, target_options.import_path);
-    //array_add(*new_import_path, SOURCE_PATH);
-    //target_options.import_path = new_import_path;
+    new_import_path : [..] string;
+    array_copy(*new_import_path, target_options.import_path);
+    array_add(*new_import_path, MODULES_PATH);
+    target_options.import_path = new_import_path;
 
 
     set_optimization(*target_options, .DEBUG);

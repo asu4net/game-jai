@@ -189,10 +189,3 @@ add_vertex_buffer :: (using vertex_array : *Vertex_Array, vertex_buffer : *Verte
         index += 1;
     }
 }
-
-#scope_file
-
-#import "GL" (DUMP_GL_ERRORS = true);
-#import "Math";
-#import "Basic";
-#import, file "api.jai";

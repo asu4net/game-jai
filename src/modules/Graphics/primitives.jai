@@ -122,6 +122,3 @@ fill_quad_sub_tex_vertex_uvs :: (
 
     fill_quad_vertex_uvs(vertex_uvs, flip_x, flip_y, tiling_factor);
 }
-
-#scope_file
-#import "Math";

@@ -58,10 +58,6 @@ set_constant_int :: (using shader : *Shader, name : string, value : s32) {
 
 #scope_file
 
-#import "GL" (DUMP_GL_ERRORS = true);
-#import "Math";
-#import "Basic";
-
 QUAD_SHADER_SOURCE :: #string SCOPE
     #ifdef VERTEX_SHADER        
     layout(location = 0) in vec4 a_Position;

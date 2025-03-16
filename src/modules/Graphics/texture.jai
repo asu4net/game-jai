@@ -127,10 +127,6 @@ bind :: (using texture : *Texture, slot : u32 = 0) {
 
 #scope_file
 
-#import "Basic";
-#import "GL" (DUMP_GL_ERRORS = true);
-#import "stb_image";
-
 set_mag_filter :: (texture_id : u32, mag_filter : Mag_Filter) {
     if mag_filter == {
         case .LINEAR;  glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
