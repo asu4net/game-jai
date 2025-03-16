@@ -1,22 +1,3 @@
-
-
-ZERO_2D   :: Vector2.{ +0, +0 };
-ONE_2D    :: Vector2.{ +1, +1 };
-UP_2D     :: Vector2.{ +0, +1 };
-RIGHT_2D  :: Vector2.{ +1, +0 };
-LEFT_2D   :: Vector2.{ -1, +0 };
-
-ZERO_3D   :: Vector3.{ +0, +0, +0 };
-ONE_3D    :: Vector3.{ +1, +1, +1 };
-UP_3D     :: Vector3.{ +0, +1, +0 };
-RIGHT_3D  :: Vector3.{ +1, +0, +0 };
-LEFT_3D   :: Vector3.{ -1, +0, +0 };
-FRONT_3D  :: Vector3.{ +0, +0, +1 };
-BACK_3D   :: Vector3.{ +0, +0, -1 };
-
-ZERO_4D   :: Vector4.{ +0, +0, +0, +0 };
-ONE_4D    :: Vector4.{ +1, +1, +1, +1 };
-
 Rect :: struct {
     x: float32; 
     y: float32; 
@@ -190,22 +171,6 @@ draw_2d_begin :: (
     aspect := viewport.x / viewport.y;
     limit  := aspect * size;
     projection := orthographic_projection_matrix(-limit, limit, -size, size, near, far);
-
-    matrix4_look_at_from_fru :: (eye: Vector3, f: Vector3, r: Vector3, u: Vector3, flip_z_axis := true) -> (m: Matrix4) {
-    	f, s, u := f, r, u;
-    	f = normalize(f);
-    	s = normalize(s);
-    	u = normalize(u);
-    	fe := dot(f, eye);
-
-    	return .{
-    		+s.x, +s.y, +s.z, -dot(s, eye),
-    		+u.x, +u.y, +u.z, -dot(u, eye),
-    		-f.x, -f.y, -f.z, ifx flip_z_axis then +fe else -fe,
-    		   0,    0,    0, 1,
-    	};
-    }
-
     view := matrix4_look_at_from_fru(.{ 0, 0, -3 }, front, right, up);
     projection_view = projection * view;
     

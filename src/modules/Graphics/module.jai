@@ -16,6 +16,7 @@
 
 #scope_module
 
+#import "Core";
 #import "GL" (DUMP_GL_ERRORS = true);
 #import "Math";
 #import "Basic";
