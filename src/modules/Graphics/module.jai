@@ -20,6 +20,9 @@
 #import "Math";
 #import "Basic";
 #import "stb_image";
+#import "Hash_Table";
+#import "stb_truetype";
+#import "File";
 
 #load "draw_2d.jai";
 #load "api.jai";
@@ -27,3 +30,4 @@
 #load "primitives.jai";
 #load "shader.jai";
 #load "texture.jai";
+#load "font.jai";

@@ -38,7 +38,7 @@ rotate :: (mat: Matrix4, rotation : Vector3) -> Matrix4 {
     return rotate_z(rotate_y(rotate_x(mat, rotation.x), rotation.y), rotation.z);
 }
 
-transfom :: (pos : Vector3, rot := ZERO_3D, sc := ONE_3D) -> Matrix4 {
+make_transfom :: (pos : Vector3, rot := ZERO_3D, sc := ONE_3D) -> Matrix4 {
     scale_matrix := scale(Matrix4_Identity, sc);
     rotation_matrix :=  ifx rot != ZERO_3D then rotate(scale_matrix, RAD_PER_DEG * rot) else scale_matrix;
     translation_matrix := translate(rotation_matrix, pos);
