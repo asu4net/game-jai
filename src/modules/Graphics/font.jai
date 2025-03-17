@@ -1,5 +1,3 @@
-DEFAULT_PIXEL_HEIGHT :: 48;
-
 Glyph :: struct {
     x0, y0, s0, t0 : float32; // top-left
     x1, y1, s1, t1 : float32; // bottom-right
@@ -18,7 +16,7 @@ font_is_init :: (font : *Font) -> bool {
     return font.is_init;
 }
 
-init_font :: (font : *Font, path : string, pixel_height : u32 = DEFAULT_PIXEL_HEIGHT) {
+init_font :: (font : *Font, path : string) {
     assert(!font_is_init(font));
     
     file, success := file_open(path);
@@ -51,7 +49,7 @@ init_font :: (font : *Font, path : string, pixel_height : u32 = DEFAULT_PIXEL_HE
     defer array_free(pixels_alpha);
 
     font.baked_char = NewArray(CHAR_COUNT, Bakedchar); //pending free
-    
+
     bake_font_bitmap(buffer, 0, PIXEL_HEIGHT, pixels_alpha.data, WIDTH, HEIGHT, 0, CHAR_COUNT, font.baked_char.data);
     
     curr_index := 0;
