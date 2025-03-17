@@ -29,23 +29,23 @@ Primitive_Type :: enum {
 }
 
 Draw2D_Context :: struct {
-    white_texture      : Texture;
-    texture_slots      : [MAX_TEXTURE_SLOTS] s32;
-    textures_to_bind   : [MAX_TEXTURE_SLOTS]*Texture;
-    last_texture_slot  : s32;
-    projection_view    : Matrix4;
+    white_texture        : Texture;
+    texture_slots        : [MAX_TEXTURE_SLOTS] s32;
+    textures_to_bind     : [MAX_TEXTURE_SLOTS]*Texture;
+    last_texture_slot    : s32;
+    camera               : RenderCamera;
 
-    curr_blending      : Blending_Mode;
-    curr_primitive     : Primitive_Type;
+    curr_blending        : Blending_Mode;
+    curr_primitive       : Primitive_Type;
 
     // Quad
-    quad_ibo           : Index_Buffer;
-    quad_vao           : Vertex_Array;
-    quad_vbo           : Vertex_Buffer;
-    quad_batch         : [] Quad_Vertex;
-    quad_count         : u32;
-    quad_index_count   : u32;
-    quad_shader        : Shader;
+    quad_ibo             : Index_Buffer;
+    quad_vao             : Vertex_Array;
+    quad_vbo             : Vertex_Buffer;
+    quad_batch           : [] Quad_Vertex;
+    quad_count           : u32;
+    quad_index_count     : u32;
+    quad_shader          : Shader;
     
     // Circle
     circle_vao         : Vertex_Array;
@@ -65,7 +65,6 @@ draw_2d_init :: (instance : *Draw2D_Context) {
     draw_2d = instance;
     using draw_2d;
     
-    projection_view = Matrix4_Identity;
     init_white_texture(*white_texture);
     //texture_2d_init(*atlas_texture, "assets/atlas.png")
 
@@ -154,26 +153,14 @@ draw_2d_finish :: () {
     draw_2d.* = .{};
 }
 
-draw_2d_begin :: (
-    viewport : Vector2  = Vector2.{ 1280, 720 }, 
-    eye      : Vector3  = ZERO_3D, 
-    size     : float32  = +1, 
-    near     : float32  = -1,
-    far      : float32  = +1,
-    front    : Vector3  = FRONT_3D,
-    right    : Vector3  = RIGHT_3D,
-    up       : Vector3  = UP_3D
-) {
+update_2d_camera :: (viewport_width : s32, viewport_height : s32) {
     assert(draw_2d != null);
-    using draw_2d;
-    
-    set_viewport(xx viewport.x, xx viewport.y);
-    aspect := viewport.x / viewport.y;
-    limit  := aspect * size;
-    projection := orthographic_projection_matrix(-limit, limit, -size, size, near, far);
-    view := look_at(.{ 0, 0, -3 }, front, right, up);
-    projection_view = projection * view;
-    
+    draw_2d.camera.viewport_w = viewport_width;
+    draw_2d.camera.viewport_h = viewport_height;
+    update_render_camera(*draw_2d.camera);
+}
+
+draw_2d_begin :: () {
     start_batch();
 }
 
@@ -189,6 +176,82 @@ QuadFlag :: enum {
 }
 
 DEFAULT_QUAD_FLAGS :: QuadFlag.AUTOSIZE;
+
+draw_text :: (
+    transform     : Matrix4       = Matrix4_Identity,
+    text          : string        = "placeholder!",
+    font          : *Font         = null,
+    size          : float         = 0.1,
+    blending      : Blending_Mode = .ALPHA,
+    tint          : Vector4       = .{ 1, 1, 1, 1},
+    entity_id     : u32           = 0
+)
+{
+    assert(draw_2d != null);
+    assert(font != null);
+    
+    using draw_2d;
+
+    assert(quad_count <= MAX_2D_PRIMITIVES_PER_BATCH);
+    
+    if curr_blending != blending {
+        next_batch();
+        set_blending_mode(blending);
+        curr_blending = blending;
+    }
+
+    if curr_primitive != .NONE && curr_primitive != .QUAD {
+        next_batch();
+    }
+
+    curr_primitive = .QUAD;
+
+    if quad_count == MAX_2D_PRIMITIVES_PER_BATCH {
+        next_batch();
+    }
+
+    text_scale : float = size / cast(float) font.pixel_height;
+
+    x_pos, y_pos : float;
+
+    for c : text {
+
+        vertex_positions : V4Verts2D = ---;
+        vertex_uvs       : V2Verts2D = ---;
+        vertex_colors    : V4Verts2D = ---;
+        fill_vertex_colors(*vertex_colors, tint);
+
+        glyph : Glyph;
+        d := *glyph.quad;
+        fill_glyph(font, *glyph, c);
+
+        vertex_positions[0] = .{d.x0 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
+        vertex_positions[1] = .{d.x1 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
+        vertex_positions[2] = .{d.x1 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
+        vertex_positions[3] = .{d.x0 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
+
+        vertex_uvs[0] = .{ d.s0, d.t1 };
+        vertex_uvs[1] = .{ d.s1, d.t1 };
+        vertex_uvs[2] = .{ d.s1, d.t0 };
+        vertex_uvs[3] = .{ d.s0, d.t0 };
+        
+        x_pos += text_scale * glyph.x_pos;
+        y_pos += text_scale * glyph.y_pos;
+
+        transform_vertex_positions(*vertex_positions, transform);
+
+        slot := assign_texture_slot(*font.atlas);
+
+        for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
+            quad_batch[i + quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
+                vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
+            };
+        }
+
+        quad_index_count += INDICES_PER_2D_PRIMITIVE;
+        quad_count += 1;
+    }
+}
 
 draw_quad :: (
     transform     : Matrix4       = Matrix4_Identity,
@@ -384,13 +447,13 @@ flush :: () {
             }
             bind(*quad_shader);
             set_constant_sampler2d(*quad_shader, "u_Textures[0]", texture_slots, MAX_TEXTURE_SLOTS);
-            set_constant_matrix4(*quad_shader, "u_ProjectionView", projection_view);
+            set_constant_matrix4(*quad_shader, "u_ProjectionView", camera.pv_matrix);
             set_vertex_buffer_data(*quad_vbo, *quad_batch[0], xx (size_of(Quad_Vertex) * VERTICES_PER_2D_PRIMITIVE * quad_count));
             draw_elements(*quad_vao, quad_index_count);
         }
         case .CIRCLE; {
             bind(*circle_shader);
-            set_constant_matrix4(*circle_shader, "u_ProjectionView", projection_view);
+            set_constant_matrix4(*circle_shader, "u_ProjectionView", camera.pv_matrix);
             set_vertex_buffer_data(*circle_vbo, *circle_batch[0], xx (size_of(Circle_Vertex) * VERTICES_PER_2D_PRIMITIVE * circle_count));
             draw_elements(*circle_vao, circle_index_count);
         }

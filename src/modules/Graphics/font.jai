@@ -1,14 +1,14 @@
 Glyph :: struct {
-    x0, y0, s0, t0 : float32; // top-left
-    x1, y1, s1, t1 : float32; // bottom-right
+    quad           : AlignedQuad;
     x_pos, y_pos   : float32;
 }
 
 Font :: struct {
-    path       : string;
-    is_init    : bool;
-    baked_char : [] Bakedchar;
-    atlas      : Texture;
+    path         : string;
+    atlas        : Texture;
+    glyphs       : Table(u8, Glyph);
+    is_init      : bool;
+    pixel_height : s32;
 }
 
 font_is_init :: (font : *Font) -> bool {
@@ -35,12 +35,13 @@ init_font :: (font : *Font, path : string) {
         return;
     }
 
-    PIXEL_HEIGHT        :: 64.0;
+    PIXEL_HEIGHT        :: 64;
     HEIGHT              :: 1024;
     WIDTH               :: 1024;
     CHAR_COUNT          :: 256;
     PIXELS_ALPHA_LENGTH :: HEIGHT * WIDTH;
     PIXELS_RGB_LENGTH   :: PIXELS_ALPHA_LENGTH * 4;
+    font.pixel_height = PIXEL_HEIGHT;
 
     array_resize(*font.atlas.pixel_data, PIXELS_RGB_LENGTH ); //pending free
     pixels_rgb := font.atlas.pixel_data;
@@ -48,13 +49,14 @@ init_font :: (font : *Font, path : string) {
     pixels_alpha := NewArray(PIXELS_ALPHA_LENGTH, u8);
     defer array_free(pixels_alpha);
 
-    font.baked_char = NewArray(CHAR_COUNT, Bakedchar); //pending free
+    baked_char := NewArray(CHAR_COUNT, Bakedchar); //pending free
+    defer array_free(baked_char);
 
-    bake_font_bitmap(buffer, 0, PIXEL_HEIGHT, pixels_alpha.data, WIDTH, HEIGHT, 0, CHAR_COUNT, font.baked_char.data);
+    bake_font_bitmap(buffer, 0, PIXEL_HEIGHT, pixels_alpha.data, WIDTH, HEIGHT, 0, CHAR_COUNT, baked_char.data);
     
     curr_index := 0;
     pixels_index := 0;
-    for i : 0..PIXELS_RGB_LENGTH -1 {
+    for i : 0..PIXELS_RGB_LENGTH - 1 {
         curr_index += 1;
         if curr_index == 4 {
             pixels_rgb[i] = pixels_alpha[pixels_index];
@@ -69,16 +71,40 @@ init_font :: (font : *Font, path : string) {
     font.atlas.width  = WIDTH;
     font.atlas.height = HEIGHT;
     font.atlas.channels = 4;
+    
+    for i : 0..255 {
+        x_pos, y_pos : float32;
+        glyph : Glyph;
+        get_baked_quad(
+              baked_char.data
+            , xx font.atlas.width
+            , xx font.atlas.height
+            , xx i
+            , *glyph.x_pos
+            , *glyph.y_pos
+            , *glyph.quad
+            , 1
+        );
+        table_add(*font.glyphs, xx i, glyph);
+    }
 
     upload_texture_to_gpu(*font.atlas);
 
     font.is_init = true;
 }
 
+fill_glyph :: (font : *Font, glyph : *Glyph, c : u8) {
+    assert(font_is_init(font));
+    assert(table_contains(*font.glyphs, c));
+    success := false;
+    glyph.*, success = table_find(*font.glyphs, c);
+    assert(success);
+}
+
 fini_font :: (font : *Font) {
     assert(font_is_init(font));
-    array_free(font.baked_char);
     fini_texture(*font.atlas);
+    deinit(*font.glyphs);
     font.* = .{};
 }
 

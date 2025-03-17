@@ -31,3 +31,4 @@
 #load "shader.jai";
 #load "texture.jai";
 #load "font.jai";
+#load "render_camera.jai";
