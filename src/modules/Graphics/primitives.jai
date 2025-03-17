@@ -84,7 +84,7 @@ flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
 
 fill_quad_vertex_uvs :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool, tiling_factor : Vector2) {
     flip_quad_vertex_uv(vertex_uvs, flip_x, flip_y);
-    for i : 1..VERTICES_PER_2D_PRIMITIVE {
+    for i : 1..VERTICES_PER_2D_PRIMITIVE - 1 {
         vertex_uvs.*[i].x *= tiling_factor.x;
         vertex_uvs.*[i].y *= tiling_factor.y;
     }

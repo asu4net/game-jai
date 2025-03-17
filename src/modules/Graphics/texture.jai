@@ -75,8 +75,8 @@ init_white_texture :: (using texture : *Texture) {
 init_texture_from_path :: (
     texture  : *Texture, 
     path     : string, 
-    mag      : Mag_Filter = .NEAREST,
-    min      : Min_Filter = .NEAREST,
+    mag      : Mag_Filter = .LINEAR,
+    min      : Min_Filter = .LINEAR,
     wrap_u   : Wrap_Mode  = .REPEAT,
     wrap_v   : Wrap_Mode  = .REPEAT
 ) {
@@ -136,8 +136,8 @@ set_mag_filter :: (texture_id : u32, mag_filter : Mag_Filter) {
 
 set_min_filter :: (texture_id : u32, min_filter : Min_Filter) {
     if min_filter == {
-        case .LINEAR;  glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        case .NEAREST; glTextureParameteri(texture_id, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        case .LINEAR;  glTextureParameteri(texture_id, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        case .NEAREST; glTextureParameteri(texture_id, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     }
 }
 
