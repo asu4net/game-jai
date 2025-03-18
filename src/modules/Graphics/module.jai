@@ -1,9 +1,7 @@
 //TODO:
 /*
-- Renombrar las funciones de begin & end (?)
-- Generación de sprite-sheet
-- Fuentes y renderizado de texto (Mirar SIMP)
 - Pintado de primitivas de GUI (Mirar SIMP)
+- Generación de sprite-sheet
 - Leer shaders de ficheros
 - Poder cambiar de shader
 - Dumpear errores de OpenGL
