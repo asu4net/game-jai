@@ -16,12 +16,13 @@ main :: () {
     alien   := *context.game.alien;
     font    := *context.game.font;
     draw_2d := *context.game.draw_2d;
-
+    
     init_window(window);
     defer fini_window(window);
 
     set_clear_color(DARK_GRAY);
-    draw_2d_init(draw_2d);
+    init_draw_2d(draw_2d);
+    defer fini_draw_2d();
 
     init_texture_from_path(alien, "assets/alien.png", mag = .LINEAR, min = .LINEAR);    
     defer fini_texture(alien);

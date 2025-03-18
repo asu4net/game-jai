@@ -34,9 +34,9 @@ Draw2D_Context :: struct {
     textures_to_bind     : [MAX_TEXTURE_SLOTS]*Texture;
     last_texture_slot    : s32;
     camera               : RenderCamera;
-
     curr_blending        : Blending_Mode;
     curr_primitive       : Primitive_Type;
+    initialized          : bool;
 
     // Quad
     quad_ibo             : Index_Buffer;
@@ -56,28 +56,31 @@ Draw2D_Context :: struct {
     circle_shader      : Shader;
 }
 
-draw_2d_init :: (instance : *Draw2D_Context) {
+is_draw_2d_initialized :: () -> bool {
+    assert(draw_2d != null);
+    return draw_2d.initialized;
+}
+
+init_draw_2d :: (instance : *Draw2D_Context) {
     assert(draw_2d == null);
     assert(instance != null);
-    
     set_blending_mode(.ALPHA);
-
     draw_2d = instance;
-    using draw_2d;
-    
-    init_white_texture(*white_texture);
+    state := draw_2d;
+
+    init_white_texture(*state.white_texture);
     //texture_2d_init(*atlas_texture, "assets/atlas.png")
 
-    textures_to_bind[Default_Texture_Slots.WHITE] = *white_texture;
+    state.textures_to_bind[Default_Texture_Slots.WHITE] = *state.white_texture;
     //textures_to_bind[Default_Texture_Slots.ATLAS] = *atlas_texture
-    last_texture_slot = xx Default_Texture_Slots.COUNT;
+    state.last_texture_slot = xx Default_Texture_Slots.COUNT;
 
     for i : 0..MAX_TEXTURE_SLOTS - 1 {
-        texture_slots[i] = xx i;
+        state.texture_slots[i] = xx i;
     }
 
-    init_shader(*quad_shader, .QUAD);
-    init_shader(*circle_shader, .CIRCLE);
+    init_shader(*state.quad_shader, .QUAD);
+    init_shader(*state.circle_shader, .CIRCLE);
 
     {
         INDEX_COUNT :: MAX_2D_PRIMITIVES_PER_BATCH * INDICES_PER_2D_PRIMITIVE;
@@ -101,63 +104,67 @@ draw_2d_init :: (instance : *Draw2D_Context) {
             i += INDICES_PER_2D_PRIMITIVE;
         }
 
-        init_index_buffer(*quad_ibo, indices.data, INDEX_COUNT);
+        init_index_buffer(*state.quad_ibo, indices.data, INDEX_COUNT);
         
         VERTICES :: MAX_2D_PRIMITIVES_PER_BATCH * VERTICES_PER_2D_PRIMITIVE;
         
         // Quad
         {
-            quad_batch = NewArray(VERTICES, Quad_Vertex);
-            init_vertex_array(*quad_vao);
-            init_vertex_buffer(*quad_vbo, VERTICES * size_of(Quad_Vertex));
-            add_layout(*quad_vbo, type = .Float4, name = "a_Position");
-            add_layout(*quad_vbo, type = .Float4, name = "a_Tint");
-            add_layout(*quad_vbo, type = .Float2, name = "a_UV");
-            add_layout(*quad_vbo, type = .Int,    name = "a_Texture");
-            add_layout(*quad_vbo, type = .Int,    name = "a_EntityID");
-            add_vertex_buffer(*quad_vao, *quad_vbo);
-            add_index_buffer(*quad_vao, *quad_ibo);
+            state.quad_batch = NewArray(VERTICES, Quad_Vertex);
+            init_vertex_array(*state.quad_vao);
+            init_vertex_buffer(*state.quad_vbo, VERTICES * size_of(Quad_Vertex));
+            add_layout(*state.quad_vbo, type = .Float4, name = "a_Position");
+            add_layout(*state.quad_vbo, type = .Float4, name = "a_Tint");
+            add_layout(*state.quad_vbo, type = .Float2, name = "a_UV");
+            add_layout(*state.quad_vbo, type = .Int,    name = "a_Texture");
+            add_layout(*state.quad_vbo, type = .Int,    name = "a_EntityID");
+            add_vertex_buffer(*state.quad_vao, *state.quad_vbo);
+            add_index_buffer(*state.quad_vao, *state.quad_ibo);
         }
 
         // Circle
         {
-            circle_batch = NewArray(VERTICES, Circle_Vertex);
-            init_vertex_array(*circle_vao);
-            init_vertex_buffer(*circle_vbo, VERTICES * size_of(Circle_Vertex));
-            add_layout(*circle_vbo, type = .Float4, name = "a_Position");
-            add_layout(*circle_vbo, type = .Float4, name = "a_LocalPosition");
-            add_layout(*circle_vbo, type = .Float4, name = "a_Tint");
-            add_layout(*circle_vbo, type = .Float,  name = "a_Thickness");
-            add_layout(*circle_vbo, type = .Float,  name = "a_Fade");
-            add_layout(*circle_vbo, type = .Int,    name = "a_EntityID");
-            add_vertex_buffer(*circle_vao, *circle_vbo);
-            add_index_buffer(*circle_vao, *quad_ibo);
+            state.circle_batch = NewArray(VERTICES, Circle_Vertex);
+            init_vertex_array(*state.circle_vao);
+            init_vertex_buffer(*state.circle_vbo, VERTICES * size_of(Circle_Vertex));
+            add_layout(*state.circle_vbo, type = .Float4, name = "a_Position");
+            add_layout(*state.circle_vbo, type = .Float4, name = "a_LocalPosition");
+            add_layout(*state.circle_vbo, type = .Float4, name = "a_Tint");
+            add_layout(*state.circle_vbo, type = .Float,  name = "a_Thickness");
+            add_layout(*state.circle_vbo, type = .Float,  name = "a_Fade");
+            add_layout(*state.circle_vbo, type = .Int,    name = "a_EntityID");
+            add_vertex_buffer(*state.circle_vao, *state.circle_vbo);
+            add_index_buffer(*state.circle_vao, *state.quad_ibo);
         }
     }
+
+    state.initialized = true;
 }
 
-draw_2d_finish :: () {
-    using draw_2d;
-    assert(draw_2d != null);
-    fini_texture(*white_texture);
+fini_draw_2d :: () {
+    assert(is_draw_2d_initialized());
+    state := draw_2d;
+
+    fini_texture(*state.white_texture);
     //texture_2d_finish(*atlas_texture)
 
-    array_free(quad_batch);
-    fini_vertex_buffer(*quad_vbo);
-    fini_shader(*quad_shader);
+    array_free(state.quad_batch);
+    fini_vertex_buffer(*state.quad_vbo);
+    fini_shader(*state.quad_shader);
     
-    array_free(circle_batch);
-    fini_vertex_buffer(*circle_vbo);
-    fini_shader(*circle_shader);
+    array_free(state.circle_batch);
+    fini_vertex_buffer(*state.circle_vbo);
+    fini_shader(*state.circle_shader);
     
     draw_2d.* = .{};
 }
 
 update_2d_camera :: (viewport_width : s32, viewport_height : s32) {
-    assert(draw_2d != null);
-    draw_2d.camera.viewport_w = viewport_width;
-    draw_2d.camera.viewport_h = viewport_height;
-    update_render_camera(*draw_2d.camera);
+    assert(is_draw_2d_initialized());
+    state := draw_2d;
+    state.camera.viewport_w = viewport_width;
+    state.camera.viewport_h = viewport_height;
+    update_render_camera(*state.camera);
 }
 
 draw_2d_begin :: () {
@@ -187,28 +194,8 @@ draw_text :: (
     entity_id     : u32           = 0
 )
 {
-    assert(draw_2d != null);
     assert(font != null);
-    
-    using draw_2d;
-
-    assert(quad_count <= MAX_2D_PRIMITIVES_PER_BATCH);
-    
-    if curr_blending != blending {
-        next_batch();
-        set_blending_mode(blending);
-        curr_blending = blending;
-    }
-
-    if curr_primitive != .NONE && curr_primitive != .QUAD {
-        next_batch();
-    }
-
-    curr_primitive = .QUAD;
-
-    if quad_count == MAX_2D_PRIMITIVES_PER_BATCH {
-        next_batch();
-    }
+    Draw2DProcHeader(.QUAD, blending);
 
     text_scale : float = size / cast(float) font.pixel_height;
 
@@ -243,13 +230,13 @@ draw_text :: (
         slot := assign_texture_slot(*font.atlas);
 
         for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
-            quad_batch[i + quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
+            state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
                 vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
             };
         }
 
-        quad_index_count += INDICES_PER_2D_PRIMITIVE;
-        quad_count += 1;
+        state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
+        state.quad_count += 1;
     }
 }
 
@@ -264,26 +251,7 @@ draw_quad :: (
     flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
 )
 {
-    assert(draw_2d != null);
-    using draw_2d;
-
-    assert(quad_count <= MAX_2D_PRIMITIVES_PER_BATCH);
-    
-    if curr_blending != blending {
-        next_batch();
-        set_blending_mode(blending);
-        curr_blending = blending;
-    }
-
-    if curr_primitive != .NONE && curr_primitive != .QUAD {
-        next_batch();
-    }
-
-    curr_primitive = .QUAD;
-
-    if quad_count == MAX_2D_PRIMITIVES_PER_BATCH {
-        next_batch();
-    }
+    Draw2DProcHeader(.QUAD, blending);
 
     vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
     vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
@@ -327,13 +295,13 @@ draw_quad :: (
     slot := assign_texture_slot(texture);
 
     for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
-        quad_batch[i + quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
+        state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
             vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
         };
     }    
     
-    quad_index_count += INDICES_PER_2D_PRIMITIVE;
-    quad_count += 1;
+    state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
+    state.quad_count += 1;
 }
 
 draw_circle :: (
@@ -345,25 +313,7 @@ draw_circle :: (
     entity_id : u32      = 0
 )
 {
-    assert(draw_2d != null);
-    using draw_2d;
-
-    if curr_blending != .ALPHA {
-        next_batch();
-        set_blending_mode(.ALPHA);
-    }
-    
-    if curr_primitive != .NONE && curr_primitive != .CIRCLE {
-        next_batch();
-    }
-
-    curr_primitive = .CIRCLE;
-
-    assert(circle_count <= MAX_2D_PRIMITIVES_PER_BATCH);
-
-    if circle_count == MAX_2D_PRIMITIVES_PER_BATCH {
-        next_batch();
-    }
+    Draw2DProcHeader(.CIRCLE, .ALPHA);
 
     vertex_positions : V4Verts2D = ---;
     fill_circle_vertex_positions(*vertex_positions, radius);
@@ -378,7 +328,7 @@ draw_circle :: (
     
     for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
 
-        vert := *circle_batch[i + circle_count * VERTICES_PER_2D_PRIMITIVE];
+        vert := *state.circle_batch[i + state.circle_count * VERTICES_PER_2D_PRIMITIVE];
         
         vert.local_position = default_vertex_positions[i];
         vert.position       = vertex_positions[i];
@@ -388,15 +338,34 @@ draw_circle :: (
         vert.entity         = xx entity_id;
     }    
     
-    circle_index_count += INDICES_PER_2D_PRIMITIVE;
-    circle_count += 1;
+    state.circle_index_count += INDICES_PER_2D_PRIMITIVE;
+    state.circle_count += 1;
 }
 
 #scope_file
 
 draw_2d : *Draw2D_Context;
 
+Draw2DProcHeader :: (_primitive_type : Primitive_Type, _blending_mode : Blending_Mode = .ALPHA) #expand {
+    assert(is_draw_2d_initialized());
+    `state := draw_2d; 
+    if state.curr_blending != _blending_mode {
+        next_batch();
+        set_blending_mode(_blending_mode);
+        state.curr_blending = _blending_mode;
+    }
+    if state.curr_primitive != .NONE && state.curr_primitive != _primitive_type {
+        next_batch();
+    }
+    if _primitive_type == {
+        case .QUAD;   assert(state.quad_count <= MAX_2D_PRIMITIVES_PER_BATCH);
+        case .CIRCLE; assert(state.circle_count <= MAX_2D_PRIMITIVES_PER_BATCH);
+    }
+    state.curr_primitive = _primitive_type;
+}
+
 assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
+
     texture_slot : s32 = xx Default_Texture_Slots.WHITE;
     if texture == null {
         return texture_slot;
@@ -421,45 +390,45 @@ assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
 }
 
 start_batch :: () {
-    using draw_2d;
-    assert(draw_2d != null);
+    assert(is_draw_2d_initialized());
+    state := draw_2d;
+
+    state.last_texture_slot = xx Default_Texture_Slots.COUNT;
     
-    last_texture_slot = xx Default_Texture_Slots.COUNT;
+    state.quad_count = 0;
+    state.quad_index_count = 0;
     
-    quad_count = 0;
-    quad_index_count = 0;
-    
-    circle_count = 0;
-    circle_index_count = 0;
+    state.circle_count = 0;
+    state.circle_index_count = 0;
 }
 
 flush :: () {
-    using draw_2d;
-    assert(draw_2d != null);
-    
-    if curr_primitive == {
+    assert(is_draw_2d_initialized());
+    state := draw_2d;
+
+    if state.curr_primitive == {
         
         case .NONE; return;
         
         case .QUAD; {
-            for i : 0..last_texture_slot - 1 {
-                bind(textures_to_bind[i], xx i);
+            for i : 0..state.last_texture_slot - 1 {
+                bind(state.textures_to_bind[i], xx i);
             }
-            bind(*quad_shader);
-            set_constant_sampler2d(*quad_shader, "u_Textures[0]", texture_slots, MAX_TEXTURE_SLOTS);
-            set_constant_matrix4(*quad_shader, "u_ProjectionView", camera.pv_matrix);
-            set_vertex_buffer_data(*quad_vbo, *quad_batch[0], xx (size_of(Quad_Vertex) * VERTICES_PER_2D_PRIMITIVE * quad_count));
-            draw_elements(*quad_vao, quad_index_count);
+            bind(*state.quad_shader);
+            set_constant_sampler2d(*state.quad_shader, "u_Textures[0]", state.texture_slots, MAX_TEXTURE_SLOTS);
+            set_constant_matrix4(*state.quad_shader, "u_ProjectionView", state.camera.pv_matrix);
+            set_vertex_buffer_data(*state.quad_vbo, *state.quad_batch[0], xx (size_of(Quad_Vertex) * VERTICES_PER_2D_PRIMITIVE * state.quad_count));
+            draw_elements(*state.quad_vao, state.quad_index_count);
         }
         case .CIRCLE; {
-            bind(*circle_shader);
-            set_constant_matrix4(*circle_shader, "u_ProjectionView", camera.pv_matrix);
-            set_vertex_buffer_data(*circle_vbo, *circle_batch[0], xx (size_of(Circle_Vertex) * VERTICES_PER_2D_PRIMITIVE * circle_count));
-            draw_elements(*circle_vao, circle_index_count);
+            bind(*state.circle_shader);
+            set_constant_matrix4(*state.circle_shader, "u_ProjectionView", state.camera.pv_matrix);
+            set_vertex_buffer_data(*state.circle_vbo, *state.circle_batch[0], xx (size_of(Circle_Vertex) * VERTICES_PER_2D_PRIMITIVE * state.circle_count));
+            draw_elements(*state.circle_vao, state.circle_index_count);
         }
     }
 
-    curr_primitive = .NONE;
+    state.curr_primitive = .NONE;
 }
 
 next_batch :: () {
