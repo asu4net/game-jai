@@ -65,10 +65,10 @@ is_draw_2d_initialized :: () -> bool {
 init_draw_2d :: (instance : *Draw2D_Context) {
     assert(draw_2d == null);
     assert(instance != null);
-    set_blending_mode(.ALPHA);
     draw_2d = instance;
     state := draw_2d;
-
+    
+    set_blending_mode(.ALPHA);
     init_white_texture(*state.white_texture);
     //texture_2d_init(*atlas_texture, "assets/atlas.png")
 
@@ -156,7 +156,12 @@ fini_draw_2d :: () {
     fini_vertex_buffer(*state.circle_vbo);
     fini_shader(*state.circle_shader);
     
-    draw_2d.* = .{};
+    state.* = .{};
+}
+
+get_2d_camera :: () -> *RenderCamera {
+    Draw2DStateHeader();
+    return *state.camera;
 }
 
 update_2d_camera :: (viewport_width : s32, viewport_height : s32) {
