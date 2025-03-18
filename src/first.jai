@@ -16,11 +16,10 @@ main :: () {
     alien   := *context.game.alien;
     font    := *context.game.font;
     draw_2d := *context.game.draw_2d;
-    
+
     init_window(window);
     defer fini_window(window);
 
-    set_clear_color(DARK_GRAY);
     init_draw_2d(draw_2d);
     defer fini_draw_2d();
 
@@ -29,15 +28,17 @@ main :: () {
 
     init_font(font, "assets/fonts/AlbertSans-VariableFont_wght.ttf");
     defer fini_font(font);
+    
+    set_clear_color(DARK_GRAY);
 
     while keep_window_opened(window) {
         clear_screen();
         update_2d_camera(window.width, window.height);
         draw_quad(texture = alien);
+        draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
         draw_text(transform = make_transfom(DOWN_3D * 0.5), "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
         draw_circle(transform = make_transfom(RIGHT_3D), tint = LIGHT_BLUE);
-        draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
-        draw_2d_end();
+        submit_drawings();
         reset_temporary_storage();
     }
 }

@@ -37,6 +37,7 @@ Draw2D_Context :: struct {
     curr_blending        : Blending_Mode;
     curr_primitive       : Primitive_Type;
     initialized          : bool;
+    started_batch        : bool;
 
     // Quad
     quad_ibo             : Index_Buffer;
@@ -163,14 +164,6 @@ update_2d_camera :: (viewport_width : s32, viewport_height : s32) {
     state.camera.viewport_w = viewport_width;
     state.camera.viewport_h = viewport_height;
     update_render_camera(*state.camera);
-}
-
-draw_2d_begin :: () {
-    start_batch();
-}
-
-draw_2d_end :: () {
-    flush();
 }
 
 QuadFlag :: enum {
@@ -340,6 +333,10 @@ draw_circle :: (
     state.circle_count += 1;
 }
 
+submit_drawings :: () {
+    flush();
+}
+
 #scope_file
 
 draw_2d : *Draw2D_Context;
@@ -352,6 +349,9 @@ Draw2DStateHeader :: () #expand {
 Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _blending_mode : Blending_Mode = .ALPHA) #expand {
     assert(is_draw_2d_initialized());
     `state := draw_2d;
+    if !state.started_batch {
+        next_batch();
+    }
     if state.curr_blending != _blending_mode {
         next_batch();
         set_blending_mode(_blending_mode);
@@ -402,16 +402,18 @@ start_batch :: () {
     
     state.circle_count = 0;
     state.circle_index_count = 0;
+
+    state.started_batch = true;
 }
 
 flush :: () {
     Draw2DStateHeader();
-
     if state.curr_primitive == {
         
         case .NONE; return;
-        
+       
         case .QUAD; {
+            assert(state.started_batch);
             for i : 0..state.last_texture_slot - 1 {
                 bind(state.textures_to_bind[i], xx i);
             }
@@ -422,6 +424,7 @@ flush :: () {
             draw_elements(*state.quad_vao, state.quad_index_count);
         }
         case .CIRCLE; {
+            assert(state.started_batch);
             bind(*state.circle_shader);
             set_constant_matrix4(*state.circle_shader, "u_ProjectionView", state.camera.pv_matrix);
             set_vertex_buffer_data(*state.circle_vbo, *state.circle_batch[0], xx (size_of(Circle_Vertex) * VERTICES_PER_2D_PRIMITIVE * state.circle_count));
@@ -430,9 +433,13 @@ flush :: () {
     }
 
     state.curr_primitive = .NONE;
+    state.started_batch = false;
 }
 
 next_batch :: () {
-    flush();
+    state := draw_2d;
+    if state.started_batch {
+        flush();
+    }
     start_batch();
 }
