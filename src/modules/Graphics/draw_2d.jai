@@ -142,8 +142,7 @@ init_draw_2d :: (instance : *Draw2D_Context) {
 }
 
 fini_draw_2d :: () {
-    assert(is_draw_2d_initialized());
-    state := draw_2d;
+    Draw2DStateHeader();
 
     fini_texture(*state.white_texture);
     //texture_2d_finish(*atlas_texture)
@@ -160,8 +159,7 @@ fini_draw_2d :: () {
 }
 
 update_2d_camera :: (viewport_width : s32, viewport_height : s32) {
-    assert(is_draw_2d_initialized());
-    state := draw_2d;
+    Draw2DStateHeader();
     state.camera.viewport_w = viewport_width;
     state.camera.viewport_h = viewport_height;
     update_render_camera(*state.camera);
@@ -195,7 +193,7 @@ draw_text :: (
 )
 {
     assert(font != null);
-    Draw2DProcHeader(.QUAD, blending);
+    Draw2DPrimitiveHeader(.QUAD, blending);
 
     text_scale : float = size / cast(float) font.pixel_height;
 
@@ -251,7 +249,7 @@ draw_quad :: (
     flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
 )
 {
-    Draw2DProcHeader(.QUAD, blending);
+    Draw2DPrimitiveHeader(.QUAD, blending);
 
     vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
     vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
@@ -313,7 +311,7 @@ draw_circle :: (
     entity_id : u32      = 0
 )
 {
-    Draw2DProcHeader(.CIRCLE, .ALPHA);
+    Draw2DPrimitiveHeader(.CIRCLE, .ALPHA);
 
     vertex_positions : V4Verts2D = ---;
     fill_circle_vertex_positions(*vertex_positions, radius);
@@ -346,9 +344,14 @@ draw_circle :: (
 
 draw_2d : *Draw2D_Context;
 
-Draw2DProcHeader :: (_primitive_type : Primitive_Type, _blending_mode : Blending_Mode = .ALPHA) #expand {
+Draw2DStateHeader :: () #expand {
     assert(is_draw_2d_initialized());
-    `state := draw_2d; 
+    `state := draw_2d;
+}
+
+Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _blending_mode : Blending_Mode = .ALPHA) #expand {
+    assert(is_draw_2d_initialized());
+    `state := draw_2d;
     if state.curr_blending != _blending_mode {
         next_batch();
         set_blending_mode(_blending_mode);
@@ -365,33 +368,32 @@ Draw2DProcHeader :: (_primitive_type : Primitive_Type, _blending_mode : Blending
 }
 
 assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
+    Draw2DStateHeader();
 
     texture_slot : s32 = xx Default_Texture_Slots.WHITE;
     if texture == null {
         return texture_slot;
     }
 
-    using draw_2d;
-    for i : 0..last_texture_slot - 1{
-        if textures_to_bind[i].id == texture.id {
+    for i : 0..state.last_texture_slot - 1{
+        if state.textures_to_bind[i].id == texture.id {
             texture_slot = i;
             break;
         }
     }
     if texture_slot == 0 {
-        if last_texture_slot > MAX_TEXTURE_SLOTS {
+        if state.last_texture_slot > MAX_TEXTURE_SLOTS {
             next_batch();
         }
-        textures_to_bind[last_texture_slot] = texture;
-        texture_slot = last_texture_slot;
-        last_texture_slot += 1;
+        state.textures_to_bind[state.last_texture_slot] = texture;
+        texture_slot = state.last_texture_slot;
+        state.last_texture_slot += 1;
     }
     return texture_slot;
 }
 
 start_batch :: () {
-    assert(is_draw_2d_initialized());
-    state := draw_2d;
+    Draw2DStateHeader();
 
     state.last_texture_slot = xx Default_Texture_Slots.COUNT;
     
@@ -403,8 +405,7 @@ start_batch :: () {
 }
 
 flush :: () {
-    assert(is_draw_2d_initialized());
-    state := draw_2d;
+    Draw2DStateHeader();
 
     if state.curr_primitive == {
         
