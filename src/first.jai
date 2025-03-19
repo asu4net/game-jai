@@ -23,7 +23,7 @@ main :: () {
     init_draw_2d(draw_2d);
     defer fini_draw_2d();
 
-    init_texture_from_path(alien, "assets/alien.png", mag = .LINEAR, min = .LINEAR);    
+    init_texture_from_path(alien, "assets/images/alien.png", mag = .LINEAR, min = .LINEAR);    
     defer fini_texture(alien);
 
     init_font(font, "assets/fonts/AlbertSans-VariableFont_wght.ttf");

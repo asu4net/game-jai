@@ -3,16 +3,18 @@
 
 //TODO: Copy SDL dll on comptime depending on the operating system.
 
-EXECUTABLE_NAME :: "game";
-OUTPUT_PATH     ::"../bin";
-BUILD_FILE      ::"../src/first.jai";
-MODULES_PATH     ::"../src/modules";
+EXECUTABLE_NAME          :: "game";
+OUTPUT_PATH              ::"../bin";
+BUILD_FILE               ::"../src/first.jai";
+MODULES_PATH             ::"../src";
+THIRD_PARTY_MODULES_PATH ::"../src/ThirdParty";
 
 #run compile();
 
 compile :: () {
 
     //compile_shaders();
+    generate_spritesheet();
 
     log("Compiling game...");   
     w := compiler_create_workspace("game");
@@ -29,6 +31,7 @@ compile :: () {
     new_import_path : [..] string;
     array_copy(*new_import_path, target_options.import_path);
     array_add(*new_import_path, MODULES_PATH);
+    array_add(*new_import_path, THIRD_PARTY_MODULES_PATH);
     target_options.import_path = new_import_path;
 
 
@@ -45,3 +48,4 @@ compile :: () {
 #import "Compiler";
 String :: #import "String";
 #load "compile_shaders.jai";
+#load "spritesheet.jai";
