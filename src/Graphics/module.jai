@@ -1,7 +1,6 @@
 //TODO:
 /*
-- Pintado de primitivas de GUI (Mirar SIMP)
-- Generación de sprite-sheet
+- Pintado de primitivas de GUI (Mirar SIMP) (Revisar funcionamiento de camara de Render)
 - Leer shaders de ficheros
 - Poder cambiar de shader
 - Dumpear errores de OpenGL
