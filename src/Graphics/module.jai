@@ -30,3 +30,4 @@
 #load "texture.jai";
 #load "font.jai";
 #load "render_camera.jai";
+#load "spritesheet.jai";

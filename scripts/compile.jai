@@ -13,9 +13,6 @@ THIRD_PARTY_MODULES_PATH ::"../src/ThirdParty";
 
 compile :: () {
 
-    //compile_shaders();
-    generate_spritesheet();
-
     log("Compiling game...");   
     w := compiler_create_workspace("game");
 
@@ -48,4 +45,3 @@ compile :: () {
 #import "Compiler";
 String :: #import "String";
 #load "compile_shaders.jai";
-#load "spritesheet.jai";

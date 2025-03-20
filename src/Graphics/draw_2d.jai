@@ -108,7 +108,7 @@ init_draw_2d :: (instance : *Draw2D_Context) {
         init_index_buffer(*state.quad_ibo, indices.data, INDEX_COUNT);
         
         VERTICES :: MAX_2D_PRIMITIVES_PER_BATCH * VERTICES_PER_2D_PRIMITIVE;
-        
+
         // Quad
         {
             state.quad_batch = NewArray(VERTICES, Quad_Vertex);

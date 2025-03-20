@@ -43,8 +43,8 @@ init_font :: (font : *Font, path : string) {
     PIXELS_RGB_LENGTH   :: PIXELS_ALPHA_LENGTH * 4;
     font.pixel_height = PIXEL_HEIGHT;
 
-    array_resize(*font.atlas.pixel_data, PIXELS_RGB_LENGTH ); //pending free
-    pixels_rgb := font.atlas.pixel_data;
+    array_resize(*font.atlas.pixels, PIXELS_RGB_LENGTH ); //pending free
+    pixels_rgb := font.atlas.pixels;
 
     pixels_alpha := NewArray(PIXELS_ALPHA_LENGTH, u8);
     defer array_free(pixels_alpha);

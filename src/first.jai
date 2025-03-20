@@ -31,11 +31,15 @@ main :: () {
     
     set_clear_color(DARK_GRAY);
 
+    sheet : Spritesheet;
+    generate_spritesheet("test_sheet", "assets/images/", "assets", 1024, *sheet);
+
     while keep_window_opened(window) {
         clear_screen();
         update_2d_camera(window.width, window.height);
         draw_quad(texture = alien);
-        draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
+        //draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
+        draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *sheet.texture);
         draw_text(transform = make_transfom(DOWN_3D * 0.5), "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
         draw_circle(transform = make_transfom(RIGHT_3D), tint = LIGHT_BLUE);
         submit_drawings();

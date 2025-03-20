@@ -27,8 +27,9 @@ Texture :: struct {
     mag_filter : Mag_Filter;
     wrap_mode_u : Wrap_Mode;
     wrap_mode_v : Wrap_Mode;
-    pixel_data : [..] u8;
+    pixels : [..] u8;
     image_path : string;
+    stbi_loaded : bool;
 }
 
 upload_texture_to_gpu :: (using texture : *Texture) {
@@ -58,16 +59,16 @@ upload_texture_to_gpu :: (using texture : *Texture) {
     set_wrap_mode(id, .U, wrap_mode_u);
     set_wrap_mode(id, .V, wrap_mode_v);
 
-    glTextureSubImage2D(id, 0, 0, 0, width, height, data_format, GL_UNSIGNED_BYTE, pixel_data.data);
+    glTextureSubImage2D(id, 0, 0, 0, width, height, data_format, GL_UNSIGNED_BYTE, pixels.data);
 }
 
 init_white_texture :: (using texture : *Texture) {
     width = 1;
     height = 1;
     channels = 4;
-    assert(pixel_data.data == null);
+    assert(pixels.data == null);
     for i : 0..3 {
-        array_add(*pixel_data, 255);
+        array_add(*pixels, 255);
     }
     upload_texture_to_gpu(texture);
 }
@@ -89,17 +90,18 @@ init_texture_from_path :: (
     
     image_path = path;
 
-    assert(pixel_data.data == null);
+    assert(pixels.data == null);
     assert(image_path.count != 0);
 
     stbi_set_flip_vertically_on_load(1);
     
     x, y, c : s32;
     
-    pixel_data.data = stbi_load(image_path.data, *x, *y, *c, 0);
-    assert(pixel_data.data != null);
-    
-    pixel_data.count = x * y * c;
+    pixels.data = stbi_load(image_path.data, *x, *y, *c, 0);
+    assert(pixels.data != null);
+    stbi_loaded = true;
+
+    pixels.count = x * y * c;
     
     width    = xx x;
     height   = xx y;
@@ -111,11 +113,11 @@ init_texture_from_path :: (
 fini_texture :: (using texture : *Texture) {
     assert(id != 0);
     glDeleteTextures(1, *id);
-    assert(pixel_data.data != null);
-    if image_path.count != 0 {
-        stbi_image_free(pixel_data.data);
+    assert(pixels.data != null);
+    if stbi_loaded {
+        stbi_image_free(pixels.data);
     } else {
-        array_free(pixel_data);
+        array_free(pixels);
     }
     texture.* = .{};
 }

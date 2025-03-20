@@ -12,7 +12,7 @@ run_debugger :: () {
         "remedybg",
         CONFIG_FILE
     );
-
+    
     if process_result.type == .FAILED_TO_LAUNCH {
         log_error("Could not run the debugger!");
     }
