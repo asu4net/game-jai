@@ -45,6 +45,9 @@ main :: () {
         submit_drawings();
         reset_temporary_storage();
     }
+
+    //Unmapping_Allocator 
+    report_memory_leaks();
 }
 
 #scope_file
@@ -55,3 +58,4 @@ main :: () {
 #import "Core";
 #import "Graphics";
 #import "Math";
+#import "Basic"()(MEMORY_DEBUGGER=true);
