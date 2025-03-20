@@ -1,6 +1,6 @@
 //TODO:
 /*
-- Dar soporte en el renderer para pintar el sprite_sheet con draw_sprite
+- Dar soporte en el renderer para pintar el sprite_sheet con draw_sprite o mover los sprite sheets a comp-time.
 - Pintado de primitivas de GUI (Mirar SIMP) (Revisar funcionamiento de camara de Render)
 - Leer shaders de ficheros
 - Poder cambiar de shader
