@@ -18,7 +18,25 @@ fini_spritesheet :: (sheet : *Spritesheet) {
     deinit(*sheet.rects);
 }
 
-generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : string, max_width : s32, sheet : *Spritesheet) {
+init_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
+    
+    full_path_png  := join(dst_path, "/", sheet_name, ".png" ,,temp);
+    full_path_json := join(dst_path, "/", sheet_name, ".json" ,,temp);
+    
+    if !file_exists(full_path_json) || !file_exists(full_path_png) then {
+        generate_spritesheet(sheet, sheet_name, max_width, src_path, dst_path);
+        return;
+    }
+
+    json_string := read_entire_file(full_path_json ,,temp);
+    success, sheet_def := json_parse_string(json_string, SpritesheetDef ,,temp);
+    assert(success);
+    
+    init_texture_from_path(*sheet.texture, full_path_png);
+    for sheet_def.rects table_add(*sheet.rects, it.name, it.rect);
+}
+
+generate_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
     assert(sheet != null);
     
     Image :: struct {
@@ -42,7 +60,7 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
         load_image :: (folder_path : string, basename : string, ext : string) -> bool, Image {
             image : Image;
             count : s32;
-            image_path := join(folder_path, basename, ".", ext);
+            image_path := join(folder_path, "/", basename, ".", ext);
             defer free(image_path);
             log("Loading %", image_path);
             stbi_set_flip_vertically_on_load(1);
@@ -137,8 +155,8 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
     sheet.texture.width    = xx sheet_width;
     sheet.texture.channels = 4;
 
-    full_path_png  := join(dst_path, "\\", sheet_name, ".png" ,,temp);
-    full_path_json := join(dst_path, "\\", sheet_name, ".json" ,,temp);
+    full_path_png  := join(dst_path, "/", sheet_name, ".png" ,,temp);
+    full_path_json := join(dst_path, "/", sheet_name, ".json" ,,temp);
 
     upload_texture_to_gpu(*sheet.texture);
     flip_pixels(sheet.texture.pixels.data, sheet_width, sheet_height ,,temp);
@@ -148,6 +166,10 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
 }
 
 #scope_file
+
+DEF_SHEET_NAME :: "sheet";
+DEF_ASSET_PATH :: "assets/";
+DEF_MAX_WIDTH  :: cast(s32) 1024;
 
 flip_pixels :: (pixels: *u8, width: int, height: int) {
     row_size := width * 4;

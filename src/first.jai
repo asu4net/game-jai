@@ -34,9 +34,9 @@ main :: () {
     set_clear_color(DARK_GRAY);
 
     sheet : Spritesheet;
-    generate_spritesheet("test_sheet", "assets/images/", "assets", 1024, *sheet);
+    init_spritesheet(*sheet, src_path = "assets/images");
     defer fini_spritesheet(*sheet);
-    
+
     while keep_window_opened(window) {
         clear_screen();
         update_2d_camera(window.width, window.height);
