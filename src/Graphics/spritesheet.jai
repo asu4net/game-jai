@@ -3,6 +3,15 @@ Spritesheet :: struct {
     rects   : Table(string, Rect);
 }
 
+SheetDefItem :: struct {
+    name : string;
+    rect : Rect;
+}
+
+SpritesheetDef :: struct {
+    rects : [..] SheetDefItem;
+}
+
 fini_spritesheet :: (sheet : *Spritesheet) {
     assert(sheet != null);
     fini_texture(*sheet.texture);
@@ -88,6 +97,9 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
     y_offset = 0;
     max_row_height = 0;
     
+    sheet_def : SpritesheetDef;
+    defer free(sheet_def.rects.data);
+
     for image : images {
         if x_offset + image.width > sheet_width {
             x_offset = 0;
@@ -113,7 +125,9 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
         rect.height = image.height;
         rect.x      = xx x_offset;
         rect.y      = xx y_offset;
+
         table_add(*sheet.rects, image.name, rect);
+        array_add(*sheet_def.rects, .{ image.name, rect });
 
         x_offset += image.width;
         max_row_height = max(max_row_height, image.height);
@@ -123,11 +137,14 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
     sheet.texture.width    = xx sheet_width;
     sheet.texture.channels = 4;
 
-    full_path := join(dst_path, "\\", sheet_name, ".png" ,,temp); 
+    full_path_png  := join(dst_path, "\\", sheet_name, ".png" ,,temp);
+    full_path_json := join(dst_path, "\\", sheet_name, ".json" ,,temp);
+
     upload_texture_to_gpu(*sheet.texture);
-    
     flip_pixels(sheet.texture.pixels.data, sheet_width, sheet_height ,,temp);
-    stbi_write_png(to_c_string(full_path ,,temp), sheet_width, sheet_height, 4, sheet.texture.pixels.data, sheet_width * 4);
+    stbi_write_png(to_c_string(full_path_png ,,temp), sheet_width, sheet_height, 4, sheet.texture.pixels.data, sheet_width * 4);
+    string_sheet := json_write_string(sheet_def ,,temp);
+    write_entire_file(full_path_json, string_sheet);
 }
 
 #scope_file
@@ -145,11 +162,3 @@ flip_pixels :: (pixels: *u8, width: int, height: int) {
         memcpy(pixels + top_idx, aux, row_size);
     }
 }
-
-
-#import "Basic";
-#import "String";
-#import "File_Utilities";
-#import "Hash_Table";
-#import "stb_image_write";
-#import "stb_image";

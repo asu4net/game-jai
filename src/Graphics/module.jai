@@ -50,6 +50,10 @@ Sprite :: struct {
 #import "Hash_Table";
 #import "stb_truetype";
 #import "File";
+#import "File_Utilities";
+#import "stb_image_write";
+#import "Jaison";
+#import "String";
 
 #load "draw_2d.jai";
 #load "api.jai";

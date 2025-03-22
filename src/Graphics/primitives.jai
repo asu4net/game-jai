@@ -58,9 +58,13 @@ fill_circle_vertex_positions :: (vertex_positions : *V4Verts2D, radius : float32
 }
 
 flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
-    uv := array_copy(vertex_uvs.*);
+
+    DoCopy :: () #expand {
+        `uv := array_copy(vertex_uvs.*, ,,temp);
+    }
 
     if flip_x && flip_y {
+        DoCopy();
         vertex_uvs.*[0] = uv[3];
         vertex_uvs.*[1] = uv[2];
         vertex_uvs.*[2] = uv[1];
@@ -68,6 +72,7 @@ flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
         return;
     }
     if flip_x {
+        DoCopy();
         vertex_uvs.*[0] = uv[1];
         vertex_uvs.*[1] = uv[0];
         vertex_uvs.*[2] = uv[3];
@@ -75,6 +80,7 @@ flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
         return;
     }
     if flip_y {
+        DoCopy();
         vertex_uvs.*[0] = uv[2];
         vertex_uvs.*[1] = uv[3];
         vertex_uvs.*[2] = uv[0];
