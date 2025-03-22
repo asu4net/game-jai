@@ -1,6 +1,6 @@
 //TODO:
 /*
-- Dar soporte en el renderer para pintar el sprite_sheet con draw_sprite o mover los sprite sheets a comp-time.
+- Lo mejor será que el renderer no sepa lo que es un sprite sheet, tal y como está montado en odin.
 - Pintado de primitivas de GUI (Mirar SIMP) (Revisar funcionamiento de camara de Render)
 - Leer shaders de ficheros
 - Poder cambiar de shader
@@ -9,6 +9,35 @@
 - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
 - Picking
 - Sistema de iluminación: Ambient y Point lights
+
+
+Spritesheet :: struct {
+    textures:   Bucket_Array(*Texture, 8);
+    frames:     Bucket_Array(Animation_Frame, 64);
+    animations: Bucket_Array(Animation, 64);
+    sprites:    Bucket_Array(Sprite, 16);
+    index: struct {
+        frames:     Table(string, *Animation_Frame);
+        animations: Table(string, *Animation);
+        sprites:    Table(string, *Sprite);
+    }
+}
+
+Animation_Frame :: struct {
+    id: string;
+    rect: UV_Rect;
+    texture: *Texture;  @NoSerialize
+}
+Animation :: struct {
+    id: string;
+    frame_rate: int;  // in ticks per frame
+    frames: [] Animation_Frame;
+}
+Sprite :: struct {
+    id: string;
+    animations: [#run enum_highest_value(Direction)+1] *Animation;  // n w s e nw sw se ne
+}
+
 */
 
 #scope_module

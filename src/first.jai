@@ -9,6 +9,8 @@ Game :: struct {
 
 main :: () {
 
+    defer report_memory_leaks();
+
     path := path_strip_filename(get_path_of_running_executable());
     set_working_directory(path);
     
@@ -33,13 +35,20 @@ main :: () {
 
     sheet : Spritesheet;
     generate_spritesheet("test_sheet", "assets/images/", "assets", 1024, *sheet);
+    defer fini_spritesheet(*sheet);
 
     while keep_window_opened(window) {
         clear_screen();
         update_2d_camera(window.width, window.height);
-        draw_quad(texture = alien);
-        //draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
-        draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *sheet.texture);
+        
+        alien_rect, found := table_find(*sheet.rects, "player");
+
+        if found then {
+            draw_quad(texture = *sheet.texture, flags = .USE_SUBTEX | .AUTOSIZE, sub_tex_rect = alien_rect);
+        }
+        draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
+        draw_quad(transform = make_transfom(LEFT_3D), texture = *sheet.texture);
+        
         draw_text(transform = make_transfom(DOWN_3D * 0.5), "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
         draw_circle(transform = make_transfom(RIGHT_3D), tint = LIGHT_BLUE);
         submit_drawings();
@@ -47,7 +56,6 @@ main :: () {
     }
 
     //Unmapping_Allocator 
-    report_memory_leaks();
 }
 
 #scope_file
@@ -58,4 +66,5 @@ main :: () {
 #import "Core";
 #import "Graphics";
 #import "Math";
+#import "Hash_Table";
 #import "Basic"()(MEMORY_DEBUGGER=true);

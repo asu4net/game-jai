@@ -58,26 +58,27 @@ fill_circle_vertex_positions :: (vertex_positions : *V4Verts2D, radius : float32
 }
 
 flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
-    uv := vertex_uvs;
+    uv := array_copy(vertex_uvs.*);
+
     if flip_x && flip_y {
-        vertex_uvs.*[0] = uv.*[3];
-        vertex_uvs.*[1] = uv.*[2];
-        vertex_uvs.*[2] = uv.*[1];
-        vertex_uvs.*[3] = uv.*[0];
+        vertex_uvs.*[0] = uv[3];
+        vertex_uvs.*[1] = uv[2];
+        vertex_uvs.*[2] = uv[1];
+        vertex_uvs.*[3] = uv[0];
         return;
     }
     if flip_x {
-        vertex_uvs.*[0] = uv.*[1];
-        vertex_uvs.*[1] = uv.*[0];
-        vertex_uvs.*[2] = uv.*[3];
-        vertex_uvs.*[3] = uv.*[2];
+        vertex_uvs.*[0] = uv[1];
+        vertex_uvs.*[1] = uv[0];
+        vertex_uvs.*[2] = uv[3];
+        vertex_uvs.*[3] = uv[2];
         return;
     }
     if flip_y {
-        vertex_uvs.*[0] = uv.*[2];
-        vertex_uvs.*[1] = uv.*[3];
-        vertex_uvs.*[2] = uv.*[0];
-        vertex_uvs.*[3] = uv.*[1];
+        vertex_uvs.*[0] = uv[2];
+        vertex_uvs.*[1] = uv[3];
+        vertex_uvs.*[2] = uv[0];
+        vertex_uvs.*[3] = uv[1];
         return;
     }
 }
@@ -105,20 +106,19 @@ fill_quad_sub_tex_vertex_uvs :: (
     flip_x        : bool, 
     flip_y        : bool, 
     tiling_factor : Vector2
-) 
-{
+) {
     top_right, bottom_left : Vector2;
     
     top_right.x = (item_px_pos.x + item_size.x) * (1 / texture_size.x);
-    top_right.y = 1 - ((item_px_pos.y + item_size.y) * (1 / texture_size.y));
+    top_right.y = (item_px_pos.y + item_size.y) * (1 / texture_size.y);
 
     bottom_left.x = item_px_pos.x * (1 / texture_size.x);
-    bottom_left.y = 1 - (item_px_pos.y * (1 / texture_size.y));
+    bottom_left.y = (item_px_pos.y * (1 / texture_size.y));
 
-    vertex_uvs.*[0] = .{ bottom_left.x, top_right.y };   // bottom-left
-    vertex_uvs.*[1] = .{ top_right.x,   top_right.y };   // bottom-right
-    vertex_uvs.*[2] = .{ top_right.x,   bottom_left.y }; // top-right
-    vertex_uvs.*[3] = .{ bottom_left.x, bottom_left.y }; // top-left
+    vertex_uvs.*[0] = .{ bottom_left.x, bottom_left.y }; // bottom-left
+    vertex_uvs.*[1] = .{ top_right.x,   bottom_left.y }; // bottom-right
+    vertex_uvs.*[2] = .{ top_right.x,   top_right.y };   // top-right
+    vertex_uvs.*[3] = .{ bottom_left.x, top_right.y };   // top-left
 
     fill_quad_vertex_uvs(vertex_uvs, flip_x, flip_y, tiling_factor);
 }

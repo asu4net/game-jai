@@ -171,7 +171,7 @@ update_2d_camera :: (viewport_width : s32, viewport_height : s32) {
     update_render_camera(*state.camera);
 }
 
-QuadFlag :: enum {
+QuadFlag :: enum_flags u16 {
     AUTOSIZE;
     FLIP_X;
     FLIP_Y;
@@ -269,8 +269,8 @@ draw_quad :: (
                 .{ xx texture.width, xx texture.height},
                 .{ xx sub_tex_rect.width, xx sub_tex_rect.height},
                 .{ xx sub_tex_rect.x, xx sub_tex_rect.y},
-                .FLIP_X & flags == 1,
-                .FLIP_Y & flags == 1,
+                xx flags & .FLIP_X,
+                xx flags & .FLIP_Y,
                 tiling
             );
         } else {
@@ -278,7 +278,7 @@ draw_quad :: (
             pixel_width  = texture.width;
             pixel_height = texture.height;
 
-            fill_quad_vertex_uvs(*vertex_uvs, .FLIP_X & flags == 1, .FLIP_Y & flags == 1, tiling);
+            fill_quad_vertex_uvs(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags, tiling);
         }
 
         if .AUTOSIZE & flags {

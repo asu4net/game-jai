@@ -3,6 +3,12 @@ Spritesheet :: struct {
     rects   : Table(string, Rect);
 }
 
+fini_spritesheet :: (sheet : *Spritesheet) {
+    assert(sheet != null);
+    fini_texture(*sheet.texture);
+    deinit(*sheet.rects);
+}
+
 generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : string, max_width : s32, sheet : *Spritesheet) {
     assert(sheet != null);
     
@@ -54,6 +60,7 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
     
     images := vst_data.images;
     table_ensure_space(*sheet.rects, images.count);
+    defer free(images.data);
 
     images_width : s32;
     for images images_width += it.width;
@@ -90,7 +97,8 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
         for y : 0..image.height - 1 {
             for x : 0..image.width - 1 {
                 sprite_idx := ((y + y_offset) * sheet_width + (x + x_offset)) * 4;
-                img_idx := ((image.height - 1 - y) * image.width + x) * 4;
+                //img_idx := ((image.height - 1 - y) * image.width + x) * 4;
+                img_idx := (y * image.width + x) * 4;
                 if sprite_idx < pixel_count && img_idx < image.width * image.height * 4 {
                     sheet.texture.pixels[sprite_idx] = image.pixels[img_idx];         //R
                     sheet.texture.pixels[sprite_idx + 1] = image.pixels[img_idx + 1]; //G
@@ -117,10 +125,27 @@ generate_spritesheet :: (sheet_name : string, src_path : string, dst_path : stri
 
     full_path := join(dst_path, "\\", sheet_name, ".png" ,,temp); 
     upload_texture_to_gpu(*sheet.texture);
+    
+    flip_pixels(sheet.texture.pixels.data, sheet_width, sheet_height ,,temp);
     stbi_write_png(to_c_string(full_path ,,temp), sheet_width, sheet_height, 4, sheet.texture.pixels.data, sheet_width * 4);
 }
 
 #scope_file
+
+flip_pixels :: (pixels: *u8, width: int, height: int) {
+    row_size := width * 4;
+    aux := alloc(row_size);
+
+    for y : 0..(height / 2) {
+        top_idx := y * row_size;
+        bottom_idx := (height - 1 - y) * row_size;
+
+        memcpy(aux, pixels + bottom_idx, row_size);
+        memcpy(pixels + bottom_idx, pixels + top_idx, row_size);
+        memcpy(pixels + top_idx, aux, row_size);
+    }
+}
+
 
 #import "Basic";
 #import "String";
