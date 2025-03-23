@@ -54,11 +54,11 @@ main :: () {
         draw_quad(transform = make_transfom(LEFT_3D), texture = *sheet.texture); 
         draw_text(transform = make_transfom(DOWN_3D * 0.5), "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
         draw_circle(transform = make_transfom(RIGHT_3D), tint = LIGHT_BLUE);
-        
+
         set_2d_camera_mode(.ORTHO_GUI);
         //draw_text(transform, font = font);
         draw_gui_quad();
-
+        
         submit_drawings();
         reset_temporary_storage();
     }
