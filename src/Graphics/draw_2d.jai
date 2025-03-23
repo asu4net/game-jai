@@ -28,6 +28,20 @@ Primitive_Type :: enum {
     CIRCLE;
 }
 
+QuadFlag :: enum_flags u16 {
+    AUTOSIZE;
+    FLIP_X;
+    FLIP_Y;
+    USE_SUBTEX;
+}
+
+DEFAULT_QUAD_FLAGS :: QuadFlag.AUTOSIZE;
+
+Draw2D_Settings :: struct {
+    viewport_width  : s32 = 1280;
+    viewport_height : s32 = 720;
+}
+
 Draw2D_Context :: struct {
     white_texture        : Texture;
     texture_slots        : [MAX_TEXTURE_SLOTS] s32;
@@ -160,89 +174,15 @@ fini_draw_2d :: () {
     state.* = .{};
 }
 
-get_2d_camera :: () -> *RenderCamera {
-    Draw2DStateHeader();
-    return *state.camera;
-}
-
-set_2d_camera_viewport :: (viewport_width : s32, viewport_height : s32) {
+draw_2d_begin :: (using settings := Draw2D_Settings.{}) {
     Draw2DStateHeader();
     state.camera.viewport_w = viewport_width;
     state.camera.viewport_h = viewport_height;
-    update_render_camera(*state.camera);
+    //start_batch(); this is being handled by the primitive header for now
 }
 
-set_2d_camera_mode :: (mode : RenderCameraMode) {
-    Draw2DStateHeader();
-    if state.camera.mode == mode then return;
-    next_batch();
-    state.camera.mode = mode;
-    update_render_camera(*state.camera);
-}
-
-QuadFlag :: enum_flags u16 {
-    AUTOSIZE;
-    FLIP_X;
-    FLIP_Y;
-    USE_SUBTEX;
-}
-
-DEFAULT_QUAD_FLAGS :: QuadFlag.AUTOSIZE;
-
-draw_text :: (
-    transform     : Matrix4       = Matrix4_Identity,
-    text          : string        = "placeholder!",
-    font          : *Font         = null,
-    size          : float         = 0.1,
-    blending      : Blending_Mode = .ALPHA,
-    tint          : Vector4       = .{ 1, 1, 1, 1},
-    entity_id     : u32           = 0
-)
-{
-    assert(font != null);
-    Draw2DPrimitiveHeader(.QUAD, blending);
-
-    text_scale : float = size / cast(float) font.pixel_height;
-
-    x_pos, y_pos : float;
-
-    for c : text {
-
-        vertex_positions : V4Verts2D = ---;
-        vertex_uvs       : V2Verts2D = ---;
-        vertex_colors    : V4Verts2D = ---;
-        fill_vertex_colors(*vertex_colors, tint);
-
-        glyph : Glyph;
-        d := *glyph.quad;
-        fill_glyph(font, *glyph, c);
-
-        vertex_positions[0] = .{d.x0 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
-        vertex_positions[1] = .{d.x1 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
-        vertex_positions[2] = .{d.x1 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
-        vertex_positions[3] = .{d.x0 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
-
-        vertex_uvs[0] = .{ d.s0, d.t1 };
-        vertex_uvs[1] = .{ d.s1, d.t1 };
-        vertex_uvs[2] = .{ d.s1, d.t0 };
-        vertex_uvs[3] = .{ d.s0, d.t0 };
-        
-        x_pos += text_scale * glyph.x_pos;
-        y_pos += text_scale * glyph.y_pos;
-
-        transform_vertex_positions(*vertex_positions, transform);
-
-        slot := assign_texture_slot(*font.atlas);
-
-        for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
-            state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
-                vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
-            };
-        }
-
-        state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
-        state.quad_count += 1;
-    }
+draw_2d_end :: () {
+    flush();
 }
 
 draw_quad :: (
@@ -256,7 +196,7 @@ draw_quad :: (
     flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
 )
 {
-    Draw2DPrimitiveHeader(.QUAD, blending);
+    Draw2DPrimitiveHeader(.QUAD, .ORTHO_WORLD, blending);
 
     vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
     vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
@@ -309,8 +249,66 @@ draw_quad :: (
     state.quad_count += 1;
 }
 
-draw_gui_quad :: (
+draw_text :: (
     transform     : Matrix4       = Matrix4_Identity,
+    text          : string        = "placeholder!",
+    font          : *Font         = null,
+    size          : float         = 0.1,
+    blending      : Blending_Mode = .ALPHA,
+    tint          : Vector4       = .{ 1, 1, 1, 1},
+    entity_id     : u32           = 0
+)
+{
+    assert(font != null);
+    Draw2DPrimitiveHeader(.QUAD, .ORTHO_WORLD, blending);
+
+    text_scale : float = size / cast(float) font.pixel_height;
+
+    x_pos, y_pos : float;
+
+    for c : text {
+
+        vertex_positions : V4Verts2D = ---;
+        vertex_uvs       : V2Verts2D = ---;
+        vertex_colors    : V4Verts2D = ---;
+        fill_vertex_colors(*vertex_colors, tint);
+
+        glyph : Glyph;
+        d := *glyph.quad;
+        fill_glyph(font, *glyph, c);
+
+        vertex_positions[0] = .{d.x0 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
+        vertex_positions[1] = .{d.x1 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
+        vertex_positions[2] = .{d.x1 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
+        vertex_positions[3] = .{d.x0 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
+
+        vertex_uvs[0] = .{ d.s0, d.t1 };
+        vertex_uvs[1] = .{ d.s1, d.t1 };
+        vertex_uvs[2] = .{ d.s1, d.t0 };
+        vertex_uvs[3] = .{ d.s0, d.t0 };
+        
+        x_pos += text_scale * glyph.x_pos;
+        y_pos += text_scale * glyph.y_pos;
+
+        transform_vertex_positions(*vertex_positions, transform);
+
+        slot := assign_texture_slot(*font.atlas);
+
+        for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
+            state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
+                vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
+            };
+        }
+
+        state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
+        state.quad_count += 1;
+    }
+}
+
+draw_gui_quad :: (
+    position      : Vector2       = .{},
+    angle         : float32       = 0,
+    scale         : Vector2       = .{},
     texture       : *Texture      = null,
     tiling        : Vector2       = .{ 1, 1 },
     blending      : Blending_Mode = .ALPHA,
@@ -320,9 +318,9 @@ draw_gui_quad :: (
     flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
 )
 {
-    Draw2DPrimitiveHeader(.QUAD, blending);
+    Draw2DPrimitiveHeader(.QUAD, .ORTHO_SCREEN, blending);
 
-    vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
+    vertex_uvs := DEFAULT_VERTEX_UVS_2D;
     vertex_positions : V4Verts2D = ---;
     vertex_colors    : V4Verts2D = ---;
 
@@ -347,8 +345,6 @@ draw_gui_quad :: (
     vertex_positions[2] = .{100, 0,     0, 1};
     vertex_positions[3] = .{0,   0,     0, 1};
 
-    transform_vertex_positions(*vertex_positions, transform);
-    
     slot := assign_texture_slot(texture);
 
     for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
@@ -370,7 +366,7 @@ draw_circle :: (
     entity_id : u32      = 0
 )
 {
-    Draw2DPrimitiveHeader(.CIRCLE, .ALPHA);
+    Draw2DPrimitiveHeader(.CIRCLE, .ORTHO_WORLD, .ALPHA);
 
     vertex_positions : V4Verts2D = ---;
     fill_circle_vertex_positions(*vertex_positions, radius);
@@ -399,10 +395,6 @@ draw_circle :: (
     state.circle_count += 1;
 }
 
-submit_drawings :: () {
-    flush();
-}
-
 #scope_file
 
 draw_2d : *Draw2D_Context;
@@ -412,28 +404,33 @@ Draw2DStateHeader :: () #expand {
     `state := draw_2d;
 }
 
-Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _blending_mode : Blending_Mode = .ALPHA) #expand {
+Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _camera_mode : RenderCameraMode, _blending_mode : Blending_Mode) #expand {
     assert(is_draw_2d_initialized());
+    
     `state := draw_2d;
+    
     if !state.started_batch {
+        start_batch();
+    }
+
+    if state.curr_blending  != .NONE && state.curr_blending  != _blending_mode  ||
+       state.curr_primitive != .NONE && state.curr_primitive != _primitive_type ||
+       state.camera.mode    != .NONE && state.camera.mode    != _camera_mode {
         next_batch();
     }
-    if state.curr_blending != _blending_mode {
-        next_batch();
-        set_blending_mode(_blending_mode);
-        state.curr_blending = _blending_mode;
-    }
-    if state.curr_primitive != .NONE && state.curr_primitive != _primitive_type {
-        next_batch();
-    }
-    if _primitive_type == {
-        case .QUAD;   assert(state.quad_count <= MAX_2D_PRIMITIVES_PER_BATCH);
-        case .CIRCLE; assert(state.circle_count <= MAX_2D_PRIMITIVES_PER_BATCH);
-    }
+    
+    state.curr_blending  = _blending_mode;
     state.curr_primitive = _primitive_type;
+    state.camera.mode    = _camera_mode;
+
+    if _primitive_type == {
+        case .QUAD;     assert(state.quad_count   <= MAX_2D_PRIMITIVES_PER_BATCH);
+        case .CIRCLE;   assert(state.circle_count <= MAX_2D_PRIMITIVES_PER_BATCH);
+    }
 }
 
 assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
+
     Draw2DStateHeader();
 
     texture_slot : s32 = xx Default_Texture_Slots.WHITE;
@@ -460,26 +457,31 @@ assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
 
 start_batch :: () {
     Draw2DStateHeader();
-
-    state.last_texture_slot = xx Default_Texture_Slots.COUNT;
-    
-    state.quad_count = 0;
-    state.quad_index_count = 0;
-    
-    state.circle_count = 0;
+    state.last_texture_slot  = xx Default_Texture_Slots.COUNT;
+    state.curr_blending      = .NONE;
+    state.curr_primitive     = .NONE;
+    state.camera.mode        = .NONE;
+    state.quad_count         = 0;
+    state.quad_index_count   = 0;
+    state.circle_count       = 0;
     state.circle_index_count = 0;
-
-    state.started_batch = true;
+    state.started_batch      = true;
 }
 
 flush :: () {
     Draw2DStateHeader();
+    
+    if !state.started_batch then {
+        return;
+    }
+
+    update_render_camera(*state.camera);
+    set_blending_mode(state.curr_blending);
+    assert(state.started_batch);
+
     if state.curr_primitive == {
         
-        case .NONE; return;
-       
-        case .QUAD; {
-            assert(state.started_batch);
+        case .QUAD; {         
             for i : 0..state.last_texture_slot - 1 {
                 bind(state.textures_to_bind[i], xx i);
             }
@@ -490,22 +492,19 @@ flush :: () {
             draw_elements(*state.quad_vao, state.quad_index_count);
         }
         case .CIRCLE; {
-            assert(state.started_batch);
             bind(*state.circle_shader);
             set_constant_matrix4(*state.circle_shader, "u_ProjectionView", state.camera.pv_matrix);
             set_vertex_buffer_data(*state.circle_vbo, *state.circle_batch[0], xx (size_of(Circle_Vertex) * VERTICES_PER_2D_PRIMITIVE * state.circle_count));
             draw_elements(*state.circle_vao, state.circle_index_count);
         }
+
+        case; assert(false);
     }
 
-    state.curr_primitive = .NONE;
-    state.started_batch = false;
+    state.started_batch  = false;
 }
 
 next_batch :: () {
-    state := draw_2d;
-    if state.started_batch {
-        flush();
-    }
+    flush();
     start_batch();
 }

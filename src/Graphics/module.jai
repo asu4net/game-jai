@@ -1,7 +1,8 @@
 //TODO:
 /*
-- Lo mejor será que el renderer no sepa lo que es un sprite sheet, tal y como está montado en odin.
-- Pintado de primitivas de GUI (Mirar SIMP) (Revisar funcionamiento de camara de Render)
+- primitives.jai es innecesario a estas alturas.
+- Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
+- Finalizar pintado del GUI.
 - Leer shaders de ficheros
 - Poder cambiar de shader
 - Dumpear errores de OpenGL
@@ -9,7 +10,6 @@
 - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
 - Picking
 - Sistema de iluminación: Ambient y Point lights
-
 
 Spritesheet :: struct {
     textures:   Bucket_Array(*Texture, 8);

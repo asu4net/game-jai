@@ -1,6 +1,7 @@
 RenderCameraMode :: enum {
-    ORTHO;
-    ORTHO_GUI;
+    NONE;
+    ORTHO_WORLD;
+    ORTHO_SCREEN;
 }
 
 RenderCamera :: struct {
@@ -21,7 +22,7 @@ RenderCamera :: struct {
 
 update_render_camera :: (using camera : *RenderCamera) {
 
-    update_ortho :: (using camera : *RenderCamera) {
+    update_ortho_world :: (using camera : *RenderCamera) {
         assert(camera != null);
         set_viewport(xx viewport_w, xx viewport_h);
         aspect := cast(float) viewport_w / cast(float) viewport_h;
@@ -31,14 +32,15 @@ update_render_camera :: (using camera : *RenderCamera) {
         pv_matrix = p * v;
     }
     
-    update_ortho_gui :: (using camera : *RenderCamera) {
+    update_ortho_screen :: (using camera : *RenderCamera) {
         assert(camera != null);
         set_viewport(xx viewport_w, xx viewport_h);
         pv_matrix = orthographic_projection_matrix(0, cast(float) viewport_w*1, cast(float) viewport_h, 0, -1.0, 1.0);
     }
 
     if mode == {
-        case .ORTHO;     update_ortho(camera);
-        case .ORTHO_GUI; update_ortho_gui(camera);
+        case .ORTHO_WORLD;  update_ortho_world(camera);
+        case .ORTHO_SCREEN; update_ortho_screen(camera);
+        case .NONE; assert(false);
     }
 }
