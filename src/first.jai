@@ -43,16 +43,26 @@ main :: () {
         
         draw_2d_begin(.{window.width, window.height});
         {
-            alien_rect, found := table_find(*sheet.rects, "player");
+            {
+                rect, found := table_find(*sheet.rects, "player");
 
-            if found then {
-                draw_quad(texture = *sheet.texture, flags = .USE_SUBTEX | .AUTOSIZE, sub_tex_rect = alien_rect);
+                if found then {
+                    draw_quad(pos = UP_2D, texture = *sheet.texture, flags = .USE_SUBTEX | .AUTOSIZE, rect = rect);
+                }
             }
-            draw_quad(transform = make_transform(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
-            draw_quad(transform = make_transform(LEFT_3D), texture = *sheet.texture); 
-            draw_text(transform = make_transform(DOWN_3D * 0.5), "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
-            draw_circle(transform = make_transform(RIGHT_3D), tint = LIGHT_BLUE);
-            draw_gui_quad();
+            
+            draw_quad(sca = .{1, -1}, texture = *font.atlas);
+            draw_quad(pos = LEFT_2D, texture = *sheet.texture); 
+            draw_text(pos = DOWN_2D * 0.5, text = "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
+            //draw_circle(pos = RIGHT_2D, tint = LIGHT_BLUE);
+            
+            {
+                rect, found := table_find(*sheet.rects, "alien");
+
+                if found then {
+                    draw_gui_quad(texture = *sheet.texture, flags = .USE_SUBTEX | .AUTOSIZE, rect = rect);
+                }
+            }
         }
         draw_2d_end();
 

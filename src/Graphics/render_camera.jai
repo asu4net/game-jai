@@ -6,8 +6,8 @@ RenderCameraMode :: enum {
 
 RenderCamera :: struct {
     mode       : RenderCameraMode;
-    viewport_w : s32      = 1280;
-    viewport_h : s32      = 720;
+    viewport_w : s32      = DEF_SCREEN_WIDTH;
+    viewport_h : s32      = DEF_SCREEN_HEIGHT;
     eye        : Vector3  = ZERO_3D;
     near       : float32  = -1;
     far        : float32  = +1;

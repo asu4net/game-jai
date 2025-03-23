@@ -1,4 +1,4 @@
-Blending_Mode :: enum {
+Blending :: enum {
     NONE;
     ALPHA;
     SOLID;
@@ -110,9 +110,9 @@ set_blending_enabled :: (enabled: bool = true) {
     glDisable(GL_BLEND);
 }
 
-set_blending_mode :: (blending_mode : Blending_Mode) {
+set_blending_mode :: (blending : Blending) {
     set_blending_enabled();
-    if blending_mode == {
+    if blending == {
         case .NONE;
              assert(false);
             return;

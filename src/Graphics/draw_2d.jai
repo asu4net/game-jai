@@ -18,6 +18,13 @@ DEFAULT_VERTEX_POSITIONS_2D : V4Verts2D : .[
     .{-0.5,  0.5,  0.0,  1.0 }  // top-left
 ];
 
+DEFAULT_VERTEX_POSITIONS_GUI : V4Verts2D : .[
+    .{ 0.0, 1.0, 0.0, 1.0 }, // bottom-right
+    .{ 1.0, 1.0, 0.0, 1.0 }, // bottom-left
+    .{ 1.0, 0.0, 0.0, 1.0 }, // top-right
+    .{ 0.0, 0.0, 0.0, 1.0 }  // top-left
+];
+
 DEFAULT_VERTEX_UVS_2D : V2Verts2D : .[
     .{ 0.0, 0.0 }, // bottom-left
     .{ 1.0, 0.0 }, // bottom-right
@@ -65,8 +72,8 @@ QuadFlag :: enum_flags u16 {
 DEFAULT_QUAD_FLAGS :: QuadFlag.AUTOSIZE;
 
 Draw2D_Settings :: struct {
-    viewport_width  : s32 = 1280;
-    viewport_height : s32 = 720;
+    viewport_width  : s32 = DEF_SCREEN_WIDTH;
+    viewport_height : s32 = DEF_SCREEN_HEIGHT;
 }
 
 Draw2D_Context :: struct {
@@ -75,11 +82,13 @@ Draw2D_Context :: struct {
     textures_to_bind     : [MAX_TEXTURE_SLOTS]*Texture;
     last_texture_slot    : s32;
     camera               : RenderCamera;
-    curr_blending        : Blending_Mode;
+    curr_blending        : Blending;
     curr_primitive       : Primitive_Type;
     initialized          : bool;
     started_batch        : bool;
-
+    gui_width            : float;
+    gui_height           : float; 
+    
     // Quad
     quad_ibo             : Index_Buffer;
     quad_vao             : Vertex_Array;
@@ -109,6 +118,9 @@ init_draw_2d :: (instance : *Draw2D_Context) {
     draw_2d = instance;
     state := draw_2d;
     
+    state.gui_width  = DEF_SCREEN_WIDTH;
+    state.gui_height = DEF_SCREEN_HEIGHT;
+
     set_blending_mode(.ALPHA);
     
     init_white_texture(*state.white_texture);
@@ -180,7 +192,7 @@ init_draw_2d :: (instance : *Draw2D_Context) {
             add_index_buffer(*state.circle_vao, *state.quad_ibo);
         }
     }
-    
+
     state.initialized = true;
 }
 
@@ -213,15 +225,17 @@ draw_2d_end :: () {
 }
 
 draw_quad :: (
-    transform     : Matrix4       = Matrix4_Identity,
-    texture       : *Texture      = null,
-    tiling        : Vector2       = ONE_2D,
-    size          : Vector2       = ONE_2D,
-    blending      : Blending_Mode = .ALPHA,
-    sub_tex_rect  : Rect          = .{},
-    tint          : Vector4       = WHITE,
-    entity_id     : u32           = 0,
-    flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
+    pos       : Vector2  = ZERO_2D,
+    ang       : float32  = 0,
+    sca       : Vector2  = ONE_2D,
+    texture   : *Texture = null,
+    tiling    : Vector2  = ONE_2D,
+    size      : Vector2  = ONE_2D,
+    blending  : Blending = .ALPHA,
+    rect      : Rect     = .{},
+    tint      : Vector4  = WHITE,
+    entity_id : u32      = 0,
+    flags     : QuadFlag = DEFAULT_QUAD_FLAGS
 )
 {
     Draw2DPrimitiveHeader(.QUAD, .ORTHO_WORLD, blending);
@@ -239,35 +253,21 @@ draw_quad :: (
 
         if .USE_SUBTEX & flags {
             
-            pixel_width  = xx sub_tex_rect.width;
-            pixel_height = xx sub_tex_rect.height;
-
-            item_px_pos  := Vector2.{ xx sub_tex_rect.x, xx sub_tex_rect.y };
-            texture_size := Vector2.{ xx texture.width, xx texture.height };
-            item_size    := Vector2.{ xx pixel_width, xx pixel_height };
-
-            top_right, bottom_left : Vector2;
-
-            top_right.x = (item_px_pos.x + item_size.x) * (1 / texture_size.x);
-            top_right.y = (item_px_pos.y + item_size.y) * (1 / texture_size.y);
-
-            bottom_left.x = item_px_pos.x * (1 / texture_size.x);
-            bottom_left.y = (item_px_pos.y * (1 / texture_size.y));
-
-            vertex_uvs[0] = .{ bottom_left.x, bottom_left.y }; // bottom-left
-            vertex_uvs[1] = .{ top_right.x,   bottom_left.y }; // bottom-right
-            vertex_uvs[2] = .{ top_right.x,   top_right.y };   // top-right
-            vertex_uvs[3] = .{ bottom_left.x, top_right.y };   // top-left
-
+            pixel_width  = xx rect.width;
+            pixel_height = xx rect.height;
+            sub_tex_uv(*vertex_uvs, texture, rect);
         }
 
         for *vertex_uvs multiply(it.*, tiling);
         flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
 
         if .AUTOSIZE & flags {
+            
             pixel_size := Vector2.{xx pixel_width, xx pixel_height};
             final_size := multiply(pixel_size, size);
+
             pos := normalize(final_size) / 2.0;
+
             vertex_positions[0] = .{ -pos.x, -pos.y, 0.0, 1.0 };
             vertex_positions[1] = .{  pos.x, -pos.y, 0.0, 1.0 };
             vertex_positions[2] = .{  pos.x,  pos.y, 0.0, 1.0 };
@@ -275,7 +275,7 @@ draw_quad :: (
         }
     }
     
-    for *vertex_positions it.* = transform * it.*;
+    for *vertex_positions it.* = make_transform(pos, ang, sca) * it.*;
     
     slot := assign_texture_slot(texture);
 
@@ -290,19 +290,21 @@ draw_quad :: (
 }
 
 draw_text :: (
-    transform     : Matrix4       = Matrix4_Identity,
-    text          : string        = "placeholder!",
-    font          : *Font         = null,
-    size          : float         = 0.1,
-    blending      : Blending_Mode = .ALPHA,
-    tint          : Vector4       = WHITE,
-    entity_id     : u32           = 0
+    pos           : Vector2  = ZERO_2D,
+    ang           : float32  = 0,
+    sca           : Vector2  = ONE_2D,
+    text          : string   = "placeholder!",
+    font          : *Font    = null,
+    size          : float    = 0.1,
+    blending      : Blending = .ALPHA,
+    tint          : Vector4  = WHITE,
+    entity_id     : u32      = 0
 )
 {
     assert(font != null);
     Draw2DPrimitiveHeader(.QUAD, .ORTHO_WORLD, blending);
 
-    text_scale : float = size / cast(float) font.pixel_height;
+    text_size : float = size / cast(float) font.pixel_height;
 
     x_pos, y_pos : float;
 
@@ -317,20 +319,20 @@ draw_text :: (
         d := *glyph.quad;
         fill_glyph(font, *glyph, c);
 
-        vertex_positions[0] = .{d.x0 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
-        vertex_positions[1] = .{d.x1 * text_scale + x_pos , d.y1 * -text_scale + y_pos, 0, 1};
-        vertex_positions[2] = .{d.x1 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
-        vertex_positions[3] = .{d.x0 * text_scale + x_pos , d.y0 * -text_scale + y_pos, 0, 1};
+        vertex_positions[0] = .{d.x0 * text_size + x_pos , d.y1 * -text_size + y_pos, 0, 1};
+        vertex_positions[1] = .{d.x1 * text_size + x_pos , d.y1 * -text_size + y_pos, 0, 1};
+        vertex_positions[2] = .{d.x1 * text_size + x_pos , d.y0 * -text_size + y_pos, 0, 1};
+        vertex_positions[3] = .{d.x0 * text_size + x_pos , d.y0 * -text_size + y_pos, 0, 1};
 
         vertex_uvs[0] = .{ d.s0, d.t1 };
         vertex_uvs[1] = .{ d.s1, d.t1 };
         vertex_uvs[2] = .{ d.s1, d.t0 };
         vertex_uvs[3] = .{ d.s0, d.t0 };
         
-        x_pos += text_scale * glyph.x_pos;
-        y_pos += text_scale * glyph.y_pos;
+        x_pos += text_size * glyph.x_pos;
+        y_pos += text_size * glyph.y_pos;
 
-        for *vertex_positions it.* = transform * it.*;
+        for *vertex_positions it.* = make_transform(pos, ang, sca) * it.*;
 
         slot := assign_texture_slot(*font.atlas);
 
@@ -346,45 +348,60 @@ draw_text :: (
 }
 
 draw_gui_quad :: (
-    position      : Vector2       = .{},
-    angle         : float32       = 0,
-    scale         : Vector2       = .{},
-    texture       : *Texture      = null,
-    tiling        : Vector2       = ONE_2D,
-    blending      : Blending_Mode = .ALPHA,
-    sub_tex_rect  : Rect          = .{},
-    tint          : Vector4       = WHITE,
-    entity_id     : u32           = 0,
-    flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
+    pos       : Vector2  = ZERO_2D,
+    ang       : float32  = 0,
+    sca       : Vector2  = ONE_2D,
+    texture   : *Texture = null,
+    tiling    : Vector2  = ONE_2D,
+    size      : Vector2  = ONE_2D,
+    blending  : Blending = .ALPHA,
+    rect      : Rect     = .{},
+    tint      : Vector4  = WHITE,
+    entity_id : u32      = 0,
+    flags     : QuadFlag = DEFAULT_QUAD_FLAGS
 )
 {
     Draw2DPrimitiveHeader(.QUAD, .ORTHO_SCREEN, blending);
 
-    vertex_uvs := DEFAULT_VERTEX_UVS_2D;
-    vertex_positions : V4Verts2D = ---;
+    vertex_positions := DEFAULT_VERTEX_POSITIONS_GUI;
+    vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
+
     vertex_colors    : V4Verts2D = ---;
-
     for *vertex_colors it.* = tint;
-
-    b := cast(float) state.camera.viewport_h / 10;
-
-    p: Vector2;
-    p.x = cast(float) (state.camera.viewport_w  / 2);
-    p.y = cast(float) (state.camera.viewport_h / 2);
-
-    w := Vector2.{b, 0};  // Solo afecta la X
-    h := Vector2.{0, b};  // Solo afecta la Y
-
-    p0 := p - w - h;  // Esquina superior izquierda
-    p1 := p + w - h;  // Esquina superior derecha
-    p2 := p + w + h;  // Esquina inferior derecha
-    p3 := p - w + h;  // Esquina inferior izquierda
     
-    vertex_positions[0] = .{0,   100,   0, 1};
-    vertex_positions[1] = .{100, 100,   0, 1};
-    vertex_positions[2] = .{100, 0,     0, 1};
-    vertex_positions[3] = .{0,   0,     0, 1};
+    if texture != null {
+        
+        pixel_width  := texture.width;
+        pixel_height := texture.height;
 
+        if .USE_SUBTEX & flags {
+            
+            pixel_width  = xx rect.width;
+            pixel_height = xx rect.height;
+            sub_tex_uv(*vertex_uvs, texture, rect);
+        }
+
+        for *vertex_uvs multiply(it.*, tiling);
+        flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
+
+        if .AUTOSIZE & flags {
+            
+            pixel_size := Vector2.{xx pixel_width, xx pixel_height};
+            final_size := multiply(pixel_size, size);
+
+            final_size *= 100;
+
+            pos := normalize(final_size);
+
+            vertex_positions[0] = .{ 0.0,   pos.y, 0.0, 1.0 };
+            vertex_positions[1] = .{ pos.x, pos.y, 0.0, 1.0 };
+            vertex_positions[2] = .{ pos.x, 0.0,   0.0, 1.0 };
+            vertex_positions[3] = .{ 0.0,   0.0,   0.0, 1.0 };
+        }
+    }
+    
+    for *vertex_positions it.* = make_transform(pos, ang, ONE_2D * 100) * it.*;
+    
     slot := assign_texture_slot(texture);
 
     for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
@@ -449,7 +466,7 @@ Draw2DStateHeader :: () #expand {
     `state := draw_2d;
 }
 
-Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _camera_mode : RenderCameraMode, _blending_mode : Blending_Mode) #expand {
+Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _camera_mode : RenderCameraMode, _blending_mode : Blending) #expand {
     assert(is_draw_2d_initialized());
     
     `state := draw_2d;
@@ -584,4 +601,24 @@ flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
         vertex_uvs.*[3] = uv[1];
         return;
     }
+}
+
+sub_tex_uv :: (vertex_uvs : *V2Verts2D, texture : *Texture, rect : Rect) {
+    assert(texture && vertex_uvs);
+    
+    item_px_pos  := Vector2.{ xx rect.x, xx rect.y };
+    texture_size := Vector2.{ xx texture.width, xx texture.height };
+    item_size    := Vector2.{ xx rect.width, xx rect.height };
+
+    top_right, bottom_left : Vector2;
+    top_right.x = (item_px_pos.x + item_size.x) * (1 / texture_size.x);
+    top_right.y = (item_px_pos.y + item_size.y) * (1 / texture_size.y);
+    
+    bottom_left.x = item_px_pos.x * (1 / texture_size.x);
+    bottom_left.y = (item_px_pos.y * (1 / texture_size.y));
+    
+    vertex_uvs.*[0] = .{ bottom_left.x, bottom_left.y }; // bottom-left
+    vertex_uvs.*[1] = .{ top_right.x,   bottom_left.y }; // bottom-right
+    vertex_uvs.*[2] = .{ top_right.x,   top_right.y };   // top-right
+    vertex_uvs.*[3] = .{ bottom_left.x, top_right.y };   // top-left
 }

@@ -1,9 +1,16 @@
 //TODO:
 /*
+- Add gui_scope, game_scope functions to switch primitives between gui and normal.
+    - for this use the camera type
+- we have to decide things about gui
+    - the quad coordinate system:
+        - specify a fake resolution
+        - we should transform from our fake res to the real one.
+- texture options for sprite_sheet (maybe could be a struct??)
+- remove draw_gui_quad and make the gui version of the text
+- Optimize the 2d version of make_transform
 - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
-- primitives.jai es innecesario a estas alturas.
 - Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
-- Finalizar pintado del GUI.
 - Leer shaders de ficheros
 - Poder cambiar de shader
 - Dumpear errores de OpenGL
@@ -56,6 +63,7 @@ Sprite :: struct {
 #import "Jaison";
 #import "String";
 
+#load "constants.jai";
 #load "draw_2d.jai";
 #load "api.jai";
 #load "buffer_object.jai";
