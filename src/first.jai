@@ -50,10 +50,10 @@ main :: () {
         if found then {
             draw_quad(texture = *sheet.texture, flags = .USE_SUBTEX | .AUTOSIZE, sub_tex_rect = alien_rect);
         }
-        draw_quad(transform = make_transfom(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
-        draw_quad(transform = make_transfom(LEFT_3D), texture = *sheet.texture); 
-        draw_text(transform = make_transfom(DOWN_3D * 0.5), "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
-        draw_circle(transform = make_transfom(RIGHT_3D), tint = LIGHT_BLUE);
+        draw_quad(transform = make_transform(LEFT_3D, ZERO_3D, .{1, -1, 1}), texture = *font.atlas);
+        draw_quad(transform = make_transform(LEFT_3D), texture = *sheet.texture); 
+        draw_text(transform = make_transform(DOWN_3D * 0.5), "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
+        draw_circle(transform = make_transform(RIGHT_3D), tint = LIGHT_BLUE);
 
         set_2d_camera_mode(.ORTHO_GUI);
         //draw_text(transform, font = font);
