@@ -1,5 +1,6 @@
 //TODO:
 /*
+- Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
 - primitives.jai es innecesario a estas alturas.
 - Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
 - Finalizar pintado del GUI.
