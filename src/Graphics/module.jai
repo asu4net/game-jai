@@ -58,7 +58,6 @@ Sprite :: struct {
 #load "draw_2d.jai";
 #load "api.jai";
 #load "buffer_object.jai";
-#load "primitives.jai";
 #load "shader.jai";
 #load "texture.jai";
 #load "font.jai";

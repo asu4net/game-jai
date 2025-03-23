@@ -1,6 +1,13 @@
 RAD_PER_DEG :: TAU/360.0;
 DEG_PER_RAD :: 360.0/TAU;
 
+multiply :: (a : Vector2, b : Vector2) -> Vector2 {
+    r : Vector2;
+    r.x = a.x * b.x;
+    r.y = a.y * b.y;
+    return r;
+}
+
 rotate_x :: (mat: Matrix4, angle_x: float32) -> Matrix4 {
     c := cos(angle_x);
     s := sin(angle_x);

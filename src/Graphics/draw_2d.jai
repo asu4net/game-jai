@@ -1,3 +1,30 @@
+VERTICES_PER_2D_PRIMITIVE   :: 4;
+INDICES_PER_2D_PRIMITIVE    :: 6;
+MAX_2D_PRIMITIVES_PER_BATCH :: 3000;
+MAX_TEXTURE_SLOTS           :: 32;
+
+Default_Texture_Slots :: enum {
+    WHITE;
+    COUNT;
+}
+
+V4Verts2D :: [VERTICES_PER_2D_PRIMITIVE] Vector4;
+V2Verts2D :: [VERTICES_PER_2D_PRIMITIVE] Vector2;
+
+DEFAULT_VERTEX_POSITIONS_2D : V4Verts2D : .[
+    .{-0.5, -0.5,  0.0,  1.0 }, // bottom-left
+    .{ 0.5, -0.5,  0.0,  1.0 }, // bottom-right
+    .{ 0.5,  0.5,  0.0,  1.0 }, // top-right
+    .{-0.5,  0.5,  0.0,  1.0 }  // top-left
+];
+
+DEFAULT_VERTEX_UVS_2D : V2Verts2D : .[
+    .{ 0.0, 0.0 }, // bottom-left
+    .{ 1.0, 0.0 }, // bottom-right
+    .{ 1.0, 1.0 }, // top-right
+    .{ 0.0, 1.0 }  // top-left
+];
+
 Rect :: struct {
     x: float32; 
     y: float32; 
@@ -153,7 +180,7 @@ init_draw_2d :: (instance : *Draw2D_Context) {
             add_index_buffer(*state.circle_vao, *state.quad_ibo);
         }
     }
-
+    
     state.initialized = true;
 }
 
@@ -188,10 +215,11 @@ draw_2d_end :: () {
 draw_quad :: (
     transform     : Matrix4       = Matrix4_Identity,
     texture       : *Texture      = null,
-    tiling        : Vector2       = .{ 1, 1 },
+    tiling        : Vector2       = ONE_2D,
+    size          : Vector2       = ONE_2D,
     blending      : Blending_Mode = .ALPHA,
     sub_tex_rect  : Rect          = .{},
-    tint          : Vector4       = .{ 1, 1, 1, 1},
+    tint          : Vector4       = WHITE,
     entity_id     : u32           = 0,
     flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
 )
@@ -202,40 +230,52 @@ draw_quad :: (
     vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
 
     vertex_colors    : V4Verts2D = ---;
-    fill_vertex_colors(*vertex_colors, tint);
-
+    for *vertex_colors it.* = tint;
+    
     if texture != null {
-
-        pixel_width, pixel_height : int;
+        
+        pixel_width  := texture.width;
+        pixel_height := texture.height;
 
         if .USE_SUBTEX & flags {
             
-            pixel_width  = sub_tex_rect.width;
-            pixel_height = sub_tex_rect.height;
+            pixel_width  = xx sub_tex_rect.width;
+            pixel_height = xx sub_tex_rect.height;
 
-            fill_quad_sub_tex_vertex_uvs(
-                *vertex_uvs,
-                .{ xx texture.width, xx texture.height},
-                .{ xx sub_tex_rect.width, xx sub_tex_rect.height},
-                .{ xx sub_tex_rect.x, xx sub_tex_rect.y},
-                xx flags & .FLIP_X,
-                xx flags & .FLIP_Y,
-                tiling
-            );
-        } else {
+            item_px_pos  := Vector2.{ xx sub_tex_rect.x, xx sub_tex_rect.y };
+            texture_size := Vector2.{ xx texture.width, xx texture.height };
+            item_size    := Vector2.{ xx pixel_width, xx pixel_height };
 
-            pixel_width  = texture.width;
-            pixel_height = texture.height;
+            top_right, bottom_left : Vector2;
 
-            fill_quad_vertex_uvs(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags, tiling);
+            top_right.x = (item_px_pos.x + item_size.x) * (1 / texture_size.x);
+            top_right.y = (item_px_pos.y + item_size.y) * (1 / texture_size.y);
+
+            bottom_left.x = item_px_pos.x * (1 / texture_size.x);
+            bottom_left.y = (item_px_pos.y * (1 / texture_size.y));
+
+            vertex_uvs[0] = .{ bottom_left.x, bottom_left.y }; // bottom-left
+            vertex_uvs[1] = .{ top_right.x,   bottom_left.y }; // bottom-right
+            vertex_uvs[2] = .{ top_right.x,   top_right.y };   // top-right
+            vertex_uvs[3] = .{ bottom_left.x, top_right.y };   // top-left
+
         }
 
+        for *vertex_uvs multiply(it.*, tiling);
+        flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
+
         if .AUTOSIZE & flags {
-            fill_quad_vertex_positions(*vertex_positions, .{ xx pixel_width, xx pixel_height });
+            pixel_size := Vector2.{xx pixel_width, xx pixel_height};
+            final_size := multiply(pixel_size, size);
+            pos := normalize(final_size) / 2.0;
+            vertex_positions[0] = .{ -pos.x, -pos.y, 0.0, 1.0 };
+            vertex_positions[1] = .{  pos.x, -pos.y, 0.0, 1.0 };
+            vertex_positions[2] = .{  pos.x,  pos.y, 0.0, 1.0 };
+            vertex_positions[3] = .{ -pos.x,  pos.y, 0.0, 1.0 };
         }
     }
     
-    transform_vertex_positions(*vertex_positions, transform);
+    for *vertex_positions it.* = transform * it.*;
     
     slot := assign_texture_slot(texture);
 
@@ -255,7 +295,7 @@ draw_text :: (
     font          : *Font         = null,
     size          : float         = 0.1,
     blending      : Blending_Mode = .ALPHA,
-    tint          : Vector4       = .{ 1, 1, 1, 1},
+    tint          : Vector4       = WHITE,
     entity_id     : u32           = 0
 )
 {
@@ -271,7 +311,7 @@ draw_text :: (
         vertex_positions : V4Verts2D = ---;
         vertex_uvs       : V2Verts2D = ---;
         vertex_colors    : V4Verts2D = ---;
-        fill_vertex_colors(*vertex_colors, tint);
+        for *vertex_colors it.* = tint;
 
         glyph : Glyph;
         d := *glyph.quad;
@@ -290,7 +330,7 @@ draw_text :: (
         x_pos += text_scale * glyph.x_pos;
         y_pos += text_scale * glyph.y_pos;
 
-        transform_vertex_positions(*vertex_positions, transform);
+        for *vertex_positions it.* = transform * it.*;
 
         slot := assign_texture_slot(*font.atlas);
 
@@ -310,10 +350,10 @@ draw_gui_quad :: (
     angle         : float32       = 0,
     scale         : Vector2       = .{},
     texture       : *Texture      = null,
-    tiling        : Vector2       = .{ 1, 1 },
+    tiling        : Vector2       = ONE_2D,
     blending      : Blending_Mode = .ALPHA,
     sub_tex_rect  : Rect          = .{},
-    tint          : Vector4       = .{ 1, 1, 1, 1},
+    tint          : Vector4       = WHITE,
     entity_id     : u32           = 0,
     flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
 )
@@ -324,7 +364,7 @@ draw_gui_quad :: (
     vertex_positions : V4Verts2D = ---;
     vertex_colors    : V4Verts2D = ---;
 
-    fill_vertex_colors(*vertex_colors, tint);
+    for *vertex_colors it.* = tint;
 
     b := cast(float) state.camera.viewport_h / 10;
 
@@ -369,13 +409,18 @@ draw_circle :: (
     Draw2DPrimitiveHeader(.CIRCLE, .ORTHO_WORLD, .ALPHA);
 
     vertex_positions : V4Verts2D = ---;
-    fill_circle_vertex_positions(*vertex_positions, radius);
+    scale_mat := scale(Matrix4_Identity, .{ radius * 2.0, radius * 2.0, 1.0 });
+    vertex_positions[0] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[0];
+    vertex_positions[1] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[1];
+    vertex_positions[2] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[2];
+    vertex_positions[3] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[3];
+
     final_thickness := thickness / (radius * 2);
 
     vertex_colors    : V4Verts2D = ---;
-    fill_vertex_colors(*vertex_colors, tint);
+    for *vertex_colors it.* = tint;
 
-    transform_vertex_positions(*vertex_positions, transform);
+    for *vertex_positions it.* = transform * it.*;
     
     default_vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
     
@@ -507,4 +552,36 @@ flush :: () {
 next_batch :: () {
     flush();
     start_batch();
+}
+
+flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
+
+    DoCopy :: () #expand {
+        `uv := array_copy(vertex_uvs.*, ,,temp);
+    }
+
+    if flip_x && flip_y {
+        DoCopy();
+        vertex_uvs.*[0] = uv[3];
+        vertex_uvs.*[1] = uv[2];
+        vertex_uvs.*[2] = uv[1];
+        vertex_uvs.*[3] = uv[0];
+        return;
+    }
+    if flip_x {
+        DoCopy();
+        vertex_uvs.*[0] = uv[1];
+        vertex_uvs.*[1] = uv[0];
+        vertex_uvs.*[2] = uv[3];
+        vertex_uvs.*[3] = uv[2];
+        return;
+    }
+    if flip_y {
+        DoCopy();
+        vertex_uvs.*[0] = uv[2];
+        vertex_uvs.*[1] = uv[3];
+        vertex_uvs.*[2] = uv[0];
+        vertex_uvs.*[3] = uv[1];
+        return;
+    }
 }
