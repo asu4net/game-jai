@@ -69,6 +69,7 @@ init_draw_2d :: (instance : *Draw2D_Context) {
     state := draw_2d;
     
     set_blending_mode(.ALPHA);
+    
     init_white_texture(*state.white_texture);
     //texture_2d_init(*atlas_texture, "assets/atlas.png")
 
@@ -164,10 +165,18 @@ get_2d_camera :: () -> *RenderCamera {
     return *state.camera;
 }
 
-update_2d_camera :: (viewport_width : s32, viewport_height : s32) {
+set_2d_camera_viewport :: (viewport_width : s32, viewport_height : s32) {
     Draw2DStateHeader();
     state.camera.viewport_w = viewport_width;
     state.camera.viewport_h = viewport_height;
+    update_render_camera(*state.camera);
+}
+
+set_2d_camera_mode :: (mode : RenderCameraMode) {
+    Draw2DStateHeader();
+    if state.camera.mode == mode then return;
+    next_batch();
+    state.camera.mode = mode;
     update_render_camera(*state.camera);
 }
 
@@ -286,6 +295,58 @@ draw_quad :: (
         }
     }
     
+    transform_vertex_positions(*vertex_positions, transform);
+    
+    slot := assign_texture_slot(texture);
+
+    for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
+        state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
+            vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
+        };
+    }    
+    
+    state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
+    state.quad_count += 1;
+}
+
+draw_gui_quad :: (
+    transform     : Matrix4       = Matrix4_Identity,
+    texture       : *Texture      = null,
+    tiling        : Vector2       = .{ 1, 1 },
+    blending      : Blending_Mode = .ALPHA,
+    sub_tex_rect  : Rect          = .{},
+    tint          : Vector4       = .{ 1, 1, 1, 1},
+    entity_id     : u32           = 0,
+    flags         : QuadFlag      = DEFAULT_QUAD_FLAGS
+)
+{
+    Draw2DPrimitiveHeader(.QUAD, blending);
+
+    vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
+    vertex_positions : V4Verts2D = ---;
+    vertex_colors    : V4Verts2D = ---;
+
+    fill_vertex_colors(*vertex_colors, tint);
+
+    b := cast(float) state.camera.viewport_h / 10;
+
+    p: Vector2;
+    p.x = cast(float) (state.camera.viewport_w  / 2);
+    p.y = cast(float) (state.camera.viewport_h / 2);
+
+    w := Vector2.{b, 0};  // Solo afecta la X
+    h := Vector2.{0, b};  // Solo afecta la Y
+
+    p0 := p - w - h;  // Esquina superior izquierda
+    p1 := p + w - h;  // Esquina superior derecha
+    p2 := p + w + h;  // Esquina inferior derecha
+    p3 := p - w + h;  // Esquina inferior izquierda
+    
+    vertex_positions[0] = .{0,   100,   0, 1};
+    vertex_positions[1] = .{100, 100,   0, 1};
+    vertex_positions[2] = .{100, 0,     0, 1};
+    vertex_positions[3] = .{0,   0,     0, 1};
+
     transform_vertex_positions(*vertex_positions, transform);
     
     slot := assign_texture_slot(texture);

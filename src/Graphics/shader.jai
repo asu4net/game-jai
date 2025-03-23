@@ -43,7 +43,7 @@ get_constant_location :: (shader : *Shader, name : string) -> s32 {
 
 set_constant_matrix4 :: (using shader : *Shader, name : string, value : Matrix4) {
     location := get_constant_location(shader, name);
-    glUniformMatrix4fv(location, 1, false, *value.floats[0]);
+    glUniformMatrix4fv(location, 1, true, *value.floats[0]);
 }
 
 set_constant_sampler2d :: (using shader : *Shader, name : string, value : [] s32, count : s32) {
@@ -75,7 +75,7 @@ QUAD_SHADER_SOURCE :: #string SCOPE
 
     void main()
     {
-        gl_Position   = u_ProjectionView * a_Position;
+        gl_Position   = u_ProjectionView * vec4(a_Position.xy, 0.0, 1.0);
         v_Tint        = a_Tint;
         v_UV          = a_UV;
         v_Texture     = a_Texture;

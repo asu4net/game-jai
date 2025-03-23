@@ -12,10 +12,17 @@ V4Verts2D :: [VERTICES_PER_2D_PRIMITIVE] Vector4;
 V2Verts2D :: [VERTICES_PER_2D_PRIMITIVE] Vector2;
 
 DEFAULT_VERTEX_POSITIONS_2D : V4Verts2D : .[
-    .{-0.5, -0.5, 0.0, 1.0 }, // bottom-left
-    .{ 0.5, -0.5, 0.0, 1.0 }, // bottom-right
-    .{ 0.5,  0.5, 0.0, 1.0 }, // top-right
-    .{-0.5,  0.5, 0.0, 1.0 }  // top-left
+    .{-0.5, -0.5,  0.0,  1.0 }, // bottom-left
+    .{ 0.5, -0.5,  0.0,  1.0 }, // bottom-right
+    .{ 0.5,  0.5,  0.0,  1.0 }, // top-right
+    .{-0.5,  0.5,  0.0,  1.0 }  // top-left
+];
+
+DEFAULT_VERTEX_POSITIONS_GUI : V4Verts2D : .[
+    .{ 0.0,  0.0,  0.0,  1.0 }, // bottom-left
+    .{ 1.0,  0.0,  0.0,  1.0 }, // bottom-right
+    .{ 1.0,  1.0,  0.0,  1.0 }, // top-right
+    .{ 0.0,  1.0,  0.0,  1.0 }  // top-left
 ];
 
 DEFAULT_VERTEX_UVS_2D : V2Verts2D : .[
@@ -40,6 +47,15 @@ transform_vertex_positions :: (vertex_positions : *V4Verts2D, transform : Matrix
 }
 
 fill_quad_vertex_positions :: (vertex_positions : *V4Verts2D, size : Vector2) {
+    
+    pos := normalize(size) / 2.0;
+    vertex_positions.*[0] = .{ -pos.x, -pos.y, 0.0, 1.0 };
+    vertex_positions.*[1] = .{  pos.x, -pos.y, 0.0, 1.0 };
+    vertex_positions.*[2] = .{  pos.x,  pos.y, 0.0, 1.0 };
+    vertex_positions.*[3] = .{ -pos.x,  pos.y, 0.0, 1.0 };
+}
+
+fill_quad_vertex_positions_gui :: (vertex_positions : *V4Verts2D, size : Vector2) {
     
     pos := normalize(size) / 2.0;
     vertex_positions.*[0] = .{ -pos.x, -pos.y, 0.0, 1.0 };

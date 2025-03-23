@@ -1,4 +1,10 @@
+RenderCameraMode :: enum {
+    ORTHO;
+    ORTHO_GUI;
+}
+
 RenderCamera :: struct {
+    mode       : RenderCameraMode;
     viewport_w : s32      = 1280;
     viewport_h : s32      = 720;
     eye        : Vector3  = ZERO_3D;
@@ -14,11 +20,25 @@ RenderCamera :: struct {
 }
 
 update_render_camera :: (using camera : *RenderCamera) {
-    assert(camera != null);
-    set_viewport(xx viewport_w, xx viewport_h);
-    aspect := cast(float) viewport_w / cast(float) viewport_h;
-    limit  := aspect * size;
-    p := orthographic_projection_matrix(-limit, limit, -size, size, near, far);
-    v := look_at(eye, front, right, up);
-    pv_matrix = p * v;
+
+    update_ortho :: (using camera : *RenderCamera) {
+        assert(camera != null);
+        set_viewport(xx viewport_w, xx viewport_h);
+        aspect := cast(float) viewport_w / cast(float) viewport_h;
+        limit  := aspect * size;
+        p := orthographic_projection_matrix(-limit, limit, -size, size, near, far);
+        v := look_at(eye, front, right, up);
+        pv_matrix = p * v;
+    }
+    
+    update_ortho_gui :: (using camera : *RenderCamera) {
+        assert(camera != null);
+        set_viewport(xx viewport_w, xx viewport_h);
+        pv_matrix = orthographic_projection_matrix(0, cast(float) viewport_w*1, cast(float) viewport_h, 0, -1.0, 1.0);
+    }
+
+    if mode == {
+        case .ORTHO;     update_ortho(camera);
+        case .ORTHO_GUI; update_ortho_gui(camera);
+    }
 }
