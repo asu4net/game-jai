@@ -386,12 +386,12 @@ draw_gui_quad :: (
 
         if .AUTOSIZE & flags {
             
-            pixel_size := Vector2.{xx pixel_width, xx pixel_height};
+            pixel_size : Vector2;
+            pixel_size.x = map(xx pixel_width, 0, xx state.camera.viewport_w, 0, state.gui_width);
+            pixel_size.y = map(xx pixel_height, 0, xx state.camera.viewport_h, 0, state.gui_height);
             final_size := multiply(pixel_size, size);
-
-            final_size *= 100;
-
-            pos := normalize(final_size);
+            
+            pos := final_size;
 
             vertex_positions[0] = .{ 0.0,   pos.y, 0.0, 1.0 };
             vertex_positions[1] = .{ pos.x, pos.y, 0.0, 1.0 };
@@ -400,7 +400,11 @@ draw_gui_quad :: (
         }
     }
     
-    for *vertex_positions it.* = make_transform(pos, ang, ONE_2D * 100) * it.*;
+    GUI_SCALE_COEF :: 5;
+    final_pos := pos;
+    final_pos.x = map(xx pos.x, 0, xx state.camera.viewport_w, 0, state.gui_width);
+    final_pos.y = map(xx pos.y, 0, xx state.camera.viewport_h, 0, state.gui_height);
+    //for *vertex_positions it.* = make_transform(final_pos, ang, ONE_2D * (state.gui_height / GUI_SCALE_COEF)) * it.*;
     
     slot := assign_texture_slot(texture);
 
