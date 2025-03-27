@@ -60,7 +60,7 @@ main :: () {
                 rect, found := table_find(*sheet.rects, "alien");
 
                 if found then {
-                    draw_gui_quad(texture = *sheet.texture, flags = .USE_SUBTEX | .AUTOSIZE, rect = rect);
+                    draw_gui_quad(sca = ONE_2D * 0.5, texture = *sheet.texture, flags = .USE_SUBTEX | .AUTOSIZE, rect = rect);
                 }
             }
         }
