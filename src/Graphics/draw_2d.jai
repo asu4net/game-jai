@@ -400,11 +400,16 @@ draw_gui_quad :: (
         }
     }
     
-    GUI_SCALE_COEF :: 5;
     final_pos := pos;
     final_pos.x = map(xx pos.x, 0, xx state.camera.viewport_w, 0, state.gui_width);
     final_pos.y = map(xx pos.y, 0, xx state.camera.viewport_h, 0, state.gui_height);
-    //for *vertex_positions it.* = make_transform(final_pos, ang, ONE_2D * (state.gui_height / GUI_SCALE_COEF)) * it.*;
+
+    final_sca := sca;
+    final_sca.x = map(xx sca.x, 0, xx state.camera.viewport_w, 0, state.gui_width);
+    final_sca.y = map(xx sca.y, 0, xx state.camera.viewport_h, 0, state.gui_height);
+    
+    transform := make_transform(final_pos, ang, 1 / final_sca);
+    for *vertex_positions it.* = transform * it.*;
     
     slot := assign_texture_slot(texture);
 
