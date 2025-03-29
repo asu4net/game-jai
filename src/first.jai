@@ -54,13 +54,13 @@ main :: () {
             draw_quad(sca = .{1, -1}, texture = *font.atlas);
             draw_quad(pos = LEFT_2D, texture = *sheet.texture); 
             draw_text(pos = DOWN_2D * 0.5, text = "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
-            //draw_circle(pos = RIGHT_2D, tint = LIGHT_BLUE);
+            draw_circle(pos = RIGHT_2D, tint = LIGHT_BLUE);
             
             {
                 rect, found := table_find(*sheet.rects, "alien");
-
+                
                 if found then {
-                    //draw_gui_quad(pos = .{ 100, 100 }, texture = *sheet.texture, flags = .USE_SUBTEX, rect = rect);
+                    draw_gui_quad(pos = .{ 300, 300 }, texture = *sheet.texture, flags = .USE_SUBTEX, rect = rect);
                 }
 
                 draw_gui_text(pos = .{ 100, 100 }, font=font, text= "Some gui text!");
@@ -84,3 +84,4 @@ main :: () {
 #import "Math";
 #import "Hash_Table";
 #import "Basic"()(MEMORY_DEBUGGER=true);
+#import "Sparse_Set";

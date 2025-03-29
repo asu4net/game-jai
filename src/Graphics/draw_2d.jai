@@ -356,7 +356,7 @@ draw_text :: (
 }
 
 draw_circle :: (
-    transform : Matrix4  = Matrix4_Identity,
+    pos       : Vector2  = ZERO_2D,
     radius    : float32  = 0.5,
     thickness : float32  = 0.05,
     fade      : float32  = 0.01,
@@ -378,7 +378,7 @@ draw_circle :: (
     vertex_colors    : V4Verts2D = ---;
     for *vertex_colors it.* = tint;
 
-    for *vertex_positions it.* = transform * it.*;
+    for *vertex_positions it.* = translate(Matrix4_Identity, .{pos.x, pos.y, 0}) * it.*;
     
     default_vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
     
@@ -493,7 +493,7 @@ draw_gui_text :: (
         coef_x := state.camera.viewport_w / state.gui_width;
         coef_y := state.camera.viewport_h / state.gui_height;
         coef := min(coef_x, coef_y);
-        
+
         vertex_positions[0] = .{d.x0 * coef + x_pos, d.y1 * coef + y_pos, 0, 1};
         vertex_positions[1] = .{d.x1 * coef + x_pos, d.y1 * coef + y_pos, 0, 1};
         vertex_positions[2] = .{d.x1 * coef + x_pos, d.y0 * coef + y_pos, 0, 1};
