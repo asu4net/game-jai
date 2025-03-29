@@ -71,6 +71,14 @@ QuadFlag :: enum_flags u16 {
 
 DEFAULT_QUAD_FLAGS :: QuadFlag.AUTOSIZE;
 
+GUIQuadFlag :: enum_flags u16 {
+    FLIP_X;
+    FLIP_Y;
+    USE_SUBTEX;
+}
+
+DEFAULT_GUI_QUAD_FLAGS :: 0;
+
 Draw2D_Settings :: struct {
     viewport_width  : s32 = DEF_SCREEN_WIDTH;
     viewport_height : s32 = DEF_SCREEN_HEIGHT;
@@ -348,67 +356,56 @@ draw_text :: (
 }
 
 draw_gui_quad :: (
-    pos       : Vector2  = ZERO_2D,
-    ang       : float32  = 0,
-    sca       : Vector2  = ONE_2D,
-    texture   : *Texture = null,
-    tiling    : Vector2  = ONE_2D,
-    size      : Vector2  = ONE_2D,
-    blending  : Blending = .ALPHA,
-    rect      : Rect     = .{},
-    tint      : Vector4  = WHITE,
-    entity_id : u32      = 0,
-    flags     : QuadFlag = DEFAULT_QUAD_FLAGS
+    pos       : Vector2     = ZERO_2D,
+    ang       : float32     = 0,
+    sca       : Vector2     = ONE_2D,
+    texture   : *Texture    = null,
+    tiling    : Vector2     = ONE_2D,
+    size      : Vector2     = ONE_2D,
+    blending  : Blending    = .ALPHA,
+    rect      : Rect        = .{},
+    tint      : Vector4     = WHITE,
+    entity_id : u32         = 0,
+    flags     : GUIQuadFlag = DEFAULT_GUI_QUAD_FLAGS
 )
 {
     Draw2DPrimitiveHeader(.QUAD, .ORTHO_SCREEN, blending);
 
-    vertex_positions := DEFAULT_VERTEX_POSITIONS_GUI;
-    vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
-
+    vertex_positions : V4Verts2D = ---;
     vertex_colors    : V4Verts2D = ---;
-    for *vertex_colors it.* = tint;
     
+    vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
+    for *vertex_colors it.* = tint;
+
+    coef_x := state.camera.viewport_w / state.gui_width;
+    coef_y := state.camera.viewport_h / state.gui_height;
+    coef := min(coef_x, coef_y);
+    
+    GUI_QUAD_PIXEL_WIDTH  :: 200;
+    GUI_QUAD_PIXEL_HEIGHT :: 200;
+
+    pixel_size := Vector2.{ GUI_QUAD_PIXEL_WIDTH, GUI_QUAD_PIXEL_HEIGHT };
+
     if texture != null {
         
-        pixel_width  := texture.width;
-        pixel_height := texture.height;
-
-        if .USE_SUBTEX & flags {
-            
-            pixel_width  = xx rect.width;
-            pixel_height = xx rect.height;
+        if .USE_SUBTEX & flags then {
+            pixel_size = Vector2.{ xx rect.width, xx rect.height };
             sub_tex_uv(*vertex_uvs, texture, rect);
         }
+        else pixel_size = Vector2.{ xx texture.width, xx texture.height };
 
         for *vertex_uvs multiply(it.*, tiling);
         flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
-
-        if .AUTOSIZE & flags {
-            
-            pixel_size : Vector2;
-            pixel_size.x = map(xx pixel_width, 0, xx state.camera.viewport_w, 0, state.gui_width);
-            pixel_size.y = map(xx pixel_height, 0, xx state.camera.viewport_h, 0, state.gui_height);
-            final_size := multiply(pixel_size, size);
-            
-            pos := final_size;
-
-            vertex_positions[0] = .{ 0.0,   pos.y, 0.0, 1.0 };
-            vertex_positions[1] = .{ pos.x, pos.y, 0.0, 1.0 };
-            vertex_positions[2] = .{ pos.x, 0.0,   0.0, 1.0 };
-            vertex_positions[3] = .{ 0.0,   0.0,   0.0, 1.0 };
-        }
     }
     
-    final_pos : Vector2;
-    final_pos.x = map(xx pos.x, 0, xx state.camera.viewport_w, 0, state.gui_width);
-    final_pos.y = map(xx pos.y, 0, xx state.camera.viewport_h, 0, state.gui_height);
+    p := multiply(pixel_size * coef, size);
     
-    final_sca : Vector2;
-    final_sca.x = map(1 / cast(float) sca.x, 0, xx state.camera.viewport_w, 0, state.gui_width);
-    final_sca.y = map(1 / cast(float) sca.y, 0, xx state.camera.viewport_h, 0, state.gui_height);
+    vertex_positions[0] = .{ 0.0, p.y, 0.0, 1.0 };
+    vertex_positions[1] = .{ p.x, p.y, 0.0, 1.0 };
+    vertex_positions[2] = .{ p.x, 0.0, 0.0, 1.0 };
+    vertex_positions[3] = .{ 0.0, 0.0, 0.0, 1.0 };
     
-    transform := make_transform(final_pos, ang, 1 / final_sca);
+    transform := make_transform(pos * coef, ang, sca);
     for *vertex_positions it.* = transform * it.*;
     
     slot := assign_texture_slot(texture);
