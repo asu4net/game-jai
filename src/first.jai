@@ -60,8 +60,10 @@ main :: () {
                 rect, found := table_find(*sheet.rects, "alien");
 
                 if found then {
-                    draw_gui_quad(pos = .{ 100, 100 }, texture = *sheet.texture, flags = .USE_SUBTEX, rect = rect);
+                    //draw_gui_quad(pos = .{ 100, 100 }, texture = *sheet.texture, flags = .USE_SUBTEX, rect = rect);
                 }
+
+                draw_gui_text(pos = .{ 100, 100 }, font=font, text= "Some gui text!");
             }
         }
         draw_2d_end();

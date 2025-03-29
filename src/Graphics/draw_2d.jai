@@ -463,6 +463,65 @@ draw_gui_quad :: (
     state.quad_count += 1;
 }
 
+draw_gui_text :: (
+    pos           : Vector2  = ZERO_2D,
+    ang           : float32  = 0,
+    sca           : Vector2  = ONE_2D,
+    text          : string   = "placeholder!",
+    font          : *Font    = null,
+    blending      : Blending = .ALPHA,
+    tint          : Vector4  = WHITE,
+    entity_id     : u32      = 0
+)
+{
+    assert(font != null);
+    Draw2DPrimitiveHeader(.QUAD, .ORTHO_SCREEN, blending);
+
+    x_pos, y_pos : float;
+
+    for c : text {
+
+        vertex_positions : V4Verts2D = ---;
+        vertex_uvs       : V2Verts2D = ---;
+        vertex_colors    : V4Verts2D = ---;
+        for *vertex_colors it.* = tint;
+
+        glyph : Glyph;
+        d := *glyph.quad;
+        fill_glyph(font, *glyph, c);
+
+        coef_x := state.camera.viewport_w / state.gui_width;
+        coef_y := state.camera.viewport_h / state.gui_height;
+        coef := min(coef_x, coef_y);
+        
+        vertex_positions[0] = .{d.x0 * coef + x_pos, d.y1 * coef + y_pos, 0, 1};
+        vertex_positions[1] = .{d.x1 * coef + x_pos, d.y1 * coef + y_pos, 0, 1};
+        vertex_positions[2] = .{d.x1 * coef + x_pos, d.y0 * coef + y_pos, 0, 1};
+        vertex_positions[3] = .{d.x0 * coef + x_pos, d.y0 * coef + y_pos, 0, 1};
+
+        x_pos += coef * glyph.x_pos;
+        y_pos += coef * glyph.y_pos;
+
+        for *vertex_positions it.* = make_transform(coef * pos, ang, sca) * it.*;
+
+        vertex_uvs[0] = .{ d.s0, d.t1 };
+        vertex_uvs[1] = .{ d.s1, d.t1 };
+        vertex_uvs[2] = .{ d.s1, d.t0 };
+        vertex_uvs[3] = .{ d.s0, d.t0 };
+        
+        slot := assign_texture_slot(*font.atlas);
+
+        for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
+            state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
+                vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx entity_id
+            };
+        }
+
+        state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
+        state.quad_count += 1;
+    }
+}
+
 #scope_file
 
 draw_2d : *Draw2D_Context;
