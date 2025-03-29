@@ -58,7 +58,7 @@ main :: () {
             
             {
                 rect, found := table_find(*sheet.rects, "alien");
-                
+
                 if found then {
                     draw_gui_quad(pos = .{ 300, 300 }, texture = *sheet.texture, flags = .USE_SUBTEX, rect = rect);
                 }
@@ -67,10 +67,8 @@ main :: () {
             }
         }
         draw_2d_end();
-
         reset_temporary_storage();
     }
-
     //Unmapping_Allocator 
 }
 
