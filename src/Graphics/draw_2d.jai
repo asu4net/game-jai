@@ -355,6 +355,49 @@ draw_text :: (
     }
 }
 
+draw_circle :: (
+    transform : Matrix4  = Matrix4_Identity,
+    radius    : float32  = 0.5,
+    thickness : float32  = 0.05,
+    fade      : float32  = 0.01,
+    tint      : Vector4  = .{ 1, 1, 1, 1 }, 
+    entity_id : u32      = 0
+)
+{
+    Draw2DPrimitiveHeader(.CIRCLE, .ORTHO_WORLD, .ALPHA);
+
+    vertex_positions : V4Verts2D = ---;
+    scale_mat := scale(Matrix4_Identity, .{ radius * 2.0, radius * 2.0, 1.0 });
+    vertex_positions[0] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[0];
+    vertex_positions[1] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[1];
+    vertex_positions[2] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[2];
+    vertex_positions[3] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[3];
+
+    final_thickness := thickness / (radius * 2);
+
+    vertex_colors    : V4Verts2D = ---;
+    for *vertex_colors it.* = tint;
+
+    for *vertex_positions it.* = transform * it.*;
+    
+    default_vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
+    
+    for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
+
+        vert := *state.circle_batch[i + state.circle_count * VERTICES_PER_2D_PRIMITIVE];
+        
+        vert.local_position = default_vertex_positions[i];
+        vert.position       = vertex_positions[i];
+        vert.tint           = vertex_colors[i];
+        vert.thickness      = final_thickness;
+        vert.fade           = fade;
+        vert.entity         = xx entity_id;
+    }    
+    
+    state.circle_index_count += INDICES_PER_2D_PRIMITIVE;
+    state.circle_count += 1;
+}
+
 draw_gui_quad :: (
     pos       : Vector2     = ZERO_2D,
     ang       : float32     = 0,
@@ -374,7 +417,7 @@ draw_gui_quad :: (
     vertex_positions : V4Verts2D = ---;
     vertex_colors    : V4Verts2D = ---;
     
-    vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
+    vertex_uvs := DEFAULT_VERTEX_UVS_2D;
     for *vertex_colors it.* = tint;
 
     coef_x := state.camera.viewport_w / state.gui_width;
@@ -418,49 +461,6 @@ draw_gui_quad :: (
     
     state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
     state.quad_count += 1;
-}
-
-draw_circle :: (
-    transform : Matrix4  = Matrix4_Identity,
-    radius    : float32  = 0.5,
-    thickness : float32  = 0.05,
-    fade      : float32  = 0.01,
-    tint      : Vector4  = .{ 1, 1, 1, 1 }, 
-    entity_id : u32      = 0
-)
-{
-    Draw2DPrimitiveHeader(.CIRCLE, .ORTHO_WORLD, .ALPHA);
-
-    vertex_positions : V4Verts2D = ---;
-    scale_mat := scale(Matrix4_Identity, .{ radius * 2.0, radius * 2.0, 1.0 });
-    vertex_positions[0] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[0];
-    vertex_positions[1] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[1];
-    vertex_positions[2] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[2];
-    vertex_positions[3] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[3];
-
-    final_thickness := thickness / (radius * 2);
-
-    vertex_colors    : V4Verts2D = ---;
-    for *vertex_colors it.* = tint;
-
-    for *vertex_positions it.* = transform * it.*;
-    
-    default_vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
-    
-    for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
-
-        vert := *state.circle_batch[i + state.circle_count * VERTICES_PER_2D_PRIMITIVE];
-        
-        vert.local_position = default_vertex_positions[i];
-        vert.position       = vertex_positions[i];
-        vert.tint           = vertex_colors[i];
-        vert.thickness      = final_thickness;
-        vert.fade           = fade;
-        vert.entity         = xx entity_id;
-    }    
-    
-    state.circle_index_count += INDICES_PER_2D_PRIMITIVE;
-    state.circle_count += 1;
 }
 
 #scope_file
