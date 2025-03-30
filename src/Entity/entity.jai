@@ -68,11 +68,3 @@ entity_create :: (slot : u32 = 0, tag := "", flags := Entity_Flag) -> *Entity {
 
     return entity;
 }
-
-#scope_module
-
-#import "Hash_Table";
-#import "Math";
-#import "Core";
-#import "Basic";
-#import "Compiler";
