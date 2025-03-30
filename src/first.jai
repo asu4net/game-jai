@@ -37,6 +37,18 @@ main :: () {
     init_spritesheet(*sheet, src_path = "assets/images");
     defer fini_spritesheet(*sheet);
 
+    array : Entity_Array;
+    index := entity_array_init(*array, 0);
+    
+    MyEntity :: struct {
+        #as using entity : Entity;
+        life : float;
+    }
+    
+    entity := entity_create(tag = "test");
+    exists := entity_exists(entity);
+    valid  := entity_valid(entity);
+
     while keep_window_opened(window) {
         
         clear_screen();
@@ -82,4 +94,4 @@ main :: () {
 #import "Math";
 #import "Hash_Table";
 #import "Basic"()(MEMORY_DEBUGGER=true);
-#import "Sparse_Set";
+#import "Entity";

@@ -8,4 +8,6 @@
 #load "constants.jai";
 #load "math.jai";
 #load "window.jai";
+#load "queue.jai";
+#load "sparse_set.jai";
 #load "sdl.jai";

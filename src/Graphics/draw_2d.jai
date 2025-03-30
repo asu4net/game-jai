@@ -18,13 +18,6 @@ DEFAULT_VERTEX_POSITIONS_2D : V4Verts2D : .[
     .{-0.5,  0.5,  0.0,  1.0 }  // top-left
 ];
 
-DEFAULT_VERTEX_POSITIONS_GUI : V4Verts2D : .[
-    .{ 0.0, 1.0, 0.0, 1.0 }, // bottom-right
-    .{ 1.0, 1.0, 0.0, 1.0 }, // bottom-left
-    .{ 1.0, 0.0, 0.0, 1.0 }, // top-right
-    .{ 0.0, 0.0, 0.0, 1.0 }  // top-left
-];
-
 DEFAULT_VERTEX_UVS_2D : V2Verts2D : .[
     .{ 0.0, 0.0 }, // bottom-left
     .{ 1.0, 0.0 }, // bottom-right
