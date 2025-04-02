@@ -62,7 +62,6 @@ entity_array_bind :: (slot : u32) {
 
 entity_arrays: [MAX_ENTITY_ARRAYS] *Entity_Array;
 entity_array_count: u32;
-entity_array_current: *Entity_Array;
 
 entity_array_add :: (array : *Entity_Array, slot : u32, capacity : u32) {
     assert(array != null);
@@ -70,12 +69,10 @@ entity_array_add :: (array : *Entity_Array, slot : u32, capacity : u32) {
     assert(entity_arrays[slot] == null);
     entity_arrays[slot] = array;
     entity_array_count += 1;
-    entity_array_current = ifx entity_array_current == null then array;
 }
 
 entity_array_remove :: (slot : u32) {
     current := entity_array_get(slot);
-    entity_array_current = ifx entity_array_current == current then null;
     entity_arrays[slot] = null;
     entity_array_count -= 1;
 }
