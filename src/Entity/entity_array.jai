@@ -30,6 +30,7 @@ entity_array_deinit :: (array: *Entity_Array) {
     free(array.data.data);
     sparse_deinit(*array.used_ids);
     queue_deinit(*array.free_ids);
+    deinit(*array.to_serialize);
     array.* = .{};
 }
 
