@@ -3,17 +3,20 @@ DEF_ENTITY_ARRAY_CAPACITY :: 100;
 
 Entity_Array :: struct($TEntity: Type = Entity) {
     #assert(is_entity(TEntity));
-    data     : [] TEntity;
-    used_ids : Sparse_Set;
-    free_ids : Queue(Entity_ID);
-    to_clean : Table(Entity_ID, struct{});
-    capacity : u32;
+    data         : [] TEntity;
+    used_ids     : Sparse_Set;
+    free_ids     : Queue(Entity_ID);
+    to_clean     : Table(Entity_ID, struct{});
+    capacity     : u32;
+    type         : Type;
+    to_serialize : Table(string, Entity_ID);
 }
 
 entity_array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 = DEF_ENTITY_ARRAY_CAPACITY) {
     assert(array && !entity_array_initialized(array));
     entity_array_add(array, slot, capacity);
     array.data = NewArray(capacity, TEntity);
+    array.type = TEntity;
     sparse_init(*array.used_ids, capacity);
     queue_init(*array.free_ids, capacity + 1);
     for i : 0..capacity-1 queue_push_back(*array.free_ids, cast(u32) i);

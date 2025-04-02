@@ -45,9 +45,13 @@ main :: () {
         life : float;
     }
     
-    entity := entity_create(tag = "test");
-    exists := entity_exists(entity);
-    valid  := entity_valid(entity);
+    entity  := entity_create(Entity, tag = "test");
+    exists  := entity_exists(entity);
+    valid   := entity_valid(entity);
+    entity_set_enabled(entity, false);
+    enabled := entity_enabled(entity);
+    genabled := entity_global_enabled(entity);
+    entity_cloned := entity_clone(Entity, entity);
 
     while keep_window_opened(window) {
         
