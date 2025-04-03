@@ -125,10 +125,8 @@ init :: (instance : *Draw2D_Context) {
     set_blend_mode(.ALPHA);
     
     init_white_texture(*state.white_texture);
-    //texture_2d_init(*atlas_texture, "assets/atlas.png")
 
     state.textures_to_bind[Default_Texture_Slots.WHITE] = *state.white_texture;
-    //textures_to_bind[Default_Texture_Slots.ATLAS] = *atlas_texture
     state.last_texture_slot = xx Default_Texture_Slots.COUNT;
 
     for i : 0..MAX_TEXTURE_SLOTS - 1 {
@@ -201,7 +199,6 @@ deinit :: (instance : *Draw2D_Context) {
     Draw2DStateHeader();
     assert(state == instance);
     deinit(*state.white_texture);
-    //texture_2d_finish(*atlas_texture)
 
     array_free(state.quad_batch);
     deinit(*state.quad_vbo);
@@ -218,7 +215,7 @@ draw_2d_begin :: (using settings := Draw2D_Settings.{}) {
     Draw2DStateHeader();
     state.camera.viewport_w = viewport_width;
     state.camera.viewport_h = viewport_height;
-    //start_batch(); this is being handled by the primitive header for now
+    //start_batch(); This now is being handled by the primitive header.
 }
 
 draw_2d_end :: () {
