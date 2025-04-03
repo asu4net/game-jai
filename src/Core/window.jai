@@ -8,7 +8,7 @@ Window :: struct {
     keep_opened : bool;
 }
 
-init_window :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync := true) -> bool {
+init :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync := true) -> bool {
 
     assert(!is_window_init(window));
     
@@ -66,7 +66,7 @@ keep_window_opened :: (window : *Window) -> bool {
     return window.keep_opened;
 }
 
-fini_window :: (window : *Window) {
+fini :: (window : *Window) {
     assert(is_window_init(window));
     destroy_sdl_window(window);
     window.* = .{};

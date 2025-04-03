@@ -41,23 +41,23 @@ main :: () {
     font    := *context.game.font;
     draw_2d := *context.game.draw_2d;
 
-    init_window(window);
-    defer fini_window(window);
+    init(window);
+    defer fini(window);
 
-    init_draw_2d(draw_2d);
-    defer fini_draw_2d();
+    init(draw_2d);
+    defer fini(draw_2d);
 
-    init_texture_from_path(alien, "assets/images/alien.png", mag = .LINEAR, min = .LINEAR);    
-    defer fini_texture(alien);
+    init(alien, "assets/images/alien.png", mag = .LINEAR, min = .LINEAR);    
+    defer fini(alien);
 
-    init_font(font, "assets/fonts/AlbertSans-VariableFont_wght.ttf");
-    defer fini_font(font);
+    init(font, "assets/fonts/AlbertSans-VariableFont_wght.ttf");
+    defer fini(font);
     
     set_clear_color(DARK_GRAY);
 
     sheet : Spritesheet;
-    init_spritesheet(*sheet, src_path = "assets/images");
-    defer fini_spritesheet(*sheet);
+    init(*sheet, src_path = "assets/images");
+    defer fini(*sheet);
 
     entities_2d : Entity_Array(Entity2D);
     index := entity_array_init(*entities_2d, 0);

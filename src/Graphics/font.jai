@@ -16,7 +16,7 @@ font_is_init :: (font : *Font) -> bool {
     return font.is_init;
 }
 
-init_font :: (font : *Font, path : string) {
+init :: (font : *Font, path : string) {
     assert(!font_is_init(font));
     
     file, success := file_open(path);
@@ -101,9 +101,9 @@ fill_glyph :: (font : *Font, glyph : *Glyph, c : u8) {
     assert(success);
 }
 
-fini_font :: (font : *Font) {
+fini :: (font : *Font) {
     assert(font_is_init(font));
-    fini_texture(*font.atlas);
+    fini(*font.atlas);
     deinit(*font.glyphs);
     font.* = .{};
 }

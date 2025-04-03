@@ -113,7 +113,7 @@ is_draw_2d_initialized :: () -> bool {
     return draw_2d.initialized;
 }
 
-init_draw_2d :: (instance : *Draw2D_Context) {
+init :: (instance : *Draw2D_Context) {
     assert(draw_2d == null);
     assert(instance != null);
     draw_2d = instance;
@@ -135,8 +135,8 @@ init_draw_2d :: (instance : *Draw2D_Context) {
         state.texture_slots[i] = xx i;
     }
 
-    init_shader(*state.quad_shader, .QUAD);
-    init_shader(*state.circle_shader, .CIRCLE);
+    init(*state.quad_shader, .QUAD);
+    init(*state.circle_shader, .CIRCLE);
 
     {
         INDEX_COUNT :: MAX_2D_PRIMITIVES_PER_BATCH * INDICES_PER_2D_PRIMITIVE;
@@ -160,15 +160,15 @@ init_draw_2d :: (instance : *Draw2D_Context) {
             i += INDICES_PER_2D_PRIMITIVE;
         }
 
-        init_index_buffer(*state.quad_ibo, indices.data, INDEX_COUNT);
+        init(*state.quad_ibo, indices.data, INDEX_COUNT);
         
         VERTICES :: MAX_2D_PRIMITIVES_PER_BATCH * VERTICES_PER_2D_PRIMITIVE;
 
         // Quad
         {
             state.quad_batch = NewArray(VERTICES, Quad_Vertex);
-            init_vertex_array(*state.quad_vao);
-            init_vertex_buffer(*state.quad_vbo, VERTICES * size_of(Quad_Vertex));
+            init(*state.quad_vao);
+            init(*state.quad_vbo, VERTICES * size_of(Quad_Vertex));
             add_layout(*state.quad_vbo, type = .Float4, name = "a_Position");
             add_layout(*state.quad_vbo, type = .Float4, name = "a_Tint");
             add_layout(*state.quad_vbo, type = .Float2, name = "a_UV");
@@ -181,8 +181,8 @@ init_draw_2d :: (instance : *Draw2D_Context) {
         // Circle
         {
             state.circle_batch = NewArray(VERTICES, Circle_Vertex);
-            init_vertex_array(*state.circle_vao);
-            init_vertex_buffer(*state.circle_vbo, VERTICES * size_of(Circle_Vertex));
+            init(*state.circle_vao);
+            init(*state.circle_vbo, VERTICES * size_of(Circle_Vertex));
             add_layout(*state.circle_vbo, type = .Float4, name = "a_Position");
             add_layout(*state.circle_vbo, type = .Float4, name = "a_LocalPosition");
             add_layout(*state.circle_vbo, type = .Float4, name = "a_Tint");
@@ -197,19 +197,19 @@ init_draw_2d :: (instance : *Draw2D_Context) {
     state.initialized = true;
 }
 
-fini_draw_2d :: () {
+fini :: (instance : *Draw2D_Context) {
     Draw2DStateHeader();
-
-    fini_texture(*state.white_texture);
+    assert(state == instance);
+    fini(*state.white_texture);
     //texture_2d_finish(*atlas_texture)
 
     array_free(state.quad_batch);
-    fini_vertex_buffer(*state.quad_vbo);
-    fini_shader(*state.quad_shader);
+    fini(*state.quad_vbo);
+    fini(*state.quad_shader);
     
     array_free(state.circle_batch);
-    fini_vertex_buffer(*state.circle_vbo);
-    fini_shader(*state.circle_shader);
+    fini(*state.circle_vbo);
+    fini(*state.circle_shader);
     
     state.* = .{};
 }

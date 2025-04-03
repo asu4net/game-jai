@@ -33,27 +33,27 @@ add_layout :: (vertex_buffer : *Vertex_Buffer, type : Shader_Data_Type, name : s
     array_add(*layout.elements, element);
 }
 
-fini_buffer_layout :: (buffer : *Buffer_Layout) {
+fini :: (buffer : *Buffer_Layout) {
     if buffer.elements.count != 0 {
         array_free(buffer.elements);
     }
     buffer.* = .{};
 }
 
-init_vertex_buffer :: (using vertex_buffer : *Vertex_Buffer, size : u64) {
+init :: (using vertex_buffer : *Vertex_Buffer, size : u64) {
     glCreateBuffers(1, *id);
     glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferData(GL_ARRAY_BUFFER, xx size, null, GL_DYNAMIC_DRAW);
 }
 
-fini_vertex_buffer :: (using vertex_buffer : *Vertex_Buffer) {
+fini :: (using vertex_buffer : *Vertex_Buffer) {
     assert(id != 0);
     glDeleteBuffers(1, *id);
-    fini_buffer_layout(*layout);
+    fini(*layout);
     vertex_buffer.* = .{};
 }
 
-init_vertex_buffer :: (using vertex_buffer : *Vertex_Buffer, vertices : *void, size : u64) {
+init :: (using vertex_buffer : *Vertex_Buffer, vertices : *void, size : u64) {
     glCreateBuffers(1, *id);
     glBindBuffer(GL_ARRAY_BUFFER, id);
     glBufferData(GL_ARRAY_BUFFER, xx size, vertices, GL_STATIC_DRAW);
@@ -77,14 +77,14 @@ Index_Buffer :: struct {
     count : u64;
 }
 
-init_index_buffer :: (using index_buffer : *Index_Buffer, indices : *u32, indices_count : u64) {
+init :: (using index_buffer : *Index_Buffer, indices : *u32, indices_count : u64) {
     count = indices_count;
     glCreateBuffers(1, *id);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, xx (count * size_of(u32)), indices, GL_STATIC_DRAW);
 }
 
-fini_index_buffer :: (using index_buffer : *Index_Buffer) {
+fini :: (using index_buffer : *Index_Buffer) {
     assert(id != 0);
     glDeleteBuffers(1, *id);
     index_buffer.* = .{};
@@ -104,15 +104,15 @@ Vertex_Array :: struct {
     index_buffer : *Index_Buffer;
 }
 
-init_vertex_array :: (using vertex_array : *Vertex_Array) {
+init :: (using vertex_array : *Vertex_Array) {
     glCreateVertexArrays(1, *id);
 }
 
-fini_vertex_array :: (using vertex_array : *Vertex_Array) {
+fini :: (using vertex_array : *Vertex_Array) {
     for vertex_buffer : vertex_buffers {
         assert(vertex_buffer != null);
         if vertex_buffer.id != 0 {
-            fini_vertex_buffer(vertex_buffer);
+            fini(vertex_buffer);
         }
     }
     if vertex_buffers.count != 0 {
@@ -121,7 +121,7 @@ fini_vertex_array :: (using vertex_array : *Vertex_Array) {
     assert(index_buffer != null);
 
     if index_buffer.id != 0 {
-        fini_index_buffer(index_buffer);
+        fini(index_buffer);
     }
 
     glDeleteVertexArrays(1, *id);

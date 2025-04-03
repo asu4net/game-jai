@@ -297,7 +297,7 @@ get_font_offset_for_index :: (
     index : s32
 ) -> s32 #foreign libstbtruetype "stbtt_GetFontOffsetForIndex";
 
-init_font :: (
+init :: (
     info : *Fontinfo,
     data : *u8,
     offset : s32

@@ -15,13 +15,13 @@ SpritesheetDef :: struct {
     rects : [..] SheetDefItem;
 }
 
-fini_spritesheet :: (sheet : *Spritesheet) {
+fini :: (sheet : *Spritesheet) {
     assert(sheet != null);
-    fini_texture(*sheet.tex);
+    fini(*sheet.tex);
     deinit(*sheet.rects);
 }
 
-init_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
+init :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
     
     full_path_png  := join(dst_path, "/", sheet_name, ".png" ,,temp);
     full_path_json := join(dst_path, "/", sheet_name, ".json" ,,temp);
@@ -35,7 +35,7 @@ init_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_wid
     success, sheet_def := json_parse_string(json_string, SpritesheetDef ,,temp);
     assert(success);
     
-    init_texture_from_path(*sheet.tex, full_path_png);
+    init(*sheet.tex, full_path_png);
     for sheet_def.rects table_add(*sheet.rects, it.name, it.rect);
 }
 
