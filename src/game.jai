@@ -64,7 +64,7 @@ main :: () {
     defer entity_array_deinit(*entities_2d);
 
     {
-        a := entity_create(Entity2D);
+        a := create_entity(Entity2D);
         a.pos = UP_2D;
         a.visible = true;
         a.tint = WHITE;
@@ -75,7 +75,7 @@ main :: () {
     }
 
     {
-        a := entity_create(Entity2D);
+        a := create_entity(Entity2D);
         a.visible = true;
         a.tint = WHITE;
         a.scl = ONE_2D;
@@ -85,7 +85,7 @@ main :: () {
     }
 
     {
-        a := entity_create(Entity2D);
+        a := create_entity(Entity2D);
         a.pos = RIGHT_2D;
         a.visible = true;
         a.tint = WHITE;
@@ -96,7 +96,7 @@ main :: () {
     }
 
     {
-        a := entity_create(Entity2D);
+        a := create_entity(Entity2D);
         a.pos = DOWN_2D;
         a.visible = true;
         a.tint = WHITE;
@@ -113,7 +113,7 @@ main :: () {
         for i : 1..entities_2d.used_ids.count {
             
             e := (*entities_2d.data[i]).(*Entity2D);
-            if !entity_global_enabled(e) then continue;
+            if !is_enabled(e) then continue;
 
             tex   := ifx e.item.count > 0 then *sheet.tex else null;
             flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;

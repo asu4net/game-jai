@@ -33,29 +33,29 @@ entity_array_initialized :: (array : *Entity_Array) -> bool {
     return array.data.data != null;
 }
 
-entity_exists :: (entity : *Entity) -> bool {
+is_not_cleaned :: (entity : *Entity) -> bool {
     assert(entity != null);
     array := entity_array_get_unsafe(entity.slot); 
     if array == null then return false;
     return test(*array.used_ids, entity.id);   
 }
 
-entity_valid :: (entity : *Entity) -> bool {
-    assert(entity_exists(entity));
+is_valid :: (entity : *Entity) -> bool {
+    assert(is_not_cleaned(entity));
     return xx .VALID & entity.flags;   
 }
 
-entity_enabled :: (entity : *Entity) -> bool {
-    assert(entity_valid(entity));
-    return entity_valid(entity) && (.ENABLED & entity.flags).(bool);   
+is_local_enabled :: (entity : *Entity) -> bool {
+    assert(is_valid(entity));
+    return is_valid(entity) && (.ENABLED & entity.flags).(bool);   
 }
 
-entity_global_enabled :: (entity : *Entity) -> bool {
-    assert(entity_valid(entity));
-    return entity_enabled(entity) && (.GLOBAL_ENABLED & entity.flags).(bool);   
+is_enabled :: (entity : *Entity) -> bool {
+    assert(is_valid(entity));
+    return is_local_enabled(entity) && (.GLOBAL_ENABLED & entity.flags).(bool);   
 }
 
-entity_create :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
+create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
     base_array := entity_array_get(slot);
     array := base_array.(*Entity_Array(TEntity));
 
@@ -85,7 +85,7 @@ entity_create :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
     return entity;
 }
 
-entity_destroy :: (entity : *Entity) {
+destroy_entity :: (entity : *Entity) {
     if entity == null then {
         log_error("You're trying to destroy a null entity dude");
         return;
@@ -94,7 +94,7 @@ entity_destroy :: (entity : *Entity) {
     entity.flags = entity.flags &~ .VALID;
     
     for child : entity.children {
-        entity_destroy(entity_resolve_ref(*child));
+        destroy_entity(resolve_ref(*child));
     }
     
     array := entity_array_get(entity);
@@ -124,7 +124,7 @@ clean_destroyed_entities :: () {
     }
 }
 
-entity_resolve_ref :: (ref : *Entity_Ref) -> *Entity {
+resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     assert(ref != null);
     array := entity_array_get(ref.slot);
     
@@ -144,8 +144,8 @@ entity_resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     return *array.data[index];
 }
 
-entity_make_ref :: (entity : *Entity) -> Entity_Ref {
-    assert(entity_valid(entity));
+make_ref :: (entity : *Entity) -> Entity_Ref {
+    assert(is_valid(entity));
     return .{
         id   = entity.id,
         tag  = entity.tag,
@@ -154,8 +154,8 @@ entity_make_ref :: (entity : *Entity) -> Entity_Ref {
 }
 
 entity_clone :: ($TEntity : Type, template : *Entity) -> *Entity {
-    assert(entity_valid(template));
-    entity := entity_create(TEntity, template.slot, template.tag);
+    assert(is_valid(template));
+    entity := create_entity(TEntity, template.slot, template.tag);
     id := entity.id;
     entity.* = template.*;
     entity.id = id;
@@ -163,7 +163,7 @@ entity_clone :: ($TEntity : Type, template : *Entity) -> *Entity {
     array_reset(*entity.children);
     
     for child : template.children {
-        cloned_child := entity_clone(TEntity, entity_resolve_ref(*child));
+        cloned_child := entity_clone(TEntity, resolve_ref(*child));
         entity_set_parent(cloned_child, entity);
     }
 
@@ -174,11 +174,11 @@ entity_add_child :: (entity : *Entity, child : *Entity) {
     assert(entity != null && child != null);
     
     for ref : entity.children {
-        current_child := entity_resolve_ref(*ref);
+        current_child := resolve_ref(*ref);
         if current_child.id == child.id then return;
     }
 
-    child_ref := entity_make_ref(child);
+    child_ref := make_ref(child);
     array_add(*entity.children, child_ref);
     compute_enabled_iterative(child_ref);
 }
@@ -194,29 +194,29 @@ entity_remove_child :: (entity : *Entity, child : *Entity) {
         }
     }
     if found then array_unordered_remove_by_index(*entity.children, index);
-    compute_enabled_iterative(entity_make_ref(child));
+    compute_enabled_iterative(make_ref(child));
 }
 
 entity_set_parent :: (entity : *Entity, parent : *Entity) {
-    entity_parent := entity_resolve_ref(*entity.parent);
-    if entity_exists(entity_parent) && entity_valid(parent) {
+    entity_parent := resolve_ref(*entity.parent);
+    if is_not_cleaned(entity_parent) && is_valid(parent) {
         entity_remove_child(entity_parent, entity);
     }
-    entity.parent = entity_make_ref(parent);
+    entity.parent = make_ref(parent);
     entity_add_child(parent, entity);
 }
 
 entity_get_parent :: (entity : *Entity) -> *Entity {
-    assert(entity_valid(entity));
-    parent := entity_resolve_ref(*entity.parent);
+    assert(is_valid(entity));
+    parent := resolve_ref(*entity.parent);
     return parent;
 }
 
 entity_set_enabled :: (entity : *Entity, enabled := true) {
-    assert(entity_valid(entity));
-    entity_enabled := (.ENABLED & entity.flags).(bool);
-    if enabled != entity_enabled
-    then compute_enabled_iterative(entity_make_ref(entity));
+    assert(is_valid(entity));
+    is_local_enabled := (.ENABLED & entity.flags).(bool);
+    if enabled != is_local_enabled
+    then compute_enabled_iterative(make_ref(entity));
 }
 
 compute_enabled_iterative :: (entity_ref : Entity_Ref) { 
@@ -225,11 +225,11 @@ compute_enabled_iterative :: (entity_ref : Entity_Ref) {
 
     while stack.count > 0 {
         current_ref := pop(*stack);
-        current_entity := entity_resolve_ref(*current_ref);
+        current_entity := resolve_ref(*current_ref);
         parent_ref := current_entity.parent;
 
-        parent := entity_resolve_ref(*parent_ref);
-        parent_enabled := ifx entity_exists(parent) && entity_valid(parent) then entity_global_enabled(parent) else true;
+        parent := resolve_ref(*parent_ref);
+        parent_enabled := ifx is_not_cleaned(parent) && is_valid(parent) then is_enabled(parent) else true;
         new_global_enabled := (.ENABLED & current_entity.flags).(bool) && parent_enabled;
         
         if((.GLOBAL_ENABLED & current_entity.flags).(bool) != new_global_enabled) {
