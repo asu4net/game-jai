@@ -58,7 +58,7 @@ entity_array_bind :: (slot : u32) {
     entity_array_current = current;
 }
 
-#scope_file
+#scope_module
 
 entity_arrays: [MAX_ENTITY_ARRAYS] *Entity_Array;
 entity_array_count: u32;

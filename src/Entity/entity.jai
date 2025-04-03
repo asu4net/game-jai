@@ -64,23 +64,74 @@ entity_create :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
     id := queue_pop_front(*array.free_ids);
     index := sparse_insert(*array.used_ids, id);
     entity := *array.data[index];
-    
-    //TODO: We should copy the tag to an allocated string
+    entity.tag = copy_string(tag);
+
     if entity.flags & .SERIALIZABLE {
-       // we have to make sure tag is not empty and not exists
+        if entity.tag.count == 0 {
+            log_error("Serializable cannot have an empty tag!");
+            return null;
+        }
         _, found := table_find(*array.to_serialize, tag);
         if found then {
-            log_error("Serializable, entity with the same tag already exists!");
+            log_error("Serializable entity with the same tag already exists!");
             return null;
         }
         table_add(*array.to_serialize, tag, id);
     }
 
     entity.id    = id;
-    entity.tag   = tag;
     entity.flags = flags;
 
     return entity;
+}
+
+entity_destroy :: (entity : *Entity) {
+    if entity == null then {
+        log_error("You're trying to destroy a null entity dude");
+        return;
+    }
+    
+    entity.flags = entity.flags &~ .VALID;
+    
+    for child : entity.children {
+        entity_destroy(entity_resolve_ref(*child));
+    }
+    
+    array := entity_array_get(entity);
+    table_add(*array.to_clean, entity.id, .{});
+}
+
+clean_destroyed_entities :: () {
+
+    for array : entity_arrays {
+        for entity_id, _ : array.to_clean {
+            
+            //sparse_search()
+
+            /*
+            data := entity_data(handle);
+            
+            delete(data.children);
+
+            if(emitter_exists(data.particle_emitter)) {
+                emitter_destroy(data.particle_emitter);
+            }
+            
+            queue.push(&entity_ids, data.id);
+            deleted, last := sparse_set.remove(&entity_used_ids, data.id);
+            
+            entity_count -= 1;
+            
+            if deleted != last {
+                entities[deleted] = entities[last];
+                entities[last] = {};
+            } else {
+                entities[deleted] = {};
+            }
+            clear(&pending_destroy)
+            */
+        }
+    }
 }
 
 entity_resolve_ref :: (ref : *Entity_Ref) -> *Entity {

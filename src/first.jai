@@ -52,7 +52,9 @@ main :: () {
     enabled := entity_enabled(entity);
     genabled := entity_global_enabled(entity);
     entity_cloned := entity_clone(Entity, entity);
-
+    entity_destroy(entity_cloned);
+    clean_destroyed_entities();
+    
     while keep_window_opened(window) {
         
         clear_screen();

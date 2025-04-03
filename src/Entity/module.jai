@@ -1,5 +1,5 @@
-#load "entity.jai";
 #load "entity_array.jai";
+#load "entity.jai";
 
 #scope_module
 
@@ -8,3 +8,4 @@
 #import "Core";
 #import "Basic";
 #import "Compiler";
+#import "Default_Allocator";
