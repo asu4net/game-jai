@@ -28,14 +28,14 @@ is_entity :: ($T: Type) -> bool {
     return type_info(Entity) == info || is_subclass_of(info, type_info(Entity).name);
 }
 
-array_initialized :: (array : *Entity_Array) -> bool {
+initialized :: (array : *Entity_Array) -> bool {
     assert(array != null);
     return array.data.data != null;
 }
 
 is_not_cleaned :: (entity : *Entity) -> bool {
     assert(entity != null);
-    array := array_get_unsafe(entity.slot); 
+    array := entity_array_get_unsafe(entity.slot); 
     if array == null then return false;
     return test(*array.used_ids, entity.id);   
 }
@@ -56,7 +56,7 @@ is_enabled :: (entity : *Entity) -> bool {
 }
 
 create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
-    base_array := array_get(slot);
+    base_array := entity_array_get(slot);
     array := base_array.(*Entity_Array(TEntity));
 
     assert(array.used_ids.count <= array.capacity);
@@ -97,7 +97,7 @@ destroy_entity :: (entity : *Entity) {
         destroy_entity(resolve_ref(*child));
     }
     
-    array := array_get(entity);
+    array := entity_array_get(entity);
     table_add(*array.to_clean, entity.id, .{});
 }
 
@@ -123,7 +123,7 @@ clean_destroyed_entities :: () {
 
 resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     assert(ref != null);
-    array := array_get(ref.slot);
+    array := entity_array_get(ref.slot);
     
     if ref.id == 0 then {
         assert(ref.tag.count > 0);

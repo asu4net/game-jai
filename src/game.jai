@@ -60,8 +60,8 @@ main :: () {
     defer deinit(*sheet);
 
     entities_2d : Entity_Array(Entity2D);
-    index := array_init(*entities_2d, 0);
-    defer array_deinit(*entities_2d);
+    index := init(*entities_2d, 0);
+    defer deinit(*entities_2d);
 
     {
         a := create_entity(Entity2D);

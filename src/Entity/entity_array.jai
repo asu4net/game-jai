@@ -3,6 +3,8 @@ DEF_ENTITY_ARRAY_CAPACITY :: 100;
 
 // #TODO_asuarez
 // Think about how allocate the strings and the entity children handles. 
+// Entity array name sucks. Maybe use scene.
+// Create a manager or something maybe.
 
 Entity_Array :: struct($TEntity: Type = Entity) {
     #assert(is_entity(TEntity));
@@ -17,9 +19,9 @@ Entity_Array :: struct($TEntity: Type = Entity) {
     to_serialize : Table(string, Entity_ID);
 }
 
-array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 = DEF_ENTITY_ARRAY_CAPACITY) {
-    assert(array && !array_initialized(array));
-    array_add(array.(*Entity_Array(Entity)), slot, capacity);
+init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 = DEF_ENTITY_ARRAY_CAPACITY) {
+    assert(array && !initialized(array));
+    entity_array_add(array.(*Entity_Array(Entity)), slot, capacity);
     array.data = NewArray(capacity, TEntity);
     array.type = TEntity;
     array.slot = slot;
@@ -30,9 +32,9 @@ array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 = DEF_E
     array.capacity = capacity;
 }
 
-array_deinit :: (array: *Entity_Array) {
+deinit :: (array: *Entity_Array) {
     assert(array != null);
-    array_remove(array.slot);
+    entity_array_remove(array.slot);
     free(array.data.data);
     deinit(*array.used_ids);
     deinit(*array.free_ids);
@@ -40,21 +42,21 @@ array_deinit :: (array: *Entity_Array) {
     array.* = .{};
 }
 
-array_get :: (entity : *Entity) -> *Entity_Array(Entity) {
+entity_array_get :: (entity : *Entity) -> *Entity_Array(Entity) {
     assert(entity != null);
-    array := array_get(entity.slot);
-    assert(array_initialized(array)); 
+    array := entity_array_get(entity.slot);
+    assert(initialized(array)); 
     return array;
 }
 
-array_get_unsafe :: (slot : u32) -> *Entity_Array(Entity) {
+entity_array_get_unsafe :: (slot : u32) -> *Entity_Array(Entity) {
     assert(slot < MAX_ENTITY_ARRAYS);
     return arrays[slot];
 }
 
-array_get :: (slot : u32) -> *Entity_Array(Entity) {
+entity_array_get :: (slot : u32) -> *Entity_Array(Entity) {
     assert(array_count > 0 && slot < array_count);
-    array := array_get_unsafe(slot);
+    array := entity_array_get_unsafe(slot);
     assert(array != null);
     return xx arrays[slot];
 }
@@ -62,7 +64,7 @@ array_get :: (slot : u32) -> *Entity_Array(Entity) {
 arrays: [MAX_ENTITY_ARRAYS] *Entity_Array;
 array_count: u32;
 
-array_add :: (array : *Entity_Array, slot : u32, capacity : u32) {
+entity_array_add :: (array : *Entity_Array, slot : u32, capacity : u32) {
     assert(array != null);
     assert(array_count < MAX_ENTITY_ARRAYS); //Tío si has llegado aquí, lo estás haciendo raro.
     assert(arrays[slot] == null);
@@ -70,8 +72,8 @@ array_add :: (array : *Entity_Array, slot : u32, capacity : u32) {
     array_count += 1;
 }
 
-array_remove :: (slot : u32) {
-    current := array_get(slot);
+entity_array_remove :: (slot : u32) {
+    current := entity_array_get(slot);
     arrays[slot] = null;
     array_count -= 1;
 }
