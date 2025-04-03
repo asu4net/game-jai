@@ -102,16 +102,13 @@ destroy_entity :: (entity : *Entity) {
 }
 
 clean_destroyed_entities :: () {
-
     for array : arrays {
-        for _, id : array.to_clean {
-            
+        for _, id : array.to_clean {        
             index := search(*array.used_ids, id);
             assert(index != 0);
             entity := array.data[index];
             push_back(*array.free_ids, id);
-            deleted, last := remove_id(*array.used_ids, id);
-            
+            deleted, last := remove_id(*array.used_ids, id);       
             if deleted != last {
                 array.data[deleted] = array.data[last];
                 array.data[last] = .{};
@@ -222,7 +219,7 @@ set_enabled :: (entity : *Entity, enabled := true) {
 compute_enabled_iterative :: (ref : Entity_Ref) { 
     stack : [..] Entity_Ref;
     array_add(*stack, ref ,,temp);
-    
+
     while stack.count > 0 {
         current_ref := pop(*stack);
         current_entity := resolve_ref(*current_ref);
