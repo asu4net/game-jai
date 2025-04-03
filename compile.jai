@@ -1,11 +1,8 @@
-// see the Default_Metaprogram in modules
-// another option tprint("%./bin", #filepath);
+//#TODO_asuarez: Copy SDL dll on comptime depending on the operating system.
 
-//TODO: Copy SDL dll on comptime depending on the operating system.
-
-EXECUTABLE_NAME          :: "game";
-OUTPUT_PATH              :: "bin";
-BUILD_FILE               :: "src/game.jai";
+EXECUTABLE_NAME :: "game";
+OUTPUT_PATH     :: "bin";
+BUILD_FILE      :: "src/game.jai";
 
 #run compile();
 
@@ -31,6 +28,8 @@ compile :: () {
     add_build_string("DIST    :: false;", w);
     set_build_options_dc(.{do_output=false});
 }
+
+#scope_file
 
 #import "Basic";
 #import "Compiler";

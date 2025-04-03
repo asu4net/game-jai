@@ -23,7 +23,7 @@ init :: (shader : *Shader, source : string) {
     assert(!is_shader_init(shader));
     shader.program = get_shader_program(source);
     if shader.program == 0 then return;
-    //TODO: Maybe do something is shader is valid
+    //#REVIEW_asuarez: Maybe do something is shader is valid
 }
 
 deinit :: (shader : *Shader) {

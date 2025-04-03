@@ -159,7 +159,6 @@ main :: () {
         */
         reset_temporary_storage();
     }
-    //Unmapping_Allocator 
 }
 
 #scope_file
@@ -205,9 +204,8 @@ main :: () {
 #load "graphics/render_camera.jai";
 #load "graphics/spritesheet.jai";
 
-//TODO:
+//#TODO_asuarez
 /*
-- Usar 0 como valor invalido en el sparse set y en las entidades?
 - texture options for sprite_sheet (maybe could be a struct??)
 - Optimize the 2d version of make_transform
 - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).

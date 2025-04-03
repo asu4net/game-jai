@@ -62,7 +62,7 @@ keep_window_opened :: (window : *Window) -> bool {
     SDL_GL_MakeCurrent(window.handle, window.gl_context);
     SDL_GL_SwapWindow(window.handle);
     poll_events(window);
-    //TODO: Time
+    //#TODO_asuarez Time stuff.
     return window.keep_opened;
 }
 
