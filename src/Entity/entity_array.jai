@@ -4,7 +4,9 @@ DEF_ENTITY_ARRAY_CAPACITY :: 100;
 Entity_Array :: struct($TEntity: Type = Entity) {
     #assert(is_entity(TEntity));
     data         : [] TEntity;
+    slot         : u32;
     used_ids     : Sparse_Set;
+    count        : int;
     free_ids     : Queue(Entity_ID);
     to_clean     : Table(Entity_ID, struct{});
     capacity     : u32;
@@ -14,9 +16,10 @@ Entity_Array :: struct($TEntity: Type = Entity) {
 
 entity_array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 = DEF_ENTITY_ARRAY_CAPACITY) {
     assert(array && !entity_array_initialized(array));
-    entity_array_add(array, slot, capacity);
+    entity_array_add(array.(*Entity_Array(Entity)), slot, capacity);
     array.data = NewArray(capacity, TEntity);
     array.type = TEntity;
+    array.slot = slot;
     sparse_init(*array.used_ids, capacity);
     queue_init(*array.free_ids, capacity + 1);
     for i : 0..capacity-1 queue_push_back(*array.free_ids, cast(u32) i);
@@ -26,7 +29,7 @@ entity_array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 
 
 entity_array_deinit :: (array: *Entity_Array) {
     assert(array != null);
-    entity_array_remove(array);
+    entity_array_remove(array.slot);
     free(array.data.data);
     sparse_deinit(*array.used_ids);
     queue_deinit(*array.free_ids);
@@ -52,13 +55,6 @@ entity_array_get :: (slot : u32) -> *Entity_Array(Entity) {
     assert(array != null);
     return xx entity_arrays[slot];
 }
-
-entity_array_bind :: (slot : u32) {
-    current := entity_array_get(slot);
-    entity_array_current = current;
-}
-
-#scope_module
 
 entity_arrays: [MAX_ENTITY_ARRAYS] *Entity_Array;
 entity_array_count: u32;

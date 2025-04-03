@@ -55,9 +55,8 @@ entity_global_enabled :: (entity : *Entity) -> bool {
     return entity_enabled(entity) && (.GLOBAL_ENABLED & entity.flags).(bool);   
 }
 
-entity_create :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *Entity {
+entity_create :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
     base_array := entity_array_get(slot);
-    assert(type_of(TEntity) == base_array.type);
     array := base_array.(*Entity_Array(TEntity));
 
     assert(array.used_ids.count <= array.capacity);
@@ -81,6 +80,7 @@ entity_create :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
 
     entity.id    = id;
     entity.flags = flags;
+    array.count =+ 1;
 
     return entity;
 }
@@ -104,33 +104,23 @@ entity_destroy :: (entity : *Entity) {
 clean_destroyed_entities :: () {
 
     for array : entity_arrays {
-        for entity_id, _ : array.to_clean {
+        for _, entity_id : array.to_clean {
             
-            //sparse_search()
-
-            /*
-            data := entity_data(handle);
-            
-            delete(data.children);
-
-            if(emitter_exists(data.particle_emitter)) {
-                emitter_destroy(data.particle_emitter);
-            }
-            
-            queue.push(&entity_ids, data.id);
-            deleted, last := sparse_set.remove(&entity_used_ids, data.id);
-            
-            entity_count -= 1;
+            entity_index := sparse_search(*array.used_ids, entity_id);
+            assert(entity_index != 0);
+            entity := array.data[entity_index];
+            queue_push_back(*array.free_ids, entity_id);
+            deleted, last := sparse_remove(*array.used_ids, entity_id);
             
             if deleted != last {
-                entities[deleted] = entities[last];
-                entities[last] = {};
+                array.data[deleted] = array.data[last];
+                array.data[last] = .{};
             } else {
-                entities[deleted] = {};
+                array.data[deleted] = .{};
             }
-            clear(&pending_destroy)
-            */
+            array.count-=1;
         }
+        table_reset(*array.to_clean);
     }
 }
 
@@ -218,7 +208,7 @@ entity_set_parent :: (entity : *Entity, parent : *Entity) {
 
 entity_get_parent :: (entity : *Entity) -> *Entity {
     assert(entity_valid(entity));
-    parent := entity_resolve_ref(entity.parent);
+    parent := entity_resolve_ref(*entity.parent);
     return parent;
 }
 

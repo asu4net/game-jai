@@ -4,10 +4,8 @@
 //TODO: Copy SDL dll on comptime depending on the operating system.
 
 EXECUTABLE_NAME          :: "game";
-OUTPUT_PATH              ::"../bin";
-BUILD_FILE               ::"../src/first.jai";
-MODULES_PATH             ::"../src";
-THIRD_PARTY_MODULES_PATH ::"../src/ThirdParty";
+OUTPUT_PATH              :: "bin";
+BUILD_FILE               :: "src/game.jai";
 
 #run compile();
 
@@ -23,18 +21,11 @@ compile :: () {
     
     target_options := get_build_options(w);
     target_options.output_executable_name = EXECUTABLE_NAME;
-    target_options.output_path = String.join(#filepath, OUTPUT_PATH);
-
-    new_import_path : [..] string;
-    array_copy(*new_import_path, target_options.import_path);
-    array_add(*new_import_path, MODULES_PATH);
-    array_add(*new_import_path, THIRD_PARTY_MODULES_PATH);
-    target_options.import_path = new_import_path;
-
-
+    target_options.output_path = join(#filepath, OUTPUT_PATH);
+    
     set_optimization(*target_options, .DEBUG);
     set_build_options(target_options, w);
-    add_build_file(String.join(#filepath, BUILD_FILE), w);
+    add_build_file(join(#filepath, BUILD_FILE), w);
     add_build_string("DEBUG   :: true;", w);
     add_build_string("RELEASE :: false;", w);
     add_build_string("DIST    :: false;", w);
@@ -43,5 +34,4 @@ compile :: () {
 
 #import "Basic";
 #import "Compiler";
-String :: #import "String";
-#load "compile_shaders.jai";
+#import "String";

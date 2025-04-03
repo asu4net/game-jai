@@ -15,7 +15,7 @@ queue_init :: (q: *Queue($T), capacity := DEFAULT_CAPACITY) {
 
 // procedure to destroy a queue
 queue_deinit :: (q: *Queue($T)) {
-	free(q.data);
+	array_reset(*q.data);
 }
 
 // The count of the queue

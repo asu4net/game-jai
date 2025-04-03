@@ -89,9 +89,10 @@ linear_interp :: (x: float32, min: float32, max: float32) -> float32 {
 }
 
 linear_interp :: (x : float32, min: Vector4, max: Vector4) -> (v : Vector4) {
-    v.r = linear_interp(x, min.r, max.r);
-    v.g = linear_interp(x, min.g, max.g);
-    v.b = linear_interp(x, min.b, max.b);
-    v.a = linear_interp(x, min.a, max.a);
+    v : Vector4;
+    v.x = linear_interp(x, min.x, max.x);
+    v.y = linear_interp(x, min.y, max.y);
+    v.z = linear_interp(x, min.z, max.z);
+    v.w = linear_interp(x, min.w, max.w);
     return v;
 }

@@ -1,4 +1,4 @@
-Blending :: enum {
+Blend :: enum {
     NONE;
     ALPHA;
     SOLID;
@@ -101,7 +101,7 @@ clear_screen :: () {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-set_blending_enabled :: (enabled: bool = true) {
+set_blend_enabled :: (enabled: bool = true) {
     if enabled {
         glEnable(GL_BLEND);
         return;
@@ -110,9 +110,9 @@ set_blending_enabled :: (enabled: bool = true) {
     glDisable(GL_BLEND);
 }
 
-set_blending_mode :: (blending : Blending) {
-    set_blending_enabled();
-    if blending == {
+set_blend_mode :: (blend : Blend) {
+    set_blend_enabled();
+    if blend == {
         case .NONE;
              assert(false);
             return;
