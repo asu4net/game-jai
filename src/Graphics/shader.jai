@@ -26,7 +26,7 @@ init :: (shader : *Shader, source : string) {
     //TODO: Maybe do something is shader is valid
 }
 
-fini :: (shader : *Shader) {
+deinit :: (shader : *Shader) {
     assert(is_shader_init(shader));
     glDeleteProgram(shader.program);
     shader.* = .{};

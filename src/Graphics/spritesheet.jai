@@ -15,9 +15,9 @@ SpritesheetDef :: struct {
     rects : [..] SheetDefItem;
 }
 
-fini :: (sheet : *Spritesheet) {
+deinit :: (sheet : *Spritesheet) {
     assert(sheet != null);
-    fini(*sheet.tex);
+    deinit(*sheet.tex);
     deinit(*sheet.rects);
 }
 

@@ -33,7 +33,7 @@ add_layout :: (vertex_buffer : *Vertex_Buffer, type : Shader_Data_Type, name : s
     array_add(*layout.elements, element);
 }
 
-fini :: (buffer : *Buffer_Layout) {
+deinit :: (buffer : *Buffer_Layout) {
     if buffer.elements.count != 0 {
         array_free(buffer.elements);
     }
@@ -46,10 +46,10 @@ init :: (using vertex_buffer : *Vertex_Buffer, size : u64) {
     glBufferData(GL_ARRAY_BUFFER, xx size, null, GL_DYNAMIC_DRAW);
 }
 
-fini :: (using vertex_buffer : *Vertex_Buffer) {
+deinit :: (using vertex_buffer : *Vertex_Buffer) {
     assert(id != 0);
     glDeleteBuffers(1, *id);
-    fini(*layout);
+    deinit(*layout);
     vertex_buffer.* = .{};
 }
 
@@ -84,7 +84,7 @@ init :: (using index_buffer : *Index_Buffer, indices : *u32, indices_count : u64
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, xx (count * size_of(u32)), indices, GL_STATIC_DRAW);
 }
 
-fini :: (using index_buffer : *Index_Buffer) {
+deinit :: (using index_buffer : *Index_Buffer) {
     assert(id != 0);
     glDeleteBuffers(1, *id);
     index_buffer.* = .{};
@@ -108,11 +108,11 @@ init :: (using vertex_array : *Vertex_Array) {
     glCreateVertexArrays(1, *id);
 }
 
-fini :: (using vertex_array : *Vertex_Array) {
+deinit :: (using vertex_array : *Vertex_Array) {
     for vertex_buffer : vertex_buffers {
         assert(vertex_buffer != null);
         if vertex_buffer.id != 0 {
-            fini(vertex_buffer);
+            deinit(vertex_buffer);
         }
     }
     if vertex_buffers.count != 0 {
@@ -121,7 +121,7 @@ fini :: (using vertex_array : *Vertex_Array) {
     assert(index_buffer != null);
 
     if index_buffer.id != 0 {
-        fini(index_buffer);
+        deinit(index_buffer);
     }
 
     glDeleteVertexArrays(1, *id);

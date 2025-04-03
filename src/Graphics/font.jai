@@ -101,9 +101,9 @@ fill_glyph :: (font : *Font, glyph : *Glyph, c : u8) {
     assert(success);
 }
 
-fini :: (font : *Font) {
+deinit :: (font : *Font) {
     assert(font_is_init(font));
-    fini(*font.atlas);
+    deinit(*font.atlas);
     deinit(*font.glyphs);
     font.* = .{};
 }

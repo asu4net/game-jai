@@ -66,7 +66,7 @@ keep_window_opened :: (window : *Window) -> bool {
     return window.keep_opened;
 }
 
-fini :: (window : *Window) {
+deinit :: (window : *Window) {
     assert(is_window_init(window));
     destroy_sdl_window(window);
     window.* = .{};

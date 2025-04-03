@@ -42,22 +42,22 @@ main :: () {
     draw_2d := *context.game.draw_2d;
 
     init(window);
-    defer fini(window);
-
+    defer deinit(window);
+    
     init(draw_2d);
-    defer fini(draw_2d);
+    defer deinit(draw_2d);
 
     init(alien, "assets/images/alien.png", mag = .LINEAR, min = .LINEAR);    
-    defer fini(alien);
+    defer deinit(alien);
 
     init(font, "assets/fonts/AlbertSans-VariableFont_wght.ttf");
-    defer fini(font);
+    defer deinit(font);
     
     set_clear_color(DARK_GRAY);
 
     sheet : Spritesheet;
     init(*sheet, src_path = "assets/images");
-    defer fini(*sheet);
+    defer deinit(*sheet);
 
     entities_2d : Entity_Array(Entity2D);
     index := entity_array_init(*entities_2d, 0);

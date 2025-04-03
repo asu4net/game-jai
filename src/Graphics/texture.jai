@@ -110,7 +110,7 @@ init :: (
     upload_texture_to_gpu(texture);
 }
 
-fini :: (using texture : *Texture) {
+deinit :: (using texture : *Texture) {
     assert(id != 0);
     glDeleteTextures(1, *id);
     assert(pixels.data != null);

@@ -197,19 +197,19 @@ init :: (instance : *Draw2D_Context) {
     state.initialized = true;
 }
 
-fini :: (instance : *Draw2D_Context) {
+deinit :: (instance : *Draw2D_Context) {
     Draw2DStateHeader();
     assert(state == instance);
-    fini(*state.white_texture);
+    deinit(*state.white_texture);
     //texture_2d_finish(*atlas_texture)
 
     array_free(state.quad_batch);
-    fini(*state.quad_vbo);
-    fini(*state.quad_shader);
+    deinit(*state.quad_vbo);
+    deinit(*state.quad_shader);
     
     array_free(state.circle_batch);
-    fini(*state.circle_vbo);
-    fini(*state.circle_shader);
+    deinit(*state.circle_vbo);
+    deinit(*state.circle_shader);
     
     state.* = .{};
 }
