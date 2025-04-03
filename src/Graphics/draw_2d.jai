@@ -457,14 +457,14 @@ draw_gui_quad :: (
 }
 
 draw_gui_text :: (
-    pos           : Vector2  = ZERO_2D,
-    ang           : float32  = 0,
-    scl           : Vector2  = ONE_2D,
-    text          : string   = "placeholder!",
-    font          : *Font    = null,
-    blend      : Blend = .ALPHA,
-    tint          : Vector4  = WHITE,
-    id     : u32      = 0
+    pos   : Vector2  = ZERO_2D,
+    ang   : float32  = 0,
+    scl   : Vector2  = ONE_2D,
+    text  : string   = "placeholder!",
+    font  : *Font    = null,
+    blend : Blend = .ALPHA,
+    tint  : Vector4  = WHITE,
+    id    : u32      = 0
 )
 {
     assert(font != null);

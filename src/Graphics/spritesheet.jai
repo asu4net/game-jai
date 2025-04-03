@@ -1,6 +1,9 @@
+//#TODO_asuarez
+// Manage the memory from jaison (more string fun).
+
 Spritesheet :: struct {
-    texture : Texture;
-    rects   : Table(string, Rect);
+    tex   : Texture;
+    rects : Table(string, Rect);
 }
 
 SheetDefItem :: struct {
@@ -14,7 +17,7 @@ SpritesheetDef :: struct {
 
 fini_spritesheet :: (sheet : *Spritesheet) {
     assert(sheet != null);
-    fini_texture(*sheet.texture);
+    fini_texture(*sheet.tex);
     deinit(*sheet.rects);
 }
 
@@ -32,7 +35,7 @@ init_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_wid
     success, sheet_def := json_parse_string(json_string, SpritesheetDef ,,temp);
     assert(success);
     
-    init_texture_from_path(*sheet.texture, full_path_png);
+    init_texture_from_path(*sheet.tex, full_path_png);
     for sheet_def.rects table_add(*sheet.rects, it.name, it.rect);
 }
 
@@ -108,8 +111,8 @@ generate_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max
     sheet_height := y_offset + max_row_height;
 
     pixel_count := sheet_width * sheet_height * 4;
-    assert(sheet.texture.pixels.data == null);
-    array_resize(*sheet.texture.pixels, pixel_count);
+    assert(sheet.tex.pixels.data == null);
+    array_resize(*sheet.tex.pixels, pixel_count);
 
     x_offset = 0; 
     y_offset = 0;
@@ -130,10 +133,10 @@ generate_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max
                 //img_idx := ((image.height - 1 - y) * image.width + x) * 4;
                 img_idx := (y * image.width + x) * 4;
                 if sprite_idx < pixel_count && img_idx < image.width * image.height * 4 {
-                    sheet.texture.pixels[sprite_idx] = image.pixels[img_idx];         //R
-                    sheet.texture.pixels[sprite_idx + 1] = image.pixels[img_idx + 1]; //G
-                    sheet.texture.pixels[sprite_idx + 2] = image.pixels[img_idx + 2]; //B
-                    sheet.texture.pixels[sprite_idx + 3] = image.pixels[img_idx + 3]; //A
+                    sheet.tex.pixels[sprite_idx] = image.pixels[img_idx];         //R
+                    sheet.tex.pixels[sprite_idx + 1] = image.pixels[img_idx + 1]; //G
+                    sheet.tex.pixels[sprite_idx + 2] = image.pixels[img_idx + 2]; //B
+                    sheet.tex.pixels[sprite_idx + 3] = image.pixels[img_idx + 3]; //A
                 }
             }
         }
@@ -151,16 +154,16 @@ generate_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max
         max_row_height = max(max_row_height, image.height);
     }
 
-    sheet.texture.height   = xx sheet_height;
-    sheet.texture.width    = xx sheet_width;
-    sheet.texture.channels = 4;
+    sheet.tex.height   = xx sheet_height;
+    sheet.tex.width    = xx sheet_width;
+    sheet.tex.channels = 4;
 
     full_path_png  := join(dst_path, "/", sheet_name, ".png" ,,temp);
     full_path_json := join(dst_path, "/", sheet_name, ".json" ,,temp);
 
-    upload_texture_to_gpu(*sheet.texture);
-    flip_pixels(sheet.texture.pixels.data, sheet_width, sheet_height ,,temp);
-    stbi_write_png(to_c_string(full_path_png ,,temp), sheet_width, sheet_height, 4, sheet.texture.pixels.data, sheet_width * 4);
+    upload_texture_to_gpu(*sheet.tex);
+    flip_pixels(sheet.tex.pixels.data, sheet_width, sheet_height ,,temp);
+    stbi_write_png(to_c_string(full_path_png ,,temp), sheet_width, sheet_height, 4, sheet.tex.pixels.data, sheet_width * 4);
     string_sheet := json_write_string(sheet_def ,,temp);
     write_entire_file(full_path_json, string_sheet);
 }

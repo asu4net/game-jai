@@ -1,6 +1,9 @@
 MAX_ENTITY_ARRAYS :: 30;
 DEF_ENTITY_ARRAY_CAPACITY :: 100;
 
+// #TODO_asuarez
+// Think about how allocate the strings and the entity children handles. 
+
 Entity_Array :: struct($TEntity: Type = Entity) {
     #assert(is_entity(TEntity));
     data         : [] TEntity;
@@ -23,7 +26,7 @@ entity_array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 
     sparse_init(*array.used_ids, capacity);
     queue_init(*array.free_ids, capacity + 1);
     for i : 0..capacity-1 queue_push_back(*array.free_ids, cast(u32) i);
-    queue_pop_front(*array.free_ids); // Pop the invalid id [0]
+    queue_pop_front(*array.free_ids); // Pop the invalid id [0].
     array.capacity = capacity;
 }
 

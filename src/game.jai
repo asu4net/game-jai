@@ -11,7 +11,7 @@ Sprite :: struct {
     visible  : bool;
     tint     : Vector4;
     rect     : Rect;
-    item   : string;
+    item     : string;
     tiling   : Vector2;
     flip_x   : bool;
     flip_y   : bool;
@@ -115,7 +115,7 @@ main :: () {
             e := (*entities_2d.data[i]).(*Entity2D);
             if !entity_global_enabled(e) then continue;
 
-            tex   := ifx e.item.count > 0 then *sheet.texture else null;
+            tex   := ifx e.item.count > 0 then *sheet.tex else null;
             flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
 
             // try find the item
