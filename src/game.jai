@@ -30,7 +30,7 @@ Entity2D :: struct {
 }
 
 main :: () {
-
+    
     defer report_memory_leaks();
 
     path := path_strip_filename(get_path_of_running_executable());
@@ -164,6 +164,7 @@ main :: () {
 
 #scope_file
 
+// Modules
 #import "Basic"()(MEMORY_DEBUGGER=true);
 #import "System";
 #import "Compiler";
@@ -173,6 +174,7 @@ main :: () {
 #import "File";
 #import "File_Utilities";
 
+// Vendor Modules
 #import "SDL";
 #import "GL" (DUMP_GL_ERRORS = true);
 #import "stb_image";
@@ -180,6 +182,7 @@ main :: () {
 #import "stb_image_write";
 #import "Jaison";
 
+// Core
 #load "core/constants.jai";
 #load "core/math.jai";
 #load "core/window.jai";
@@ -187,9 +190,11 @@ main :: () {
 #load "core/sparse_set.jai";
 #load "core/sdl.jai";
 
+// Entity
 #load "entity/entity_array.jai";
 #load "entity/entity.jai";
 
+// Graphics
 #load "graphics/constants.jai";
 #load "graphics/draw_2d.jai";
 #load "graphics/api.jai";
@@ -214,32 +219,4 @@ main :: () {
 - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
 - Picking
 - Sistema de iluminación: Ambient y Point lights
-
-Spritesheet :: struct {
-    textures:   Bucket_Array(*Texture, 8);
-    frames:     Bucket_Array(Animation_Frame, 64);
-    animations: Bucket_Array(Animation, 64);
-    sprites:    Bucket_Array(Sprite, 16);
-    index: struct {
-        frames:     Table(string, *Animation_Frame);
-        animations: Table(string, *Animation);
-        sprites:    Table(string, *Sprite);
-    }
-}
-
-Animation_Frame :: struct {
-    id: string;
-    rect: UV_Rect;
-    texture: *Texture;  @NoSerialize
-}
-Animation :: struct {
-    id: string;
-    frame_rate: int;  // in ticks per frame
-    frames: [] Animation_Frame;
-}
-Sprite :: struct {
-    id: string;
-    animations: [#run enum_highest_value(Direction)+1] *Animation;  // n w s e nw sw se ne
-}
-
 */

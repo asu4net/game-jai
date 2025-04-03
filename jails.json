@@ -3,7 +3,7 @@
         "modules"
     ],
     "roots": [
-        "src/first.jai"
+        "src/game.jai"
     ],
     "build_root": "compile.jai"
 }
