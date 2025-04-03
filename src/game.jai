@@ -43,7 +43,7 @@ main :: () {
 
     init(window);
     defer deinit(window);
-    
+
     init(draw_2d);
     defer deinit(draw_2d);
 

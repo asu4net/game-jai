@@ -37,7 +37,7 @@ entity_exists :: (entity : *Entity) -> bool {
     assert(entity != null);
     array := entity_array_get_unsafe(entity.slot); 
     if array == null then return false;
-    return sparse_test(*array.used_ids, entity.id);   
+    return test(*array.used_ids, entity.id);   
 }
 
 entity_valid :: (entity : *Entity) -> bool {
@@ -60,8 +60,8 @@ entity_create :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
     array := base_array.(*Entity_Array(TEntity));
 
     assert(array.used_ids.count <= array.capacity);
-    id := queue_pop_front(*array.free_ids);
-    index := sparse_insert(*array.used_ids, id);
+    id := pop_front(*array.free_ids);
+    index := insert_id(*array.used_ids, id);
     entity := *array.data[index];
     entity.tag = copy_string(tag);
 
@@ -106,11 +106,11 @@ clean_destroyed_entities :: () {
     for array : entity_arrays {
         for _, entity_id : array.to_clean {
             
-            entity_index := sparse_search(*array.used_ids, entity_id);
+            entity_index := search(*array.used_ids, entity_id);
             assert(entity_index != 0);
             entity := array.data[entity_index];
-            queue_push_back(*array.free_ids, entity_id);
-            deleted, last := sparse_remove(*array.used_ids, entity_id);
+            push_back(*array.free_ids, entity_id);
+            deleted, last := remove_id(*array.used_ids, entity_id);
             
             if deleted != last {
                 array.data[deleted] = array.data[last];
@@ -138,9 +138,9 @@ entity_resolve_ref :: (ref : *Entity_Ref) -> *Entity {
 
     if ref.id == 0 then return null;
 
-    exists := sparse_test(*array.used_ids, ref.id);
+    exists := test(*array.used_ids, ref.id);
     if !exists then return null;
-    index := sparse_search(*array.used_ids, ref.id);
+    index := search(*array.used_ids, ref.id);
     return *array.data[index];
 }
 

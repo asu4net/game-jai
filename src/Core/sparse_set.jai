@@ -9,14 +9,14 @@ Sparse_Set :: struct {
     capacity : u32;        
 }
 
-sparse_initialized :: (sparse_set : *Sparse_Set) -> bool {
-    using sparse_set;
+initialized :: (s : *Sparse_Set) -> bool {
+    using s;
     return sparse.data != null && dense.data != null && capacity > 0;
 }
 
-sparse_init :: (sparse_set : *Sparse_Set, cap : u32) {
-    using sparse_set;
-    assert(!sparse_initialized(sparse_set));
+init :: (s : *Sparse_Set, cap : u32) {
+    using s;
+    assert(!initialized(s));
     capacity = cap + 1; //zero represents the invalid value
     sparse = NewArray(capacity, u32);
     dense  = NewArray(capacity, u32);
@@ -24,40 +24,40 @@ sparse_init :: (sparse_set : *Sparse_Set, cap : u32) {
     memset(sparse.data, 0, capacity * size_of(u32));
 }
 
-sparse_deinit :: (sparse_set : *Sparse_Set) {
-    assert(sparse_initialized(sparse_set));
-    using sparse_set;
+deinit :: (s : *Sparse_Set) {
+    assert(initialized(s));
+    using s;
     free(sparse.data);
     free(dense.data);
-    sparse_set.* = .{};
+    s.* = .{};
 }
 
-sparse_test :: (sparse_set : *Sparse_Set, element : u32) -> bool {
-    using sparse_set;
-    assert(sparse_initialized(sparse_set));
+test :: (s : *Sparse_Set, element : u32) -> bool {
+    using s;
+    assert(initialized(s));
     return element < capacity && sparse[element] < count + 1 && sparse[element] != 0;
 }
 
-sparse_search :: (sparse_set : *Sparse_Set, element : u32) -> u32 {
-    using sparse_set;
-    assert(sparse_initialized(sparse_set) && element != 0);
-    assert(sparse_test(sparse_set, element));
+search :: (s : *Sparse_Set, element : u32) -> u32 {
+    using s;
+    assert(initialized(s) && element != 0);
+    assert(test(s, element));
     dense_index := sparse[element];
     return dense_index;
 }
 
-sparse_is_full :: (sparse_set : *Sparse_Set) -> bool {
-    using sparse_set;
-    assert(sparse_initialized(sparse_set));
+is_full :: (s : *Sparse_Set) -> bool {
+    using s;
+    assert(initialized(s));
     assert(count <= capacity);
     return count == capacity;
 }
 
-sparse_insert :: (sparse_set : *Sparse_Set, element : u32) -> u32 {
-    using sparse_set;
-    assert(sparse_initialized(sparse_set));
-    assert(element < capacity && !sparse_test(sparse_set, element));
-    assert(!sparse_is_full(sparse_set));
+insert_id :: (s : *Sparse_Set, element : u32) -> u32 {
+    using s;
+    assert(initialized(s));
+    assert(element < capacity && !test(s, element));
+    assert(!is_full(s));
     next_slot := count + 1;
     sparse[element] = next_slot;
     dense[next_slot] = element;
@@ -65,10 +65,10 @@ sparse_insert :: (sparse_set : *Sparse_Set, element : u32) -> u32 {
     return next_slot;
 }
 
-sparse_remove :: (sparse_set : *Sparse_Set, element : u32) -> u32, u32 {
-    using sparse_set;
-    assert(sparse_initialized(sparse_set));
-    assert(element < capacity && sparse_test(sparse_set, element));
+remove_id :: (s : *Sparse_Set, element : u32) -> u32, u32 {
+    using s;
+    assert(initialized(s));
+    assert(element < capacity && test(s, element));
     
     deleted := sparse[element];
     last    := count - 1;
@@ -86,7 +86,7 @@ sparse_remove :: (sparse_set : *Sparse_Set, element : u32) -> u32, u32 {
 }
 
 Sparse_Array :: struct {
-    using sparse_set : Sparse_Set;
+    using s : Sparse_Set;
     
 }
 

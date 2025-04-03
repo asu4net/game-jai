@@ -23,10 +23,10 @@ entity_array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 
     array.data = NewArray(capacity, TEntity);
     array.type = TEntity;
     array.slot = slot;
-    sparse_init(*array.used_ids, capacity);
-    queue_init(*array.free_ids, capacity + 1);
-    for i : 0..capacity-1 queue_push_back(*array.free_ids, cast(u32) i);
-    queue_pop_front(*array.free_ids); // Pop the invalid id [0].
+    init(*array.used_ids, capacity);
+    init(*array.free_ids, capacity + 1);
+    for i : 0..capacity-1 push_back(*array.free_ids, cast(u32) i);
+    pop_front(*array.free_ids); // Pop the invalid id [0].
     array.capacity = capacity;
 }
 
@@ -34,8 +34,8 @@ entity_array_deinit :: (array: *Entity_Array) {
     assert(array != null);
     entity_array_remove(array.slot);
     free(array.data.data);
-    sparse_deinit(*array.used_ids);
-    queue_deinit(*array.free_ids);
+    deinit(*array.used_ids);
+    deinit(*array.free_ids);
     deinit(*array.to_serialize);
     array.* = .{};
 }
