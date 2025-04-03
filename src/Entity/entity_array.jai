@@ -17,9 +17,9 @@ Entity_Array :: struct($TEntity: Type = Entity) {
     to_serialize : Table(string, Entity_ID);
 }
 
-entity_array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 = DEF_ENTITY_ARRAY_CAPACITY) {
-    assert(array && !entity_array_initialized(array));
-    entity_array_add(array.(*Entity_Array(Entity)), slot, capacity);
+array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 = DEF_ENTITY_ARRAY_CAPACITY) {
+    assert(array && !array_initialized(array));
+    array_add(array.(*Entity_Array(Entity)), slot, capacity);
     array.data = NewArray(capacity, TEntity);
     array.type = TEntity;
     array.slot = slot;
@@ -30,9 +30,9 @@ entity_array_init :: (array: *Entity_Array($TEntity), slot : u32, capacity: u32 
     array.capacity = capacity;
 }
 
-entity_array_deinit :: (array: *Entity_Array) {
+array_deinit :: (array: *Entity_Array) {
     assert(array != null);
-    entity_array_remove(array.slot);
+    array_remove(array.slot);
     free(array.data.data);
     deinit(*array.used_ids);
     deinit(*array.free_ids);
@@ -40,38 +40,38 @@ entity_array_deinit :: (array: *Entity_Array) {
     array.* = .{};
 }
 
-entity_array_get :: (entity : *Entity) -> *Entity_Array(Entity) {
+array_get :: (entity : *Entity) -> *Entity_Array(Entity) {
     assert(entity != null);
-    array := entity_array_get(entity.slot);
-    assert(entity_array_initialized(array)); 
+    array := array_get(entity.slot);
+    assert(array_initialized(array)); 
     return array;
 }
 
-entity_array_get_unsafe :: (slot : u32) -> *Entity_Array(Entity) {
+array_get_unsafe :: (slot : u32) -> *Entity_Array(Entity) {
     assert(slot < MAX_ENTITY_ARRAYS);
-    return entity_arrays[slot];
+    return arrays[slot];
 }
 
-entity_array_get :: (slot : u32) -> *Entity_Array(Entity) {
-    assert(entity_array_count > 0 && slot < entity_array_count);
-    array := entity_array_get_unsafe(slot);
+array_get :: (slot : u32) -> *Entity_Array(Entity) {
+    assert(array_count > 0 && slot < array_count);
+    array := array_get_unsafe(slot);
     assert(array != null);
-    return xx entity_arrays[slot];
+    return xx arrays[slot];
 }
 
-entity_arrays: [MAX_ENTITY_ARRAYS] *Entity_Array;
-entity_array_count: u32;
+arrays: [MAX_ENTITY_ARRAYS] *Entity_Array;
+array_count: u32;
 
-entity_array_add :: (array : *Entity_Array, slot : u32, capacity : u32) {
+array_add :: (array : *Entity_Array, slot : u32, capacity : u32) {
     assert(array != null);
-    assert(entity_array_count < MAX_ENTITY_ARRAYS); //Tío si has llegado aquí, lo estás haciendo raro.
-    assert(entity_arrays[slot] == null);
-    entity_arrays[slot] = array;
-    entity_array_count += 1;
+    assert(array_count < MAX_ENTITY_ARRAYS); //Tío si has llegado aquí, lo estás haciendo raro.
+    assert(arrays[slot] == null);
+    arrays[slot] = array;
+    array_count += 1;
 }
 
-entity_array_remove :: (slot : u32) {
-    current := entity_array_get(slot);
-    entity_arrays[slot] = null;
-    entity_array_count -= 1;
+array_remove :: (slot : u32) {
+    current := array_get(slot);
+    arrays[slot] = null;
+    array_count -= 1;
 }
