@@ -33,6 +33,11 @@ can_finish :: () -> bool {
     return state.window_count == 0;
 }
 
+//#TODO_asuarez Should I create a sdl function in order to poll the events..?
+// Call this the graphics context.
+
+//#REVIEW_asuarez Why the fuck this is a macro?
+
 InitializeSDL :: () #expand {
 
     `state := *context.sdl;

@@ -45,8 +45,8 @@ init :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync
 
     gl_load(*gl, SDL_GL_GetProcAddress);
 
-    log ("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
-    log ("GL Version = %\n", to_string(glGetString(GL_VERSION)));
+    log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
+    log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
 
     window.initialized = true;
     window.keep_opened = true;
