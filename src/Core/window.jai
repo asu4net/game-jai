@@ -6,6 +6,14 @@ Window :: struct {
     height      : s32;
     initialized : bool;
     keep_opened : bool;
+    
+    //#REVIEW_asuarez I don't like this being part of the window struct.
+    // Maybe I should remove SDL events from here..?
+    // Detach this completly from the window class mybe it is a good idea. 
+    #if IMGUI {
+        imgui_ctx : *ImGui.ImGuiContext;
+        show_demo_window := true;
+    }
 }
 
 init :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync := true) -> bool {
@@ -27,11 +35,10 @@ init :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync
     window.width  = xx width;
     window.height = xx height;
 
-
     window.gl_context = SDL_GL_CreateContext(window.handle);
 
     if window.gl_context == null {
-        log("Could not create OpenGL context: %\n", to_string(SDL_GetError()));
+        log_error("Could not create OpenGL context: %\n", to_string(SDL_GetError()));
         assert(false);
         return false;
     }
@@ -43,6 +50,12 @@ init :: (window : *Window, title := "Game", width := 1280, height := 720, v_sync
 
     window.initialized = true;
     window.keep_opened = true;
+
+    #if IMGUI {
+        imgui_context := ImGui.CreateContext();
+        io := ImGui.GetIO();
+        io.ConfigFlags_ |= ImGui.ConfigFlags.DockingEnable;
+    }
 
     return true;
 }
@@ -66,8 +79,44 @@ keep_window_opened :: (window : *Window) -> bool {
     return window.keep_opened;
 }
 
+draw_imgui :: (window : *Window) {
+    assert(is_window_init(window));
+    
+    #if IMGUI {
+
+        ImGui_ImplSdl_NewFrame(window.handle);
+        ImGui.NewFrame();    
+
+        if ImGui.GetMouseCursor() == {
+            case .Arrow;         SDL_SetCursor(cursor_arrow);
+            case .TextInput;     SDL_SetCursor(cursor_text_input);
+            case .Hand;          SDL_SetCursor(cursor_move);
+            case .ResizeNS;      SDL_SetCursor(cursor_resize_ns);
+            case .ResizeEW;      SDL_SetCursor(cursor_resize_ew);
+            case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
+            case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
+        }
+    
+        // 3. Show the ImGui demo window. Most of the sample code is in ImGui.ShowDemoWindow().
+        if window.show_demo_window {
+            ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0}); // Normally user code doesn't need/want to call this because positions are saved in .ini file anyway. Here we just want to make the demo initial state a bit more friendly!
+            ImGui.ShowDemoWindow(*window.show_demo_window);
+        }
+
+        // Rendering
+        ImGui.Render();
+        ImGui_ImplSdl_RenderDrawLists(ImGui.GetDrawData());
+    }
+}
+
 deinit :: (window : *Window) {
     assert(is_window_init(window));
+    
+    #if IMGUI {
+        ImGui_ImplSdl_Shutdown();
+        ImGui.DestroyContext(window.imgui_ctx);
+    }
+    
     destroy_sdl_window(window);
     window.* = .{};
 }
@@ -78,6 +127,7 @@ poll_events :: (window : *Window) {
     assert(is_window_init(window));
     event : SDL_Event;
     while SDL_PollEvent(*event) {
+        ImGui_ImplSdl_ProcessEvent(*event);
         if event.type == {
             case SDL_KEYUP;
                 if event.key.keysym.sym == SDLK_ESCAPE window.keep_opened = false;

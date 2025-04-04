@@ -23,6 +23,7 @@ compile :: () {
     set_optimization(*target_options, .DEBUG);
     set_build_options(target_options, w);
     add_build_file(join(#filepath, BUILD_FILE), w);
+    add_build_string("IMGUI   :: true;", w);
     add_build_string("DEBUG   :: true;", w);
     add_build_string("RELEASE :: false;", w);
     add_build_string("DIST    :: false;", w);

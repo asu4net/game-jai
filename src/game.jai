@@ -46,7 +46,7 @@ main :: () {
 
     init(draw_2d);
     defer deinit(draw_2d);
-
+    
     init(alien, "assets/images/alien.png", mag = .LINEAR, min = .LINEAR);    
     defer deinit(alien);
 
@@ -123,45 +123,17 @@ main :: () {
                 rect, found := table_find(*sheet.rects, e.item);
                 e.rect = ifx found then rect;
             }
-
+            
             draw_quad(e.pos, e.ang, e.scl, tex, e.tiling, e.size, e.blend, e.rect, e.tint, e.id, flags);
         }
+
+        draw_2d_end();
+
+        draw_imgui(window);
         
-        draw_2d_end();
-
-        /*
-        draw_2d_begin(.{window.width, window.height});
-        {
-            {
-                rect, found := table_find(*sheet.rects, "player");
-
-                if found then {
-                    draw_quad(pos = UP_2D, texture = *sheet.texture, flags = .USE_item | .AUTOSIZE, rect = rect);
-                }
-            }
-            
-            draw_quad(sca = .{1, -1}, texture = *font.atlas);
-            draw_quad(pos = LEFT_2D, texture = *sheet.texture); 
-            draw_text(pos = DOWN_2D * 0.5, text = "Habemos texto", font, 0.125, tint = LIGHT_GREEN);
-            draw_circle(pos = RIGHT_2D, tint = LIGHT_BLUE);
-            
-            {
-                rect, found := table_find(*sheet.rects, "alien");
-
-                if found then {
-                    draw_gui_quad(pos = .{ 300, 300 }, texture = *sheet.texture, flags = .USE_item, rect = rect);
-                }
-
-                draw_gui_text(pos = .{ 100, 100 }, font=font, text= "Some gui text!");
-            }
-        }
-        draw_2d_end();
-        */
         reset_temporary_storage();
     }
 }
-
-#scope_file
 
 // Modules
 #import "Basic"()(MEMORY_DEBUGGER=true);
@@ -180,6 +152,7 @@ main :: () {
 #import "stb_truetype";
 #import "stb_image_write";
 #import "Jaison";
+ImGui :: #import "ImGui";
 
 // Core
 #load "core/constants.jai";
@@ -188,6 +161,7 @@ main :: () {
 #load "core/queue.jai";
 #load "core/sparse_set.jai";
 #load "core/sdl.jai";
+#load "core/imgui_sdl_gl.jai";
 
 // Entity
 #load "entity/entity_array.jai";
