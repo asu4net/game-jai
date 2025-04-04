@@ -11,13 +11,13 @@ Entity_Flag :: enum_flags u16 {
 Entity_Ref :: struct {
     tag   : string;
     slot  : u32;
-    id    : Entity_ID;
+    id    : Entity_ID; @JsonIgnore
 }
 
 Entity :: struct {
     tag      : string;
     flags    : Entity_Flag;
-    id       : Entity_ID;
+    id       : Entity_ID; @JsonIgnore
     slot     : u32;
     parent   : Entity_Ref;
     children : [..] Entity_Ref; 
@@ -55,10 +55,19 @@ is_enabled :: (entity : *Entity) -> bool {
     return is_local_enabled(entity) && (.ENABLED & entity.flags).(bool);   
 }
 
+create_entity :: ($TEntity : Type, json : string) -> *TEntity {
+    success, e := json_parse_string(json, TEntity ,,temp);
+    if !success {
+        log_error("Entity could not be created!");
+        return null;
+    }
+
+    return clone_entity(TEntity, *e); 
+}
+
 create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
     base_array := entity_array_get(slot);
     array := base_array.(*Entity_Array(TEntity));
-
     assert(array.used_ids.count <= array.capacity);
     id := pop_front(*array.free_ids);
     index := insert_id(*array.used_ids, id);
@@ -150,8 +159,9 @@ make_ref :: (entity : *Entity) -> Entity_Ref {
     };
 }
 
-clone :: ($TEntity : Type, template : *Entity) -> *Entity {
-    assert(is_not_destroyed(template));
+clone_entity :: ($TEntity : Type, template : *TEntity) -> *TEntity {
+    //#REVIEW_asuarez Does it really matter if the entity we want to clone is destroyed?
+    //assert(is_not_destroyed(template));
     entity := create_entity(TEntity, template.slot, template.tag);
     id := entity.id;
     entity.* = template.*;
@@ -160,7 +170,7 @@ clone :: ($TEntity : Type, template : *Entity) -> *Entity {
     array_reset(*entity.children);
     
     for child : template.children {
-        cloned_child := clone(TEntity, resolve_ref(*child));
+        cloned_child := clone_entity(TEntity, xx resolve_ref(*child));
         set_parent(cloned_child, entity);
     }
 

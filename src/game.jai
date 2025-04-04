@@ -63,47 +63,14 @@ main :: () {
     index := init(*entities_2d, 0);
     defer deinit(*entities_2d);
 
-    {
-        a := create_entity(Entity2D);
-        a.pos = UP_2D;
-        a.visible = true;
-        a.tint = WHITE;
-        a.scl = ONE_2D;
-        a.item = "player"; 
-        a.blend = .ALPHA;
-        a.size = ONE_2D;
-    }
+    json_entity := read_entire_file("assets/entity.json", ,,temp);
+    e := create_entity(Entity2D, json_entity);
 
     {
-        a := create_entity(Entity2D);
-        a.visible = true;
-        a.tint = WHITE;
-        a.scl = ONE_2D;
-        a.item = "alien"; 
-        a.blend = .ALPHA;
-        a.size = ONE_2D;
+        //string_sheet := json_write_string(a ,,temp);
+        //write_entire_file("assets/entity.json", string_sheet);
     }
 
-    {
-        a := create_entity(Entity2D);
-        a.pos = RIGHT_2D;
-        a.visible = true;
-        a.tint = WHITE;
-        a.scl = ONE_2D;
-        a.item = "kazmikaze_saw"; 
-        a.blend = .ALPHA;
-        a.size = ONE_2D;
-    }
-
-    {
-        a := create_entity(Entity2D);
-        a.pos = DOWN_2D;
-        a.visible = true;
-        a.tint = WHITE;
-        a.scl = ONE_2D;
-        a.blend = .ALPHA;
-        a.size = ONE_2D;
-    }
 
     while keep_window_opened(window) {
         
@@ -113,7 +80,7 @@ main :: () {
         for i : 1..entities_2d.used_ids.count {
             
             e := (*entities_2d.data[i]).(*Entity2D);
-            if !is_enabled(e) then continue;
+            if !is_enabled(e) || !e.visible then continue;
 
             tex   := ifx e.item.count > 0 then *sheet.tex else null;
             flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
