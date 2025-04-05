@@ -78,26 +78,26 @@ Draw2D_Settings :: struct {
 }
 
 Draw2D_Context :: struct {
-    white_texture        : Texture;
-    texture_slots        : [MAX_TEXTURE_SLOTS] s32;
-    textures_to_bind     : [MAX_TEXTURE_SLOTS]*Texture;
-    last_texture_slot    : s32;
-    camera               : RenderCamera;
-    curr_blend        : Blend;
-    curr_primitive       : Primitive_Type;
-    initialized          : bool;
-    started_batch        : bool;
-    gui_width            : float;
-    gui_height           : float; 
+    white_texture    : Texture;
+    tex_slots        : [MAX_TEXTURE_SLOTS] s32;
+    textures_to_bind : [MAX_TEXTURE_SLOTS]*Texture;
+    last_tex_slot    : s32;
+    camera           : RenderCamera;
+    curr_blend       : Blend;
+    curr_primitive   : Primitive_Type;
+    initialized      : bool;
+    started_batch    : bool;
+    gui_width        : float;
+    gui_height       : float; 
     
     // Quad
-    quad_ibo             : Index_Buffer;
-    quad_vao             : Vertex_Array;
-    quad_vbo             : Vertex_Buffer;
-    quad_batch           : [] Quad_Vertex;
-    quad_count           : u32;
-    quad_index_count     : u32;
-    quad_shader          : Shader;
+    quad_ibo         : Index_Buffer;
+    quad_vao         : Vertex_Array;
+    quad_vbo         : Vertex_Buffer;
+    quad_batch       : [] Quad_Vertex;
+    quad_count       : u32;
+    quad_index_count : u32;
+    quad_shader      : Shader;
     
     // Circle
     circle_vao         : Vertex_Array;
@@ -126,10 +126,10 @@ init_draw_2d :: () {
     init_white_texture(*state.white_texture);
 
     state.textures_to_bind[Default_Texture_Slots.WHITE] = *state.white_texture;
-    state.last_texture_slot = xx Default_Texture_Slots.COUNT;
+    state.last_tex_slot = xx Default_Texture_Slots.COUNT;
 
     for i : 0..MAX_TEXTURE_SLOTS - 1 {
-        state.texture_slots[i] = xx i;
+        state.tex_slots[i] = xx i;
     }
 
     init(*state.quad_shader, .QUAD);
@@ -273,7 +273,7 @@ draw_quad :: (
     
     for *vertex_positions it.* = make_transform(pos, ang, scl) * it.*;
     
-    slot := assign_texture_slot(tex);
+    slot := assign_tex_slot(tex);
 
     for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
         state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
@@ -330,7 +330,7 @@ draw_text :: (
 
         for *vertex_positions it.* = make_transform(pos, ang, scl) * it.*;
 
-        slot := assign_texture_slot(*font.atlas);
+        slot := assign_tex_slot(*font.atlas);
 
         for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
             state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
@@ -439,7 +439,7 @@ draw_gui_quad :: (
     transform := make_transform(pos * coef, ang, scl);
     for *vertex_positions it.* = transform * it.*;
     
-    slot := assign_texture_slot(tex);
+    slot := assign_tex_slot(tex);
 
     for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
         state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
@@ -497,7 +497,7 @@ draw_gui_text :: (
         vertex_uvs[2] = .{ d.s1, d.t0 };
         vertex_uvs[3] = .{ d.s0, d.t0 };
         
-        slot := assign_texture_slot(*font.atlas);
+        slot := assign_tex_slot(*font.atlas);
 
         for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
             state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
@@ -540,36 +540,36 @@ Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _camera_mode : Rende
     }
 }
 
-assign_texture_slot :: (texture : *Texture) -> (texture_slot : s32) {
+assign_tex_slot :: (texture : *Texture) -> (tex_slot : s32) {
 
     Draw2DStateHeader();
 
-    texture_slot : s32 = xx Default_Texture_Slots.WHITE;
+    tex_slot : s32 = xx Default_Texture_Slots.WHITE;
     if texture == null {
-        return texture_slot;
+        return tex_slot;
     }
 
-    for i : 0..state.last_texture_slot - 1{
+    for i : 0..state.last_tex_slot - 1{
         if state.textures_to_bind[i].id == texture.id {
-            texture_slot = i;
+            tex_slot = i;
             break;
         }
     }
-    if texture_slot == 0 {
-        if state.last_texture_slot > MAX_TEXTURE_SLOTS {
+    if tex_slot == 0 {
+        if state.last_tex_slot > MAX_TEXTURE_SLOTS {
             next_batch();
         }
-        state.textures_to_bind[state.last_texture_slot] = texture;
-        texture_slot = state.last_texture_slot;
-        state.last_texture_slot += 1;
+        state.textures_to_bind[state.last_tex_slot] = texture;
+        tex_slot = state.last_tex_slot;
+        state.last_tex_slot += 1;
     }
-    return texture_slot;
+    return tex_slot;
 }
 
 start_batch :: () {
     Draw2DStateHeader();
-    state.last_texture_slot  = xx Default_Texture_Slots.COUNT;
-    state.curr_blend      = .NONE;
+    state.last_tex_slot      = xx Default_Texture_Slots.COUNT;
+    state.curr_blend         = .NONE;
     state.curr_primitive     = .NONE;
     state.camera.mode        = .NONE;
     state.quad_count         = 0;
@@ -593,11 +593,11 @@ flush :: () {
     if state.curr_primitive == {
         
         case .QUAD; {         
-            for i : 0..state.last_texture_slot - 1 {
+            for i : 0..state.last_tex_slot - 1 {
                 bind(state.textures_to_bind[i], xx i);
             }
             bind(*state.quad_shader);
-            set_constant_sampler2d(*state.quad_shader, "u_Textures[0]", state.texture_slots, MAX_TEXTURE_SLOTS);
+            set_constant_sampler2d(*state.quad_shader, "u_Textures[0]", state.tex_slots, MAX_TEXTURE_SLOTS);
             set_constant_matrix4(*state.quad_shader, "u_ProjectionView", state.camera.pv_matrix);
             set_vertex_buffer_data(*state.quad_vbo, *state.quad_batch[0], xx (size_of(Quad_Vertex) * VERTICES_PER_2D_PRIMITIVE * state.quad_count));
             draw_elements(*state.quad_vao, state.quad_index_count);

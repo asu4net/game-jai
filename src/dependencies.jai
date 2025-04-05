@@ -43,7 +43,7 @@
 // Graphics
 #load "graphics/window.jai";
 #load "graphics/constants.jai";
-#load "graphics/draw_2d.jai";
+#load "graphics/draw2d.jai";
 #load "graphics/api.jai";
 #load "graphics/buffer_object.jai";
 #load "graphics/shader.jai";
