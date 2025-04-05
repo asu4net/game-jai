@@ -1,9 +1,0 @@
-{
-    "local_modules": [
-        "modules"
-    ],
-    "roots": [
-        "src/game.jai"
-    ],
-    "build_root": "compile.jai"
-}
