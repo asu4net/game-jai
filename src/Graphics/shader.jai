@@ -56,8 +56,6 @@ set_constant_int :: (using shader : *Shader, name : string, value : s32) {
     glUniform1i(location, value);
 }
 
-#scope_file
-
 QUAD_SHADER_SOURCE :: #string SCOPE
     #ifdef VERTEX_SHADER        
     layout(location = 0) in vec4 a_Position;

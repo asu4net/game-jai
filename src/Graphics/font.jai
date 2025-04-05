@@ -107,5 +107,3 @@ deinit :: (font : *Font) {
     deinit(*font.glyphs);
     font.* = .{};
 }
-
-#scope_file

@@ -13,14 +13,12 @@ init_imgui :: () {
     ctx = ImGui.CreateContext();
     
     io := ImGui.GetIO();
-    
-    //#REVIEW this font looks ugly for some reason
-    /*
-    FONT_LOCATION :: "assets/fonts/AlbertSans-VariableFont_wght.ttf";
+        
+    FONT_LOCATION :: "assets/fonts/OpenSans-BoldItalic.ttf";
     FONT_SIZE     :: 20;
 
     if file_exists(FONT_LOCATION) then io.Fonts.AddFontFromFileTTF(io.Fonts, FONT_LOCATION, FONT_SIZE);
-    */
+    
 
     io.ConfigFlags_ |= .DockingEnable;
     io.ConfigFlags_ |= .ViewportsEnable;

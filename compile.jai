@@ -32,8 +32,6 @@ compile :: () {
     set_build_options_dc(.{do_output=false});
 }
 
-#scope_file
-
 #import "Basic";
 #import "Compiler";
 #import "String";

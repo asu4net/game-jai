@@ -1,5 +1,3 @@
-#scope_file
-
 #run run_debugger();
 
 CONFIG_FILE :: "../bin/debug.rdbg";

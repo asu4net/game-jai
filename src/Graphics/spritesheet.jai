@@ -168,8 +168,6 @@ generate_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max
     write_entire_file(full_path_json, string_sheet);
 }
 
-#scope_file
-
 DEF_SHEET_NAME :: "sheet";
 DEF_ASSET_PATH :: "assets/";
 DEF_MAX_WIDTH  :: cast(s32) 1024;

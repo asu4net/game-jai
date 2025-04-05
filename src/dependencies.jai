@@ -29,6 +29,7 @@
 // Editor
 #if EDITOR then {
     #load "editor/editor.jai";
+    #load "editor/menus/prefab_menu.jai";
 }
 
 #if IMGUI then {
