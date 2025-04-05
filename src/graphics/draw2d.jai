@@ -221,17 +221,17 @@ draw_2d_end :: () {
 }
 
 draw_quad :: (
-    pos       : Vector2  = ZERO_2D,
-    ang       : float32  = 0,
-    scl       : Vector2  = ONE_2D,
-    tex       : *Texture = null,
-    tiling    : Vector2  = ONE_2D,
-    size      : Vector2  = ONE_2D,
-    blend  : Blend = .ALPHA,
-    rect      : Rect     = .{},
-    tint      : Vector4  = WHITE,
-    id : u32      = 0,
-    flags     : QuadFlag = DEFAULT_QUAD_FLAGS
+    pos    : Vector2  = ZERO_2D,
+    ang    : float32  = 0,
+    scl    : Vector2  = ONE_2D,
+    tex    : *Texture = null,
+    tiling : Vector2  = ONE_2D,
+    size   : Vector2  = ONE_2D,
+    blend  : Blend    = .ALPHA,
+    rect   : Rect     = .{},
+    tint   : Vector4  = WHITE,
+    id     : u32      = 0,
+    flags  : QuadFlag = DEFAULT_QUAD_FLAGS
 )
 {
     Draw2DPrimitiveHeader(.QUAD, .ORTHO_WORLD, blend);
@@ -292,9 +292,9 @@ draw_text :: (
     text          : string   = "placeholder!",
     font          : *Font    = null,
     size          : float    = 0.1,
-    blend      : Blend = .ALPHA,
+    blend         : Blend    = .ALPHA,
     tint          : Vector4  = WHITE,
-    id     : u32      = 0
+    id            : u32      = 0
 )
 {
     assert(font != null);
@@ -349,7 +349,7 @@ draw_circle :: (
     thickness : float32  = 0.05,
     fade      : float32  = 0.01,
     tint      : Vector4  = .{ 1, 1, 1, 1 }, 
-    id : u32      = 0
+    id        : u32      = 0
 )
 {
     Draw2DPrimitiveHeader(.CIRCLE, .ORTHO_WORLD, .ALPHA);
