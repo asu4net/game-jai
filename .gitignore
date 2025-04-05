@@ -3,7 +3,6 @@
 **.rdbg
 **.code-workspace
 **.vscode
-**/ols.json
 .build/
-**.spv
 **.ini
+jails.json
