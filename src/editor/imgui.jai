@@ -44,7 +44,7 @@ init_imgui :: () {
     Colors[xx ImGui.Col.Button]             = .{ 0.356, 0.356, 0.416, 1.000 };
 }
 
-begin_imgui_draw :: () {
+draw_imgui :: (draw_proc : () = null) {
     assert(context.window.handle != null);
     
     ImGui_ImplSdl_NewFrame(context.window.handle);
@@ -89,9 +89,9 @@ begin_imgui_draw :: () {
         case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
         case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
     }
-}
 
-end_imgui_draw :: () {
+    draw_proc();
+
     ImGui.End(); // Dockspace Window
     ImGui.Render();
     ImGui_ImplSdl_RenderDrawLists(ImGui.GetDrawData());

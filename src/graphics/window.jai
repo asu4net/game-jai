@@ -38,6 +38,8 @@ init_window :: (name :string = "the window", w: s32 = 1920, h: s32 = 1080) {
     gl_load(*gl, SDL_GL_GetProcAddress);
     log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
+    
+    set_clear_color(DARK_GRAY);
 }
 
 swap_buffers :: () {
