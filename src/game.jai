@@ -1,13 +1,24 @@
+// #TODO_asuarez
+// - texture options for sprite_sheet (maybe could be a struct??)
+// - Optimize the 2d version of make_transform
+// - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
+// - Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
+// - Leer shaders de ficheros
+// - Poder cambiar de shader
+// - Dumpear errores de OpenGL
+// - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
+// - Picking
+// - Sistema de iluminación: Ambient y Point lights
+
 Game :: struct {
     done       : bool;
     window     : *SDL_Window;
     gl_ctx     : SDL_GLContext;
     draw_2d    : Draw2D_Context;
-    viewport_w : s32 = 1280;
-    viewport_h : s32 = 720;
-    
-    #if IMGUI then imgui_ctx : *ImGui.ImGuiContext;
+    viewport_w : s32 = 1920;
+    viewport_h : s32 = 1080;    
 }
+
 #add_context game: Game;
 
 main :: () {
@@ -47,8 +58,8 @@ main :: () {
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
 
     #if IMGUI then {
-        imgui_ctx = create_imgui_context();
-        defer destroy_imgui_context(imgui_ctx);
+        init_imgui();
+        defer deinit_imgui();
     }
 
     init(*draw_2d);
@@ -64,7 +75,7 @@ main :: () {
         
             while SDL_PollEvent(*event) {
                 
-                ImGui_ImplSdl_ProcessEvent(*event);
+                #if IMGUI then process_imgui_sdl_events(*event);
                 
                 if event.type == {
                     case SDL_KEYUP;
@@ -85,9 +96,12 @@ main :: () {
 
         clear_screen();
 
-        #if IMGUI {
-            imgui_begin(window);
-            imgui_end();
+        //#TODO_asuarez Here draw the game
+        
+        #if IMGUI then {
+            begin_imgui_draw(window);
+            draw_editor();
+            end_imgui_draw();
         } 
 
         SDL_GL_SwapWindow(window);
@@ -147,16 +161,3 @@ main :: () {
 #load "graphics/font.jai";
 #load "graphics/render_camera.jai";
 #load "graphics/spritesheet.jai";
-
-// #TODO_asuarez
-// - texture options for sprite_sheet (maybe could be a struct??)
-// - Optimize the 2d version of make_transform
-// - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
-// - Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
-// - Leer shaders de ficheros
-// - Poder cambiar de shader
-// - Dumpear errores de OpenGL
-// - Meter ImGUI
-// - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
-// - Picking
-// - Sistema de iluminación: Ambient y Point lights
