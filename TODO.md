@@ -1,8 +1,8 @@
 # TODO
 
+- Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
 - texture options for sprite_sheet (maybe could be a struct??)
 - Optimize the 2d version of make_transform
-- Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
 - Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
 - Leer shaders de ficheros
 - Poder cambiar de shader
