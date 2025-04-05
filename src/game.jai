@@ -13,15 +13,22 @@ main :: () {
     defer deinit_draw_2d();
     
     #if IMGUI {
+        draw_imgui_proc : IMGUI_DRAW_PROC;
         init_imgui();
         defer deinit_imgui();
+    }
+    
+    #if EDITOR {
+        draw_imgui_proc = draw_editor;
+        init_editor();
+        defer deinit_editor();
     }
 
     while !context.window.done {
         process_window_events();
         clear_screen();
         //#TODO_asuarez draw the game
-        #if IMGUI draw_imgui(draw_editor);
+        #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
         reset_temporary_storage();
     }

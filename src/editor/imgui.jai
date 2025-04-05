@@ -13,7 +13,7 @@ init_imgui :: () {
     ctx = ImGui.CreateContext();
     
     io := ImGui.GetIO();
-        
+
     FONT_LOCATION :: "assets/fonts/OpenSans-BoldItalic.ttf";
     FONT_SIZE     :: 20;
 
@@ -42,7 +42,9 @@ init_imgui :: () {
     Colors[xx ImGui.Col.Button]             = .{ 0.356, 0.356, 0.416, 1.000 };
 }
 
-draw_imgui :: (draw_proc : () = null) {
+IMGUI_DRAW_PROC :: #type ();
+
+draw_imgui :: (draw_proc : IMGUI_DRAW_PROC = null) {
     assert(context.window.handle != null);
     
     ImGui_ImplSdl_NewFrame(context.window.handle);
@@ -87,8 +89,8 @@ draw_imgui :: (draw_proc : () = null) {
         case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
         case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
     }
-
-    draw_proc();
+    
+    if draw_proc draw_proc();
 
     ImGui.End(); // Dockspace Window
     ImGui.Render();

@@ -1,8 +1,9 @@
 #if EDITOR {
 
-MENU_DRAW_PROC :: #type ();
+MENU_DRAW_PROC :: #type (menu : *Menu, name : string);
 
 Menu :: struct {
+    name   : string;
     opened : bool;
     draw   : MENU_DRAW_PROC;
 }
@@ -10,44 +11,46 @@ Menu :: struct {
 add_menu :: (name : string, draw : MENU_DRAW_PROC) {
     using context.editor;
     assert(name.count > 0);
-    table_add(*menus, name, .{ draw = draw });
+    array_add(*menus, .{ name = name, draw = draw });
 }
 
 Editor :: struct {
-    menus : Table(string, Menu);
+    menus : [..] Menu;
 }
 
 #add_context editor : Editor;
 
+ImGuiMenu :: struct {
+    show_demo : bool;
+}
+
 init_editor :: () {
 
+    add_menu("ImGui", (menu : *Menu, name : string) {
+        ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0});
+        ImGui.ShowDemoWindow(*menu.opened);
+    });
+
+    add_prefab_menu();
 }
 
 deinit_editor :: () {
     using context.editor;
-    deinit(*menus);
+    array_reset(*menus);
 }
 
 draw_editor :: () {
     using context.editor;
-    /*  
+
     if ImGui.BeginMenuBar() {
-        if ImGui.BeginMenu("ImGui") {
-            ImGui.Checkbox("Show demo window", *show_demo_window);
-            ImGui.EndMenu();
-        }
-        if ImGui.BeginMenu("Prefabs") {
-            ImGui.Checkbox("Show demo window", *show_demo_window);
-            ImGui.EndMenu();
+        for *menu : menus {
+            if ImGui.BeginMenu(menu.name.data) {
+                if menu.draw menu.draw(menu, menu.name);
+                ImGui.EndMenu();
+            }
         }
         ImGui.EndMenuBar();
-    }
-
-    if show_demo_window {
-        ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0});
-        ImGui.ShowDemoWindow(*show_demo_window);
-    }
-    */
+    } 
 }
 
 } //#if IMGUI
