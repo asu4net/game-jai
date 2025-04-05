@@ -28,7 +28,7 @@ draw_2d_entities :: (scene : *Scene(Entity2D)) {
             
         e := (*scene.entities[i]).(*Entity2D);
         if !is_enabled(e) || !e.visible then continue;
-
+        
         tex   := ifx e.item.count > 0 then *sheet.tex else null;
         flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
 

@@ -6,10 +6,7 @@ Game :: struct {
     viewport_w : s32 = 1280;
     viewport_h : s32 = 720;
     
-    #if IMGUI {
-        imgui_ctx : *ImGui.ImGuiContext;
-        show_demo_window := false;
-    }
+    #if IMGUI then imgui_ctx : *ImGui.ImGuiContext;
 }
 #add_context game: Game;
 
@@ -49,13 +46,9 @@ main :: () {
     log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
 
-    #if IMGUI {
-        imgui_ctx = ImGui.CreateContext();
-        io := ImGui.GetIO();
-        io.ConfigFlags_ |= ImGui.ConfigFlags.DockingEnable;
-
-        defer ImGui.DestroyContext(imgui_ctx);
-        defer ImGui_ImplSdl_Shutdown();
+    #if IMGUI then {
+        imgui_ctx = create_imgui_context();
+        defer destroy_imgui_context(imgui_ctx);
     }
 
     init(*draw_2d);
@@ -93,32 +86,11 @@ main :: () {
         clear_screen();
 
         #if IMGUI {
-
-            ImGui_ImplSdl_NewFrame(window);
-            ImGui.NewFrame();    
-
-            if ImGui.GetMouseCursor() == {
-                case .Arrow;         SDL_SetCursor(cursor_arrow);
-                case .TextInput;     SDL_SetCursor(cursor_text_input);
-                case .Hand;          SDL_SetCursor(cursor_move);
-                case .ResizeNS;      SDL_SetCursor(cursor_resize_ns);
-                case .ResizeEW;      SDL_SetCursor(cursor_resize_ew);
-                case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
-                case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
-            }
-
-            if show_demo_window {
-                ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0});
-                ImGui.ShowDemoWindow(*show_demo_window);
-            }
-
-            // Rendering
-            ImGui.Render();
-            ImGui_ImplSdl_RenderDrawLists(ImGui.GetDrawData());
+            imgui_begin(window);
+            imgui_end();
         } 
 
         SDL_GL_SwapWindow(window);
-
         reset_temporary_storage();
     }
 }
@@ -141,7 +113,9 @@ main :: () {
 #import "stb_image_write";
 #import "Jaison";
 
-#if IMGUI then ImGui :: #import "ImGui";
+#if IMGUI then {
+    ImGui :: #import "ImGui";
+}
 
 // Utils
 #load "utils/constants.jai";
@@ -149,7 +123,15 @@ main :: () {
 #load "utils/queue.jai";
 #load "utils/sparse_set.jai";
 
-#if IMGUI then #load "utils/imgui_sdl_gl.jai";
+// Editor
+#if EDITOR then {
+    #load "editor/editor.jai";
+}
+
+#if IMGUI then {
+    #load "editor/imgui_sdl_gl.jai";
+    #load "editor/imgui.jai";
+}
 
 // Entity
 #load "entity/scene.jai";
@@ -166,17 +148,15 @@ main :: () {
 #load "graphics/render_camera.jai";
 #load "graphics/spritesheet.jai";
 
-//#TODO_asuarez
-/*
-- texture options for sprite_sheet (maybe could be a struct??)
-- Optimize the 2d version of make_transform
-- Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
-- Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
-- Leer shaders de ficheros
-- Poder cambiar de shader
-- Dumpear errores de OpenGL
-- Meter ImGUI
-- Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
-- Picking
-- Sistema de iluminación: Ambient y Point lights
-*/
+// #TODO_asuarez
+// - texture options for sprite_sheet (maybe could be a struct??)
+// - Optimize the 2d version of make_transform
+// - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
+// - Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
+// - Leer shaders de ficheros
+// - Poder cambiar de shader
+// - Dumpear errores de OpenGL
+// - Meter ImGUI
+// - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
+// - Picking
+// - Sistema de iluminación: Ambient y Point lights

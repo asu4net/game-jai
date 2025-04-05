@@ -1,5 +1,4 @@
 //#TODO_asuarez: Copy SDL dll on comptime depending on the operating system.
-
 EXECUTABLE_NAME :: "game";
 OUTPUT_PATH     :: "bin";
 BUILD_FILE      :: "src/game.jai";
@@ -23,10 +22,13 @@ compile :: () {
     set_optimization(*target_options, .DEBUG);
     set_build_options(target_options, w);
     add_build_file(join(#filepath, BUILD_FILE), w);
-    add_build_string("IMGUI   :: true;", w);
-    add_build_string("DEBUG   :: true;", w);
-    add_build_string("RELEASE :: false;", w);
-    add_build_string("DIST    :: false;", w);
+
+    //#TODO_asuarez Parse arguments from console.
+    add_build_string("DEBUG     :: true;", w);
+    add_build_string("RELEASE   :: false;", w);
+    add_build_string("DIST      :: false;", w);
+    add_build_string("EDITOR    :: true;", w);
+    add_build_string("IMGUI     :: true;", w);
     set_build_options_dc(.{do_output=false});
 }
 
