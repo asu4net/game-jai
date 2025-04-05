@@ -65,8 +65,7 @@ deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
 }
 
 create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
-    base_scene := get_scene(slot);
-    scene := base_scene.(*Scene(TEntity));
+    scene := get_scene(slot).(*Scene(TEntity));
     assert(scene.used_ids.count <= scene.capacity);
     id := pop_front(*scene.free_ids);
     index := insert_id(*scene.used_ids, id);

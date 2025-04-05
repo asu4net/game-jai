@@ -1,3 +1,5 @@
+#if IMGUI {
+
 // Data
 g_Time: u64 = 0;
 g_MousePressed := bool.[false, false, false];
@@ -389,3 +391,5 @@ ImGui_ImplSdl_NewFrame :: (window: *SDL_Window) {
     // Hide OS mouse cursor if ImGui is drawing it
     SDL_ShowCursor(xx (io.MouseDrawCursor == false));
 }
+
+} // #if IMGUI

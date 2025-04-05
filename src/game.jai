@@ -1,102 +1,124 @@
 Game :: struct {
-    window  : Window;
-    draw_2d : Draw2D_Context;
-    alien   : Texture;
-    font    : Font;
+    done       : bool;
+    window     : *SDL_Window;
+    gl_ctx     : SDL_GLContext;
+    draw_2d    : Draw2D_Context;
+    viewport_w : s32 = 1280;
+    viewport_h : s32 = 720;
+    
+    #if IMGUI {
+        imgui_ctx : *ImGui.ImGuiContext;
+        show_demo_window := true;
+    }
 }
-
 #add_context game: Game;
 
-Sprite :: struct {
-    visible  : bool;
-    tint     : Vector4;
-    rect     : Rect;
-    item     : string;
-    tiling   : Vector2;
-    flip_x   : bool;
-    flip_y   : bool;
-    autosize : bool;
-    blend    : Blend;
-}
-
-Entity2D :: struct {
-    #as using entity : Entity;
-    using sprite : Sprite;
-
-    pos        : Vector2;
-    scl        : Vector2;
-    ang        : float32;
-    size       : Vector2;
-}
-
 main :: () {
+    
+    using context.game;
     
     defer report_memory_leaks();
 
     path := path_strip_filename(get_path_of_running_executable());
     set_working_directory(path);
+
+    SDL_Init(SDL_INIT_VIDEO);
+    defer SDL_Quit();
     
-    window  := *context.game.window;
-    alien   := *context.game.alien;
-    font    := *context.game.font;
-    draw_2d := *context.game.draw_2d;
-
-    init(window);
-    defer deinit(window);
-
-    init(draw_2d);
-    defer deinit(draw_2d);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
+    WINDOW_POS :: SDL_WINDOWPOS_UNDEFINED;
+    window = SDL_CreateWindow("game", WINDOW_POS, WINDOW_POS, viewport_w, viewport_h, SDL_WINDOW_OPENGL);
     
-    init(alien, "assets/images/alien.png", mag = .LINEAR, min = .LINEAR);    
-    defer deinit(alien);
+    if !window {
+        log_error("SDL Failed to create the window.");
+        return;
+    }
 
-    init(font, "assets/fonts/AlbertSans-VariableFont_wght.ttf");
-    defer deinit(font);
+    defer SDL_DestroyWindow(window);
+    
+    gl_ctx = SDL_GL_CreateContext(window);
+
+    if !gl_ctx {
+        log_error("SDL Failed to create the OpenGL context.");
+        return;
+    }
+
+    SDL_GL_MakeCurrent(window, gl_ctx);
+
+    gl_load(*gl, SDL_GL_GetProcAddress);
+    log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
+    log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
+
+    #if IMGUI {
+        imgui_ctx = ImGui.CreateContext();
+        io := ImGui.GetIO();
+        io.ConfigFlags_ |= ImGui.ConfigFlags.DockingEnable;
+
+        defer ImGui.DestroyContext(imgui_ctx);
+        defer ImGui_ImplSdl_Shutdown();
+    }
+
+    init(*draw_2d);
+    defer deinit(*draw_2d);
     
     set_clear_color(DARK_GRAY);
 
-    sheet : Spritesheet;
-    init(*sheet, src_path = "assets/images");
-    defer deinit(*sheet);
+    while !done {
 
-    scene_2d : Scene(Entity2D);
-    index := init(*scene_2d, 0);
-    defer deinit(*scene_2d);
-
-    json_entity := read_entire_file("assets/entity.json", ,,temp);
-    e := deserialize_entity(Entity2D, json_entity);
-
-    {
-        //string_sheet := json_write_string(a ,,temp);
-        //write_entire_file("assets/entity.json", string_sheet);
-    }
-
-    while keep_window_opened(window) {
+        // Poll the window events
+        {
+            event : SDL_Event;
         
-        clear_screen();
-        draw_2d_begin(.{window.width, window.height});
-        
-        for i : 1..scene_2d.used_ids.count {
-            
-            e := (*scene_2d.entities[i]).(*Entity2D);
-            if !is_enabled(e) || !e.visible then continue;
-
-            tex   := ifx e.item.count > 0 then *sheet.tex else null;
-            flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
-
-            // try find the item
-            if tex && (e.rect.width == 0 || e.rect.height == 0) {
-                rect, found := table_find(*sheet.rects, e.item);
-                e.rect = ifx found then rect;
+            while SDL_PollEvent(*event) {
+                
+                ImGui_ImplSdl_ProcessEvent(*event);
+                
+                if event.type == {
+                    case SDL_KEYUP;
+                        if event.key.keysym.sym == SDLK_ESCAPE then {
+                            done = true;
+                        }
+                    case SDL_WINDOWEVENT;
+                        if event.window.event == SDL_WINDOWEVENT_CLOSE then {
+                            done = true;
+                        }
+                        else if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED then {
+                            viewport_w = event.window.data1;
+                            viewport_h = event.window.data2;
+                        }
+                }
             }
-            
-            draw_quad(e.pos, e.ang, e.scl, tex, e.tiling, e.size, e.blend, e.rect, e.tint, e.id, flags);
         }
 
-        draw_2d_end();
+        clear_screen();
 
-        draw_imgui(window);
-        
+        #if IMGUI {
+
+            ImGui_ImplSdl_NewFrame(window);
+            ImGui.NewFrame();    
+
+            if ImGui.GetMouseCursor() == {
+                case .Arrow;         SDL_SetCursor(cursor_arrow);
+                case .TextInput;     SDL_SetCursor(cursor_text_input);
+                case .Hand;          SDL_SetCursor(cursor_move);
+                case .ResizeNS;      SDL_SetCursor(cursor_resize_ns);
+                case .ResizeEW;      SDL_SetCursor(cursor_resize_ew);
+                case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
+                case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
+            }
+
+            if show_demo_window {
+                ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0});
+                ImGui.ShowDemoWindow(*show_demo_window);
+            }
+
+            // Rendering
+            ImGui.Render();
+            ImGui_ImplSdl_RenderDrawLists(ImGui.GetDrawData());
+        } 
+
+        SDL_GL_SwapWindow(window);
+
         reset_temporary_storage();
     }
 }
@@ -118,16 +140,16 @@ main :: () {
 #import "stb_truetype";
 #import "stb_image_write";
 #import "Jaison";
-ImGui :: #import "ImGui";
 
-// Core
-#load "core/constants.jai";
-#load "core/math.jai";
-#load "core/window.jai";
-#load "core/queue.jai";
-#load "core/sparse_set.jai";
-#load "core/sdl.jai";
-#load "core/imgui_sdl_gl.jai";
+#if IMGUI then ImGui :: #import "ImGui";
+
+// Utils
+#load "utils/constants.jai";
+#load "utils/math.jai";
+#load "utils/queue.jai";
+#load "utils/sparse_set.jai";
+
+#if IMGUI then #load "utils/imgui_sdl_gl.jai";
 
 // Entity
 #load "entity/scene.jai";
