@@ -10,101 +10,42 @@
 // - Picking
 // - Sistema de iluminación: Ambient y Point lights
 
-Game :: struct {
-    done       : bool;
-    window     : *SDL_Window;
-    gl_ctx     : SDL_GLContext;
-    draw_2d    : Draw2D_Context;
-    viewport_w : s32 = 1920;
-    viewport_h : s32 = 1080;    
-}
-
-#add_context game: Game;
+GAME_NAME :: "Game";
 
 main :: () {
-    
-    using context.game;
-    
-    defer report_memory_leaks();
 
+    defer report_memory_leaks();
+    
     path := path_strip_filename(get_path_of_running_executable());
     set_working_directory(path);
 
-    SDL_Init(SDL_INIT_VIDEO);
-    defer SDL_Quit();
+    init_window(GAME_NAME);
+    defer deinit_window();
     
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
-    WINDOW_POS :: SDL_WINDOWPOS_UNDEFINED;
-    window = SDL_CreateWindow("game", WINDOW_POS, WINDOW_POS, viewport_w, viewport_h, SDL_WINDOW_OPENGL);
-    
-    if !window {
-        log_error("SDL Failed to create the window.");
-        return;
-    }
-
-    defer SDL_DestroyWindow(window);
-    
-    gl_ctx = SDL_GL_CreateContext(window);
-
-    if !gl_ctx {
-        log_error("SDL Failed to create the OpenGL context.");
-        return;
-    }
-
-    SDL_GL_MakeCurrent(window, gl_ctx);
-
-    gl_load(*gl, SDL_GL_GetProcAddress);
-    log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
-    log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
+    init_draw_2d();
+    defer deinit_draw_2d();
 
     #if IMGUI then {
         init_imgui();
         defer deinit_imgui();
     }
-
-    init(*draw_2d);
-    defer deinit(*draw_2d);
     
     set_clear_color(DARK_GRAY);
 
-    while !done {
+    while !context.window.done {
 
-        // Poll the window events
-        {
-            event : SDL_Event;
-        
-            while SDL_PollEvent(*event) {
-                
-                #if IMGUI then process_imgui_sdl_events(*event);
-                
-                if event.type == {
-                    case SDL_KEYUP;
-                        if event.key.keysym.sym == SDLK_ESCAPE then {
-                            done = true;
-                        }
-                    case SDL_WINDOWEVENT;
-                        if event.window.event == SDL_WINDOWEVENT_CLOSE then {
-                            done = true;
-                        }
-                        else if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED then {
-                            viewport_w = event.window.data1;
-                            viewport_h = event.window.data2;
-                        }
-                }
-            }
-        }
-
+        process_window_events();
         clear_screen();
-
-        //#TODO_asuarez Here draw the game
         
+        //#TODO_asuarez Here draw the game
+
         #if IMGUI then {
-            begin_imgui_draw(window);
+            begin_imgui_draw();
             draw_editor();
             end_imgui_draw();
         } 
 
-        SDL_GL_SwapWindow(window);
+        swap_buffers();
         reset_temporary_storage();
     }
 }
@@ -130,6 +71,8 @@ main :: () {
 #if IMGUI then {
     ImGui :: #import "ImGui";
 }
+
+#load "window.jai";
 
 // Utils
 #load "utils/constants.jai";

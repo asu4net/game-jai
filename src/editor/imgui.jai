@@ -12,12 +12,15 @@ init_imgui :: () {
     assert(ctx == null);
     ctx = ImGui.CreateContext();
     
+    io := ImGui.GetIO();
+    
+    //#REVIEW this font looks ugly for some reason
+    /*
     FONT_LOCATION :: "assets/fonts/AlbertSans-VariableFont_wght.ttf";
     FONT_SIZE     :: 20;
 
-    io := ImGui.GetIO();
-
     if file_exists(FONT_LOCATION) then io.Fonts.AddFontFromFileTTF(io.Fonts, FONT_LOCATION, FONT_SIZE);
+    */
 
     io.ConfigFlags_ |= .DockingEnable;
     io.ConfigFlags_ |= .ViewportsEnable;
@@ -41,10 +44,10 @@ init_imgui :: () {
     Colors[xx ImGui.Col.Button]             = .{ 0.356, 0.356, 0.416, 1.000 };
 }
 
-begin_imgui_draw :: (window : *SDL_Window) {
-    assert(window != null);
+begin_imgui_draw :: () {
+    assert(context.window.handle != null);
     
-    ImGui_ImplSdl_NewFrame(window);
+    ImGui_ImplSdl_NewFrame(context.window.handle);
     ImGui.NewFrame();
     
     // Dockspace
