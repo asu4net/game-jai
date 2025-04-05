@@ -32,7 +32,6 @@ imgui_end :: () {
         ImGui.ShowDemoWindow(*show_imgui_demo_window);
     }
 
-    // Rendering
     ImGui.Render();
     ImGui_ImplSdl_RenderDrawLists(ImGui.GetDrawData());
 }
