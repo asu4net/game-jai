@@ -1,5 +1,3 @@
-add_prefab_menu :: () {
-    add_menu("Prefabs", (menu : *Menu, name : string) {
-
-    });
+draw_prefab_menu :: (menu : *Menu, name : string) {
+    
 }
