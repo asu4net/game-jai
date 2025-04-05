@@ -59,27 +59,26 @@ main :: () {
     init(*sheet, src_path = "assets/images");
     defer deinit(*sheet);
 
-    entities_2d : Entity_Array(Entity2D);
-    index := init(*entities_2d, 0);
-    defer deinit(*entities_2d);
+    scene_2d : Scene(Entity2D);
+    index := init(*scene_2d, 0);
+    defer deinit(*scene_2d);
 
     json_entity := read_entire_file("assets/entity.json", ,,temp);
-    e := create_entity(Entity2D, json_entity);
+    e := deserialize_entity(Entity2D, json_entity);
 
     {
         //string_sheet := json_write_string(a ,,temp);
         //write_entire_file("assets/entity.json", string_sheet);
     }
 
-
     while keep_window_opened(window) {
         
         clear_screen();
         draw_2d_begin(.{window.width, window.height});
         
-        for i : 1..entities_2d.used_ids.count {
+        for i : 1..scene_2d.used_ids.count {
             
-            e := (*entities_2d.data[i]).(*Entity2D);
+            e := (*scene_2d.entities[i]).(*Entity2D);
             if !is_enabled(e) || !e.visible then continue;
 
             tex   := ifx e.item.count > 0 then *sheet.tex else null;
@@ -131,7 +130,7 @@ ImGui :: #import "ImGui";
 #load "core/imgui_sdl_gl.jai";
 
 // Entity
-#load "entity/entity_array.jai";
+#load "entity/scene.jai";
 #load "entity/entity.jai";
 
 // Graphics

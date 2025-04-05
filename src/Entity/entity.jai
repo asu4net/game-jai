@@ -28,16 +28,16 @@ is_entity :: ($T: Type) -> bool {
     return type_info(Entity) == info || is_subclass_of(info, type_info(Entity).name);
 }
 
-initialized :: (array : *Entity_Array) -> bool {
-    assert(array != null);
-    return array.data.data != null;
+initialized :: (scene : *Scene) -> bool {
+    assert(scene != null);
+    return scene.entities.data != null;
 }
 
 is_not_cleaned :: (entity : *Entity) -> bool {
     assert(entity != null);
-    array := entity_array_get_unsafe(entity.slot); 
-    if array == null then return false;
-    return test(*array.used_ids, entity.id);   
+    scene := get_scene_unsafe(entity.slot); 
+    if scene == null then return false;
+    return test(*scene.used_ids, entity.id);   
 }
 
 is_not_destroyed :: (entity : *Entity) -> bool {
@@ -55,23 +55,22 @@ is_enabled :: (entity : *Entity) -> bool {
     return is_local_enabled(entity) && (.ENABLED & entity.flags).(bool);   
 }
 
-create_entity :: ($TEntity : Type, json : string) -> *TEntity {
+deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
     success, e := json_parse_string(json, TEntity ,,temp);
     if !success {
         log_error("Entity could not be created!");
         return null;
     }
-
     return clone_entity(TEntity, *e); 
 }
 
 create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
-    base_array := entity_array_get(slot);
-    array := base_array.(*Entity_Array(TEntity));
-    assert(array.used_ids.count <= array.capacity);
-    id := pop_front(*array.free_ids);
-    index := insert_id(*array.used_ids, id);
-    entity := *array.data[index];
+    base_scene := get_scene(slot);
+    scene := base_scene.(*Scene(TEntity));
+    assert(scene.used_ids.count <= scene.capacity);
+    id := pop_front(*scene.free_ids);
+    index := insert_id(*scene.used_ids, id);
+    entity := *scene.entities[index];
     entity.tag = copy_string(tag);
 
     if entity.flags & .SERIALIZABLE {
@@ -79,17 +78,17 @@ create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
             log_error("Serializable cannot have an empty tag!");
             return null;
         }
-        _, found := table_find(*array.to_serialize, tag);
+        _, found := table_find(*scene.to_serialize, tag);
         if found then {
             log_error("Serializable entity with the same tag already exists!");
             return null;
         }
-        table_add(*array.to_serialize, tag, id);
+        table_add(*scene.to_serialize, tag, id);
     }
 
     entity.id    = id;
     entity.flags = flags;
-    array.count =+ 1;
+    scene.count =+ 1;
 
     return entity;
 }
@@ -106,37 +105,37 @@ destroy_entity :: (entity : *Entity) {
         destroy_entity(resolve_ref(*child));
     }
     
-    array := entity_array_get(entity);
-    table_add(*array.to_clean, entity.id, .{});
+    scene := get_scene(entity);
+    table_add(*scene.to_clean, entity.id, .{});
 }
 
 clean_destroyed_entities :: () {
-    for array : arrays {
-        for _, id : array.to_clean {        
-            index := search(*array.used_ids, id);
+    for scene : scenes {
+        for _, id : scene.to_clean {        
+            index := search(*scene.used_ids, id);
             assert(index != 0);
-            entity := array.data[index];
-            push_back(*array.free_ids, id);
-            deleted, last := remove_id(*array.used_ids, id);       
+            entity := scene.entities[index];
+            push_back(*scene.free_ids, id);
+            deleted, last := remove_id(*scene.used_ids, id);       
             if deleted != last {
-                array.data[deleted] = array.data[last];
-                array.data[last] = .{};
+                scene.entities[deleted] = scene.entities[last];
+                scene.entities[last] = .{};
             } else {
-                array.data[deleted] = .{};
+                scene.entities[deleted] = .{};
             }
-            array.count-=1;
+            scene.count-=1;
         }
-        table_reset(*array.to_clean);
+        table_reset(*scene.to_clean);
     }
 }
 
 resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     assert(ref != null);
-    array := entity_array_get(ref.slot);
+    scene := get_scene(ref.slot);
     
     if ref.id == 0 then {
         assert(ref.tag.count > 0);
-        id, found := table_find(*array.to_serialize, ref.tag);
+        id, found := table_find(*scene.to_serialize, ref.tag);
         if found {
             ref.id = id;
         }
@@ -144,10 +143,10 @@ resolve_ref :: (ref : *Entity_Ref) -> *Entity {
 
     if ref.id == 0 then return null;
 
-    exists := test(*array.used_ids, ref.id);
+    exists := test(*scene.used_ids, ref.id);
     if !exists then return null;
-    index := search(*array.used_ids, ref.id);
-    return *array.data[index];
+    index := search(*scene.used_ids, ref.id);
+    return *scene.entities[index];
 }
 
 make_ref :: (entity : *Entity) -> Entity_Ref {
