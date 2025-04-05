@@ -8,7 +8,7 @@ Game :: struct {
     
     #if IMGUI {
         imgui_ctx : *ImGui.ImGuiContext;
-        show_demo_window := true;
+        show_demo_window := false;
     }
 }
 #add_context game: Game;
