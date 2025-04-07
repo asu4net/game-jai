@@ -5,7 +5,7 @@ DEF_SCENE_CAPACITY :: 100;
 // Think about how allocate the strings and the entity children handles. 
 // Create a manager or something maybe.
 
-MAKE_PREFAB_PROC :: #type (*Scene(Entity)) -> *Entity;
+MAKE_PREFAB_PROC :: #type (*Scene(Entity), tag : string) -> *Entity;
 INIT_ENTITY_PROC :: #type (*Entity);
 
 Scene :: struct($TEntity: Type = Entity) {
@@ -35,9 +35,9 @@ init :: (scene: *Scene($TEntity), slot : u32, init_proc : INIT_ENTITY_PROC = nul
     for i : 0..capacity-1 push_back(*scene.free_ids, cast(u32) i);
     pop_front(*scene.free_ids); // Pop the invalid id [0].
     scene.capacity = capacity;
-    scene.make_prefab = (scene : *Scene(Entity)) -> *Entity {
+    scene.make_prefab = (scene : *Scene(Entity), tag : string) -> *Entity {
         //#TODO_asuarez Mark the entity as prefab.
-        return create_entity(TEntity, scene.slot);
+        return create_entity(TEntity, scene.slot, tag);
     };
     scene.init_entity = init_proc;
 }
