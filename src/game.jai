@@ -2,7 +2,19 @@
 
 GAME_NAME :: "Game";
 
+Scenes :: enum {
+    ENTITIES_2D;
+}
+
+Game :: struct {
+    entities2d : Scene(Entity2D);
+} 
+
+#add_context game : Game;
+
 main :: () {
+    using context.game;
+
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
@@ -12,6 +24,9 @@ main :: () {
     init_draw_2d();
     defer deinit_draw_2d();
     
+    init(*entities2d, slot = xx Scenes.ENTITIES_2D);
+    defer deinit(*entities2d);
+
     #if IMGUI {
         draw_imgui_proc : IMGUI_DRAW_PROC;
         init_imgui();

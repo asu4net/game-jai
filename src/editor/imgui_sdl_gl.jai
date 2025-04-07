@@ -25,6 +25,138 @@ cursor_resize_ew: *SDL_Cursor;
 cursor_resize_nesw: *SDL_Cursor;
 cursor_resize_nwse: *SDL_Cursor;
 
+ImGui_ImplSDL2_KeyEventToImGuiKey :: (keycode : SDL_Keycode, scancode : SDL_Scancode) -> ImGui.Key {
+    if keycode == {
+        case SDLK_TAB; return .Tab;
+        case SDLK_LEFT; return .LeftArrow;
+        case SDLK_RIGHT; return .RightArrow;
+        case SDLK_UP; return .UpArrow;
+        case SDLK_DOWN; return .DownArrow;
+        case SDLK_PAGEUP; return .PageUp;
+        case SDLK_PAGEDOWN; return .PageDown;
+        case SDLK_HOME; return .Home;
+        case SDLK_END; return .End;
+        case SDLK_INSERT; return .Insert;
+        case SDLK_DELETE; return .Delete;
+        case SDLK_BACKSPACE; return .Backspace;
+        case SDLK_SPACE; return .Space;
+        case SDLK_RETURN; return .Enter;
+        case SDLK_ESCAPE; return .Escape;
+        //case SDLK_QUOTE; return .Apostrophe;
+        case SDLK_COMMA; return .Comma;
+        //case SDLK_MINUS; return .Minus;
+        case SDLK_PERIOD; return .Period;
+        //case SDLK_SLASH; return .Slash;
+        case SDLK_SEMICOLON; return .Semicolon;
+        //case SDLK_EQUALS; return .Equal;
+        //case SDLK_LEFTBRACKET; return .LeftBracket;
+        //case SDLK_BACKSLASH; return .Backslash;
+        //case SDLK_RIGHTBRACKET; return .RightBracket;
+        //case SDLK_BACKQUOTE; return .GraveAccent;
+        case SDLK_CAPSLOCK; return .CapsLock;
+        case SDLK_SCROLLLOCK; return .ScrollLock;
+        case SDLK_NUMLOCKCLEAR; return .NumLock;
+        case SDLK_PRINTSCREEN; return .PrintScreen;
+        case SDLK_PAUSE; return .Pause;
+        case SDLK_KP_0; return .Keypad0;
+        case SDLK_KP_1; return .Keypad1;
+        case SDLK_KP_2; return .Keypad2;
+        case SDLK_KP_3; return .Keypad3;
+        case SDLK_KP_4; return .Keypad4;
+        case SDLK_KP_5; return .Keypad5;
+        case SDLK_KP_6; return .Keypad6;
+        case SDLK_KP_7; return .Keypad7;
+        case SDLK_KP_8; return .Keypad8;
+        case SDLK_KP_9; return .Keypad9;
+        case SDLK_KP_PERIOD; return .KeypadDecimal;
+        case SDLK_KP_DIVIDE; return .KeypadDivide;
+        case SDLK_KP_MULTIPLY; return .KeypadMultiply;
+        case SDLK_KP_MINUS; return .KeypadSubtract;
+        case SDLK_KP_PLUS; return .KeypadAdd;
+        case SDLK_KP_ENTER; return .KeypadEnter;
+        case SDLK_KP_EQUALS; return .KeypadEqual;
+        case SDLK_LCTRL; return .LeftCtrl;
+        case SDLK_LSHIFT; return .LeftShift;
+        case SDLK_LALT; return .LeftAlt;
+        case SDLK_LGUI; return .LeftSuper;
+        case SDLK_RCTRL; return .RightCtrl;
+        case SDLK_RSHIFT; return .RightShift;
+        case SDLK_RALT; return .RightAlt;
+        case SDLK_RGUI; return .RightSuper;
+        case SDLK_APPLICATION; return .Menu;
+        case SDLK_0; return .ImGuiKey_0;
+        case SDLK_1; return .ImGuiKey_1;
+        case SDLK_2; return .ImGuiKey_2;
+        case SDLK_3; return .ImGuiKey_3;
+        case SDLK_4; return .ImGuiKey_4;
+        case SDLK_5; return .ImGuiKey_5;
+        case SDLK_6; return .ImGuiKey_6;
+        case SDLK_7; return .ImGuiKey_7;
+        case SDLK_8; return .ImGuiKey_8;
+        case SDLK_9; return .ImGuiKey_9;
+        case SDLK_a; return .A;
+        case SDLK_b; return .B;
+        case SDLK_c; return .C;
+        case SDLK_d; return .D;
+        case SDLK_e; return .E;
+        case SDLK_f; return .F;
+        case SDLK_g; return .G;
+        case SDLK_h; return .H;
+        case SDLK_i; return .I;
+        case SDLK_j; return .J;
+        case SDLK_k; return .K;
+        case SDLK_l; return .L;
+        case SDLK_m; return .M;
+        case SDLK_n; return .N;
+        case SDLK_o; return .O;
+        case SDLK_p; return .P;
+        case SDLK_q; return .Q;
+        case SDLK_r; return .R;
+        case SDLK_s; return .S;
+        case SDLK_t; return .T;
+        case SDLK_u; return .U;
+        case SDLK_v; return .V;
+        case SDLK_w; return .W;
+        case SDLK_x; return .X;
+        case SDLK_y; return .Y;
+        case SDLK_z; return .Z;
+        case SDLK_F1; return .F1;
+        case SDLK_F2; return .F2;
+        case SDLK_F3; return .F3;
+        case SDLK_F4; return .F4;
+        case SDLK_F5; return .F5;
+        case SDLK_F6; return .F6;
+        case SDLK_F7; return .F7;
+        case SDLK_F8; return .F8;
+        case SDLK_F9; return .F9;
+        case SDLK_F10; return .F10;
+        case SDLK_F11; return .F11;
+        case SDLK_F12; return .F12;
+        case SDLK_F13; return .F13;
+        case SDLK_F14; return .F14;
+        case SDLK_F15; return .F15;
+        case SDLK_F16; return .F16;
+        case SDLK_F17; return .F17;
+        case SDLK_F18; return .F18;
+        case SDLK_F19; return .F19;
+        case SDLK_F20; return .F20;
+        case SDLK_F21; return .F21;
+        case SDLK_F22; return .F22;
+        case SDLK_F23; return .F23;
+        case SDLK_F24; return .F24;
+        case SDLK_AC_BACK; return .AppBack;
+        case SDLK_AC_FORWARD; return .AppForward;
+        case; return .None;
+    }
+}
+
+ImGui_ImplSDL2_UpdateKeyModifiers :: (sdl_key_mods : SDL_Keymod) {
+    io := ImGui.GetIO();
+    io.AddKeyEvent(io, .ImGuiMod_Ctrl,  (sdl_key_mods & KMOD_CTRL)  != 0);
+    io.AddKeyEvent(io, .ImGuiMod_Shift, (sdl_key_mods & KMOD_SHIFT) != 0);
+    io.AddKeyEvent(io, .ImGuiMod_Alt,   (sdl_key_mods & KMOD_ALT)   != 0);
+    io.AddKeyEvent(io, .ImGuiMod_Super, (sdl_key_mods & KMOD_GUI)   != 0);
+}
 
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so.
@@ -143,6 +275,7 @@ ImGui_ImplSdl_SetClipboardText :: (data: *void, text: *u8) #c_call {
 // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
 // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+
 ImGui_ImplSdl_ProcessEvent :: (event: *SDL_Event) -> bool {
     io := ImGui.GetIO();
     if event.type == {
@@ -160,14 +293,10 @@ ImGui_ImplSdl_ProcessEvent :: (event: *SDL_Event) -> bool {
             return true;
         case SDL_KEYDOWN; #through;
         case SDL_KEYUP;
-            //@@key := event.key.keysym.sym & ~SDLK_SCANCODE_MASK;
-            key := event.key.keysym.sym & (xx ~(1<<30));
-            io.KeysData[key].Down = (event.type == SDL_KEYDOWN);
-            kmod := SDL_GetModState();
-            io.KeyShift = ((kmod & KMOD_SHIFT) != 0);
-            io.KeyCtrl = ((kmod & KMOD_CTRL) != 0);
-            io.KeyAlt = ((kmod & KMOD_ALT) != 0);
-            io.KeySuper = ((kmod & KMOD_GUI) != 0);
+            ImGui_ImplSDL2_UpdateKeyModifiers(event.key.keysym.mod.(SDL_Keymod));
+            key := ImGui_ImplSDL2_KeyEventToImGuiKey(event.key.keysym.sym, event.key.keysym.scancode);
+            io.AddKeyEvent(io, key, event.type == .SDL_KEYDOWN);
+            io.SetKeyEventNativeData(io, key, xx event.key.keysym.sym, xx event.key.keysym.scancode, xx event.key.keysym.scancode);
             return true;
     }
     return false;

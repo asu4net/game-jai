@@ -29,8 +29,6 @@
 // Editor
 #if EDITOR then {
     #load "editor/editor.jai";
-    #load "editor/menus/prefab_menu.jai";
-    #load "editor/menus/imgui_menu.jai";
 }
 
 #if IMGUI then {
@@ -41,6 +39,7 @@
 // Entity
 #load "entity/scene.jai";
 #load "entity/entity.jai";
+#load "entity/entity2d.jai";
 
 // Graphics
 #load "graphics/window.jai";

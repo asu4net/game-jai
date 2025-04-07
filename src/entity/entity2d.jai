@@ -8,6 +8,7 @@ Sprite :: struct {
     flip_y   : bool;
     autosize : bool;
     blend    : Blend;
+    sheet    : *Spritesheet;
 }
 
 Entity2D :: struct {
@@ -22,22 +23,22 @@ Entity2D :: struct {
 
 draw_2d_entities :: (scene : *Scene(Entity2D)) {
 
-    draw_2d_begin(.{window.width, window.height});
+    draw_2d_begin(.{context.window.width, context.window.height});
     
     for i : 1..scene.used_ids.count {
             
         e := (*scene.entities[i]).(*Entity2D);
         if !is_enabled(e) || !e.visible then continue;
         
-        tex   := ifx e.item.count > 0 then *sheet.tex else null;
+        tex   := ifx e.item.count > 0 then *e.sheet.tex else null;
         flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
 
         // try find the item
         if tex && (e.rect.width == 0 || e.rect.height == 0) {
-            rect, found := table_find(*sheet.rects, e.item);
+            rect, found := table_find(*e.sheet.rects, e.item);
             e.rect = ifx found then rect;
         }
-            
+        
         draw_quad(e.pos, e.ang, e.scl, tex, e.tiling, e.size, e.blend, e.rect, e.tint, e.id, flags);
     }
     
