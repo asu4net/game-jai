@@ -8,18 +8,6 @@ data :: (buff : TextBuff) -> *u8 {
     return *buff[0];
 }
 
-text_is_empty :: (buff : TextBuff) -> bool {
-    return buff[0] == #char "\0";
-}
-
-text_len :: (buff : TextBuff) -> int {
-    len := 0;
-    while buff[len] != #char "\0" {
-        len+=1;
-    }
-    return len;
-}
-
 Editor :: struct {
     show_demo           : bool;
     prefab_name         : TextBuff;
@@ -87,8 +75,8 @@ draw_editor :: () {
             show_create_prefab = false;
             scene := scenes[prefab_type_index];
             
-            if scene && !text_is_empty(prefab_name) {
-                prefab := scene.make_prefab(scene, to_string(data(prefab_name), text_len(prefab_name)));
+            if scene && c_style_strlen(data(prefab_name)) > 0 {
+                prefab := scene.make_prefab(scene, to_string(data(prefab_name)));
                 print("%", prefab.tag);
                 ImGui.CloseCurrentPopup();
             }
