@@ -26,7 +26,7 @@ main :: () {
     
     init(*entities2d, init_proc = init_2d_entity, slot = xx Scenes.ENTITIES_2D);
     defer deinit(*entities2d);
-
+    
     #if IMGUI {
         draw_imgui_proc : IMGUI_DRAW_PROC;
         init_imgui();
@@ -37,13 +37,11 @@ main :: () {
         draw_imgui_proc = draw_editor;
     }
 
-    entities2d.make_prefab(xx *entities2d);
-
     while !context.window.done {
         process_window_events();
         clear_screen();
         draw_2d_entities(*entities2d);
-        //#if EDITOR draw_imgui(draw_imgui_proc);
+        #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
         reset_temporary_storage();
     }
