@@ -6,6 +6,7 @@ Entity_Flag :: enum_flags u16 {
     LOCAL_ENABLED;
     ENABLED;
     SERIALIZABLE;
+    PREFAB;
 }
 
 Entity_Ref :: struct {
@@ -55,6 +56,15 @@ is_enabled :: (entity : *Entity) -> bool {
     return is_local_enabled(entity) && (.ENABLED & entity.flags).(bool);   
 }
 
+is_prefab :: (entity : *Entity) -> bool {
+    assert(is_not_destroyed(entity));
+    return (.PREFAB & entity.flags).(bool);   
+}
+
+should_update :: (entity : *Entity) -> bool {
+    return !is_prefab(entity);
+}
+
 deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
     success, e := json_parse_string(json, TEntity ,,temp);
     if !success {
@@ -64,17 +74,14 @@ deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
     return clone_entity(TEntity, *e); 
 }
 
-create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
-    scene := get_scene(slot).(*Scene(TEntity));
+create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
+    
     assert(scene.used_ids.count <= scene.capacity);
     id := pop_front(*scene.free_ids);
     index := insert_id(*scene.used_ids, id);
     entity := *scene.entities[index];
-    if scene.init_entity {
-        scene.init_entity(entity);
-    }
     entity.tag = copy_string(tag);
-    
+
     if entity.flags & .SERIALIZABLE {
         if entity.tag.count == 0 {
             log_error("Serializable cannot have an empty tag!");
@@ -92,7 +99,16 @@ create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
     entity.flags = flags;
     scene.count =+ 1;
 
+    if scene.entity_procs.init {
+        scene.entity_procs.init(entity);
+    }
+
     return entity;
+}
+
+create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
+    scene := get_scene(slot).(*Scene(TEntity));
+    return create_entity(scene, tag, flags);
 }
 
 destroy_entity :: (entity : *Entity) {
@@ -116,19 +132,29 @@ clean_destroyed_entities :: () {
         for _, id : scene.to_clean {        
             index := search(*scene.used_ids, id);
             assert(index != 0);
-            entity := scene.entities[index];
-            push_back(*scene.free_ids, id);
-            deleted, last := remove_id(*scene.used_ids, id);       
-            if deleted != last {
-                scene.entities[deleted] = scene.entities[last];
-                scene.entities[last] = .{};
-            } else {
-                scene.entities[deleted] = .{};
-            }
-            scene.count-=1;
+            entity := *scene.entities[index];
+            scene.entity_procs.destroy(entity);
         }
         table_reset(*scene.to_clean);
     }
+}
+
+immediate_destroy_entity :: (entity : *$TEntity) {
+    assert(is_not_destroyed(entity));
+    scene := get_scene(entity);
+    if scene.entity_procs.deinit {
+        scene.entity_procs.deinit(entity);
+    }
+    push_back(*scene.free_ids, entity.id);
+    free(entity.tag);
+    deleted, last := remove_id(*scene.used_ids, entity.id);       
+    if deleted != last {
+        scene.entities[deleted] = scene.entities[last];
+        scene.entities[last] = .{};
+    } else {
+        scene.entities[deleted] = .{};
+    }
+    scene.count-=1;
 }
 
 resolve_ref :: (ref : *Entity_Ref) -> *Entity {

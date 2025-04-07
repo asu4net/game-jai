@@ -76,7 +76,7 @@ draw_editor :: () {
             scene := scenes[prefab_type_index];
             
             if scene && c_style_strlen(data(prefab_name)) > 0 {
-                prefab := scene.make_prefab(scene, to_string(data(prefab_name)));
+                prefab := scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));
                 print("%", prefab.tag);
                 ImGui.CloseCurrentPopup();
             }

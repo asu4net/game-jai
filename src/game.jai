@@ -14,7 +14,7 @@ Game :: struct {
 
 main :: () {
     using context.game;
-
+    
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
@@ -26,7 +26,7 @@ main :: () {
     
     init(*entities2d, init_proc = init_2d_entity, slot = xx Scenes.ENTITIES_2D);
     defer deinit(*entities2d);
-    
+
     #if IMGUI {
         draw_imgui_proc : IMGUI_DRAW_PROC;
         init_imgui();

@@ -5,45 +5,77 @@ DEF_SCENE_CAPACITY :: 100;
 // Think about how allocate the strings and the entity children handles. 
 // Create a manager or something maybe.
 
-MAKE_PREFAB_PROC :: #type (*Scene(Entity), tag : string) -> *Entity;
-INIT_ENTITY_PROC :: #type (*Entity);
+Entity_Procs :: struct {
+
+    CREATE  :: #type (slot : u32, tag : string) -> *Entity;
+    DESTR0Y :: #type (entity : *Entity);
+    INIT    :: #type (entity : *Entity);
+    DEINIT  :: #type (entity : *Entity);
+    
+    create  : CREATE;
+    destroy : DESTR0Y;
+    init    : INIT;
+    deinit  : DEINIT;
+}
+
+init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null) {
+    assert(procs != null);
+    procs.create = (slot : u32, tag : string) -> *Entity {
+        scene := get_scene(slot).(*Scene(TEntity));
+        return create_entity(scene, tag);
+    }
+    procs.destroy = (entity : *Entity) {
+        e := entity.(*TEntity);
+        immediate_destroy_entity(e);
+    }
+    procs.init   = init_proc;
+    procs.deinit = deinit_proc;
+}
 
 Scene :: struct($TEntity: Type = Entity) {
 
     #assert(is_entity(TEntity));
     entities     : [] TEntity;
     slot         : u32;
-    used_ids     : Sparse_Set;
     count        : int;
+    capacity     : u32;
+    used_ids     : Sparse_Set;
     free_ids     : Queue(Entity_ID);
     to_clean     : Table(Entity_ID, struct{});
-    capacity     : u32;
     type         : *Type_Info_Struct;
     to_serialize : Table(string, Entity_ID);
-    make_prefab  : MAKE_PREFAB_PROC;
-    init_entity  : INIT_ENTITY_PROC;
+    entity_procs : Entity_Procs;
 }
 
-init :: (scene: *Scene($TEntity), slot : u32, init_proc : INIT_ENTITY_PROC = null, capacity: u32 = DEF_SCENE_CAPACITY) {
+init :: (scene       : *Scene($TEntity), 
+         slot        : u32, 
+         init_proc   : Entity_Procs.INIT   = null,
+         deinit_proc : Entity_Procs.DEINIT = null,
+         capacity    : u32 = DEF_SCENE_CAPACITY) 
+{
     assert(scene && !initialized(scene));
-    add_scene(scene.(*Scene(Entity)), slot, capacity);
+    add_scene(scene.(*Scene(Entity)), slot);
     scene.entities = NewArray(capacity, TEntity);
-    scene.type = type_info(TEntity);
-    scene.slot = slot;
+    scene.type     = type_info(TEntity);
+    scene.capacity = capacity;
+
     init(*scene.used_ids, capacity);
     init(*scene.free_ids, capacity + 1);
+    
     for i : 0..capacity-1 push_back(*scene.free_ids, cast(u32) i);
     pop_front(*scene.free_ids); // Pop the invalid id [0].
-    scene.capacity = capacity;
-    scene.make_prefab = (scene : *Scene(Entity), tag : string) -> *Entity {
-        //#TODO_asuarez Mark the entity as prefab.
-        return create_entity(TEntity, scene.slot, tag);
-    };
-    scene.init_entity = init_proc;
+
+    init(TEntity, *scene.entity_procs, init_proc, deinit_proc); 
 }
 
 deinit :: (scene: *Scene) {
     assert(scene != null);
+
+    for i : 1..scene.count {
+        e := (*scene.entities[i]).(*Entity2D);
+        scene.entity_procs.destroy(e);
+    }
+
     remove_scene(scene.slot);
     free(scene.entities.data);
     deinit(*scene.used_ids);
@@ -74,11 +106,12 @@ get_scene :: (slot : u32) -> *Scene(Entity) {
 scenes: [MAX_SCENES] *Scene;
 scene_count: u32;
 
-add_scene :: (scene : *Scene, slot : u32, capacity : u32) {
+add_scene :: (scene : *Scene, slot : u32) {
     assert(scene != null);
     assert(scene_count < MAX_SCENES); //Tío si has llegado aquí, lo estás haciendo raro.
     assert(scenes[slot] == null);
     scenes[slot] = scene;
+    scene.slot = slot;
     scene_count += 1;
 }
 
