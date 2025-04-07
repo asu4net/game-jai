@@ -19,7 +19,7 @@ init_window :: (name :string = "the window", w: s32 = 1920, h: s32 = 1080) {
     
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
     WINDOW_POS :: SDL_WINDOWPOS_UNDEFINED;
-    handle = SDL_CreateWindow(name.data, WINDOW_POS, WINDOW_POS, width, height, SDL_WINDOW_OPENGL);
+    handle = SDL_CreateWindow(name.data, WINDOW_POS, WINDOW_POS, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     
     if !handle {
         log_error("SDL Failed to create the window.");

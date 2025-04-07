@@ -18,11 +18,11 @@ init_imgui :: () {
     FONT_SIZE     :: 20;
 
     if file_exists(FONT_LOCATION) then io.Fonts.AddFontFromFileTTF(io.Fonts, FONT_LOCATION, FONT_SIZE);
-    
 
     io.ConfigFlags_ |= .DockingEnable;
     io.ConfigFlags_ |= .ViewportsEnable;
 
+    /*
     ImGui.StyleColorsDark();
 
     using style := ImGui.GetStyle();
@@ -40,6 +40,8 @@ init_imgui :: () {
     Colors[xx ImGui.Col.TitleBgActive]      = .{ 0.100, 0.100, 0.100, 1.000 };
     Colors[xx ImGui.Col.FrameBg]            = .{ 0.100, 0.100, 0.100, 1.000 };
     Colors[xx ImGui.Col.Button]             = .{ 0.356, 0.356, 0.416, 1.000 };
+    //Colors[xx ImGui.Col.ModalWindowDimBg]   = .{ 0.000, 0.000, 0.000, 0.000 };
+    */
 }
 
 IMGUI_DRAW_PROC :: #type ();

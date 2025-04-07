@@ -1,9 +1,12 @@
 #if EDITOR {
 
+TEXT_BUFFER_SIZE :: 100;
+
 Editor :: struct {
-    show_demo        : bool;
-    prefab_name      : string;
-    prefab_name_buff : [100] u8;
+    show_demo           : bool;
+    prefab_name         : string;
+    prefab_name_buff    : [TEXT_BUFFER_SIZE] u8;
+    show_create_prefab  : bool;
 }
 
 #add_context editor : Editor;
@@ -11,7 +14,7 @@ Editor :: struct {
 init_editor :: () {
     using context.editor;
     prefab_name.data  = prefab_name_buff.data;
-    prefab_name.count = 100;
+    prefab_name.count = TEXT_BUFFER_SIZE;
 }
 
 deinit_editor :: () {
@@ -20,18 +23,14 @@ deinit_editor :: () {
 draw_editor :: () {
     using context.editor;
 
-    if ImGui.BeginMenuBar() 
-    {
-        if ImGui.BeginMenu("ImGui")
-        {
+    if ImGui.BeginMenuBar()  {
+        if ImGui.BeginMenu("ImGui") {
             ImGui.Checkbox("Show demo", *show_demo);
             ImGui.EndMenu();
         }
-        if ImGui.BeginMenu("Prefab") 
-        {
-            if ImGui.MenuItem("New") 
-            {
-                
+        if ImGui.BeginMenu("Prefab")  {
+            if ImGui.MenuItem("New") {
+                show_create_prefab = true;
             }
             ImGui.EndMenu();
         }
@@ -39,23 +38,27 @@ draw_editor :: () {
     }
 
     if show_demo {
-        ImGui.OpenPopup("Create Prefab");
-        //ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0});
-        //ImGui.ShowDemoWindow(*show_demo);
+        ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0});
+        ImGui.ShowDemoWindow(*show_demo);
     }
     
-    ImGui.PushStyleColor(.ImGuiCol_PopupBg, .{ 0.192, 0.2, 0.219, 1 });
-    if ImGui.BeginPopupModal("Create Prefab") 
-    {
+    if show_create_prefab {
+     ImGui.OpenPopup("Create Prefab");
+    }
+    
+    ImGui.PushStyleColor(.PopupBg, .{0.0, 0.0, 0.0, 1});
+    viewpor_size := ImGui.GetMainViewport().WorkSize;
+    ImGui.SetNextWindowPos(viewpor_size / 2, .Appearing, .{0.5, 0.5});
+    if ImGui.BeginPopupModal("Create Prefab", flags = .NoResize | .NoMove)  {
         ImGui.InputText("Name", prefab_name.data, xx prefab_name.count);
-        if ImGui.Button("Create") 
-        {
-            // vamos a ir por todos los miembros del enum de scenes 
-            // y comprobando si tienen un array de entidades asociado.
+        if ImGui.Button("Create") {
+            show_create_prefab = false;
+            ImGui.CloseCurrentPopup();
         }
         ImGui.EndPopup();
     }
     ImGui.PopStyleColor();
+
 }
 
 } //#if IMGUI
