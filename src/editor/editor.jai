@@ -1,24 +1,26 @@
 #if EDITOR {
 
-TEXT_BUFFER_SIZE :: 100;
+TEXT_BUFF_SIZE :: 100;
+
+TextBuff :: [TEXT_BUFF_SIZE] u8;
+
+data :: (buff : TextBuff) -> *u8 { 
+    return *buff[0];
+}
+
+text_is_empty :: (buff : TextBuff) -> bool {
+    return buff[0] == #char "\0";
+}
 
 Editor :: struct {
     show_demo           : bool;
-    prefab_name         : string;
-    prefab_name_buff    : [TEXT_BUFFER_SIZE] u8;
+    prefab_name         : TextBuff;
+    prefab_type         : string;
+    prefab_type_index   : int;
     show_create_prefab  : bool;
 }
 
 #add_context editor : Editor;
-
-init_editor :: () {
-    using context.editor;
-    prefab_name.data  = prefab_name_buff.data;
-    prefab_name.count = TEXT_BUFFER_SIZE;
-}
-
-deinit_editor :: () {
-}
 
 draw_editor :: () {
     using context.editor;
@@ -49,16 +51,47 @@ draw_editor :: () {
     ImGui.PushStyleColor(.PopupBg, .{0.0, 0.0, 0.0, 1});
     viewpor_size := ImGui.GetMainViewport().WorkSize;
     ImGui.SetNextWindowPos(viewpor_size / 2, .Appearing, .{0.5, 0.5});
-    if ImGui.BeginPopupModal("Create Prefab", flags = .NoResize | .NoMove)  {
-        ImGui.InputText("Name", prefab_name.data, xx prefab_name.count);
+    
+    if ImGui.BeginPopupModal("Create Prefab", flags = .AlwaysAutoResize | .NoMove)  {
+        ImGui.InputText("Name", data(prefab_name), TEXT_BUFF_SIZE);
+        prefab_types : [..] string;
+        
+        for scene : scenes {
+            if !scene continue;
+            array_add(*prefab_types, scene.type.name ,,temp);
+        }
+
+        if prefab_type.count == 0 {
+           prefab_type = prefab_types[0]; 
+        }
+
+        if ImGui.BeginCombo("Type", to_c_string(prefab_type ,,temp)) {
+            for type, i : prefab_types {
+                if ImGui.Selectable(to_c_string(type ,,temp)) {
+                    prefab_type = type;
+                    prefab_type_index = i;
+                }
+            }
+            ImGui.EndCombo();
+        }
+        
         if ImGui.Button("Create") {
+            show_create_prefab = false;
+            scene := scenes[prefab_type_index];
+            
+            if scene && !text_is_empty(prefab_name) {
+                scene.make_prefab(scene);
+                ImGui.CloseCurrentPopup();
+            }
+        } 
+        ImGui.SameLine();
+        if ImGui.Button("Cancel") {
             show_create_prefab = false;
             ImGui.CloseCurrentPopup();
         }
         ImGui.EndPopup();
     }
     ImGui.PopStyleColor();
-
 }
 
 } //#if IMGUI

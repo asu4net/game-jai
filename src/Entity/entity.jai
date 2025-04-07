@@ -70,8 +70,11 @@ create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
     id := pop_front(*scene.free_ids);
     index := insert_id(*scene.used_ids, id);
     entity := *scene.entities[index];
+    if scene.init_entity {
+        scene.init_entity(entity);
+    }
     entity.tag = copy_string(tag);
-
+    
     if entity.flags & .SERIALIZABLE {
         if entity.tag.count == 0 {
             log_error("Serializable cannot have an empty tag!");

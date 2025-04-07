@@ -21,6 +21,17 @@ Entity2D :: struct {
     size       : Vector2;
 }
 
+init_2d_entity :: (entity : *Entity) {
+    assert(entity != null);
+    e := entity.(*Entity2D);
+    e.* = .{};
+    e.scl      = ONE_2D;
+    e.visible  = true;
+    e.autosize = true;
+    e.tint     = WHITE;
+    e.blend    = .ALPHA;
+}
+
 draw_2d_entities :: (scene : *Scene(Entity2D)) {
 
     draw_2d_begin(.{context.window.width, context.window.height});

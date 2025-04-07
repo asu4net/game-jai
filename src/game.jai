@@ -24,7 +24,7 @@ main :: () {
     init_draw_2d();
     defer deinit_draw_2d();
     
-    init(*entities2d, slot = xx Scenes.ENTITIES_2D);
+    init(*entities2d, init_proc = init_2d_entity, slot = xx Scenes.ENTITIES_2D);
     defer deinit(*entities2d);
 
     #if IMGUI {
@@ -35,15 +35,15 @@ main :: () {
     
     #if EDITOR {
         draw_imgui_proc = draw_editor;
-        init_editor();
-        defer deinit_editor();
     }
+
+    entities2d.make_prefab(xx *entities2d);
 
     while !context.window.done {
         process_window_events();
         clear_screen();
-        //#TODO_asuarez draw the game
-        #if EDITOR draw_imgui(draw_imgui_proc);
+        draw_2d_entities(*entities2d);
+        //#if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
         reset_temporary_storage();
     }
