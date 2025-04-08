@@ -57,7 +57,7 @@ draw_editor :: () {
 
         prefab_types : [..] PrefabEditorType;
         
-        for scene : scenes {
+        for scene : context.scenes {
             if !scene continue;
             array_add(*prefab_types, .{ scene.type.name, scene.slot } ,,temp);
         }
@@ -77,11 +77,12 @@ draw_editor :: () {
         
         if ImGui.Button("Create") {
             show_create_prefab = false;
-            scene := scenes[prefab_type.slot];
+            scene := context.scenes[prefab_type.slot];
             
             if scene && c_style_strlen(data(prefab_name)) > 0 {
                 prefab := scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));
-                print("%", prefab.tag);
+                //#REVIEW_asuarez Until we have editor we are going to serialize directly the entity
+                scene.entity_procs.serialize(prefab);
                 ImGui.CloseCurrentPopup();
             }
         } 

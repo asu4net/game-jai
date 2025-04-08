@@ -75,6 +75,16 @@ should_update :: (entity : *Entity) -> bool {
     return !is_enabled(entity) || !is_prefab(entity);
 }
 
+serialize_entity :: (entity : *$TEntity) {
+    assert(entity != null);
+    entities : [..] TEntity;
+    array_add(*entities, entity.* ,,temp);
+    for ref : entity.children {
+        array_add(*entities, .{}); //#TODO_asuarez We need to make a generic resolve_ref...
+    }
+    json_write_file(tprint("assets/%.json", entity.tag ,,temp), entities);
+}
+
 deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
     success, e := json_parse_string(json, TEntity ,,temp);
     if !success {
@@ -143,7 +153,7 @@ destroy_entity :: (entity : *Entity) {
 }
 
 clean_destroyed_entities :: () {
-    for scene : scenes {
+    for scene : context.scenes {
         if !scene continue;
         for _, id : scene.to_clean {        
             index := search(*scene.used_ids, id);

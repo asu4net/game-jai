@@ -37,7 +37,7 @@ Collider2D :: struct {
     target_flags : CollisionFlag;
     radius       : float32;
 
-    #if DEBUG then tint : Vector4;
+    #if DEBUG then tint : Vector4; @JsonIgnore
 }
 
 init_collider_2d :: (e : *Entity) {

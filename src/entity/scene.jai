@@ -7,33 +7,42 @@ DEF_SCENE_CAPACITY :: 100;
 
 Entity_Procs :: struct {
 
-    CREATE  :: #type (slot : u32, tag : string) -> *Entity;
-    DESTR0Y :: #type (entity : *Entity);
-    INIT    :: #type (entity : *Entity);
-    DEINIT  :: #type (entity : *Entity);
+    CREATE      :: #type (slot : u32, tag : string) -> *Entity;
+    DESTR0Y     :: #type (entity : *Entity);
+    INIT        :: #type (entity : *Entity);
+    DEINIT      :: #type (entity : *Entity);
+    SERIALIZE   :: #type (entity : *Entity);
 
-    create  : CREATE;
-    destroy : DESTR0Y;
-    init    : INIT;
-    deinit  : DEINIT;
+    create      : CREATE;
+    destroy     : DESTR0Y;
+    init        : INIT;
+    deinit      : DEINIT;
+    serialize   : SERIALIZE;
 }
 
 init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null) {
     assert(procs != null);
+
+    // Automatic procs
     procs.create = (slot : u32, tag : string) -> *Entity {
         scene := get_scene(slot).(*Scene(TEntity));
         return create_entity(scene, tag);
-    }
+    };
     procs.destroy = (entity : *Entity) {
         e := entity.(*TEntity);
         immediate_destroy_entity(e);
-    }
+    };
+    procs.serialize = (entity : *Entity) {
+        e := entity.(*TEntity);
+        serialize_entity(e);
+    };
+    
+    // User provided procs
     procs.init   = init_proc;
     procs.deinit = deinit_proc;
 }
 
 Scene :: struct($TEntity: Type = Entity) {
-
     #assert(is_entity(TEntity));
     entities     : [..] TEntity;
     slot         : u32;
@@ -46,6 +55,8 @@ Scene :: struct($TEntity: Type = Entity) {
     to_serialize : Table(string, Entity_ID);
     entity_procs : Entity_Procs;
 }
+
+#add_context scenes: [MAX_SCENES] *Scene;
 
 init :: (scene          : *Scene($TEntity), 
          slot           : u32, 
@@ -92,30 +103,24 @@ get_scene :: (entity : *Entity) -> *Scene(Entity) {
 
 get_scene_unsafe :: (slot : u32) -> *Scene(Entity) {
     assert(slot < MAX_SCENES);
-    return scenes[slot];
+    return context.scenes[slot];
 }
 
 get_scene :: (slot : u32) -> *Scene(Entity) {
-    assert(scene_count > 0 && slot < MAX_SCENES);
+    assert(slot < MAX_SCENES);
     scene := get_scene_unsafe(slot);
     assert(scene != null);
-    return xx scenes[slot];
+    return xx context.scenes[slot];
 }
-
-scenes: [MAX_SCENES] *Scene;
-scene_count: u32;
 
 add_scene :: (scene : *Scene, slot : u32) {
     assert(scene != null);
-    assert(scene_count < MAX_SCENES); //Tío si has llegado aquí, lo estás haciendo raro.
-    assert(scenes[slot] == null);
-    scenes[slot] = scene;
+    assert(context.scenes[slot] == null);
+    context.scenes[slot] = scene;
     scene.slot = slot;
-    scene_count += 1;
 }
 
 remove_scene :: (slot : u32) {
     current := get_scene(slot);
-    scenes[slot] = null;
-    scene_count -= 1;
+    context.scenes[slot] = null;
 }
