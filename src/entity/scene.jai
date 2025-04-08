@@ -26,7 +26,8 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
     // Automatic procs
     procs.create = (slot : u32, tag : string) -> *Entity {
         scene := get_scene(slot).(*Scene(TEntity));
-        return create_entity(scene, tag);
+        flags := DEFAULT_ENTITY_FLAGS | .SERIALIZABLE;
+        return create_entity(scene, tag, flags);
     };
     procs.destroy = (entity : *Entity) {
         e := entity.(*TEntity);

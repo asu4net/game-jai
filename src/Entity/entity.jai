@@ -90,7 +90,7 @@ serialize_entity_recursive :: (entity : *Entity, builder : *String_Builder = nul
 }
 
 serialize_entity :: (entity : *$TEntity) -> string {
-    assert(entity != null);
+    assert(entity != null && entity.flags & .SERIALIZABLE);
     return json_write_string(entity ,,temp);
 }
 
