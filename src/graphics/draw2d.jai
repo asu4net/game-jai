@@ -457,7 +457,7 @@ draw_gui_text :: (
     scl   : Vector2  = ONE_2D,
     text  : string   = "placeholder!",
     font  : *Font    = null,
-    blend : Blend = .ALPHA,
+    blend : Blend    = .ALPHA,
     tint  : Vector4  = WHITE,
     id    : u32      = 0
 )

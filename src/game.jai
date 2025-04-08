@@ -8,13 +8,24 @@ Scenes :: enum {
 
 Game :: struct {
     entities2d : Scene(Entity2D);
-} 
+
+    //enemies -> Logic_Sprite
+    //projectiles -> Logic_Sprite
+    //player -> Logic_Sprite
+
+    // Lo único que tienen en común el player, los enemigos, los proyectiles LAS COLISIONES
+
+    //props -> Sprite / Logic_Sprite
+    //gui -> Sprite / Text / Circle
+}
+
+// Vamos a tener 1 loop de colisiones
 
 #add_context game : Game;
 
 main :: () {
     using context.game;
-    
+
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
@@ -40,7 +51,7 @@ main :: () {
     while !context.window.done {
         process_window_events();
         clear_screen();
-        draw_2d_entities(*entities2d);
+        //draw_2d_entities(*entities2d);
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
         reset_temporary_storage();

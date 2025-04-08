@@ -1,51 +1,65 @@
-Sprite :: struct {
-    visible  : bool;
-    tint     : Vector4;
-    rect     : Rect;
-    item     : string;
-    tiling   : Vector2;
-    flip_x   : bool;
-    flip_y   : bool;
-    autosize : bool;
-    blend    : Blend;
-    sheet    : *Spritesheet;
+Entity2D_Flag :: enum_flags u16 {
+    VISIBLE;
+    FLIP_X;
+    FLIP_Y;
+    AUTOSIZE;
+    GUI;
 }
 
 Entity2D :: struct {
     #as using entity : Entity;
-    using sprite : Sprite;
 
+    flags2d    : Entity2D_Flag;
     pos        : Vector2;
     scl        : Vector2;
     ang        : float32;
     size       : Vector2;
+    tint       : Vector4;
+    blend      : Blend;
+}
+
+Sprite :: struct {
+    #as using entity2d : Entity2D;
+    
+    sheet  : *Spritesheet; @JsonIgnore
+    rect   : Rect; @JsonIgnore
+    item   : string; 
+    tiling : Vector2;
+    //particles
+}
+
+Logic_Sprite :: struct {
+    #as using sprite : Sprite;
+    //collisions
 }
 
 init_2d_entity :: (entity : *Entity) {
     assert(entity != null);
     e := entity.(*Entity2D);
     e.scl      = ONE_2D;
-    e.visible  = true;
-    e.autosize = true;
+    e.flags2d  = .VISIBLE | .AUTOSIZE;
     e.tint     = WHITE;
     e.blend    = .ALPHA;
 }
 
+/*
 draw_2d_entities :: (scene : *Scene(Entity2D)) {
     draw_2d_begin(.{context.window.width, context.window.height});
     for i : 1..scene.count {
-        e := (*scene.entities[i]).(*Entity2D);
+        e := *scene.entities[i];
         if !should_update(e) continue;
-        draw_2d_entity(e);
+        draw_sprite(e);
     }
     draw_2d_end();
 }
+*/
 
-draw_2d_entity :: (e : *Entity2D) {
+draw_sprite :: (e : *Sprite) {
     assert(e != null);
-    if !is_enabled(e) || !e.visible return;
+    if !is_enabled(e) || !.VISIBLE & e.flags2d return;
     tex   := ifx e.item.count > 0 then *e.sheet.tex else null;
     flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
+    if .AUTOSIZE & e.flags2d then flags |= .AUTOSIZE;
 
     // try find the item
     if tex && (e.rect.width == 0 || e.rect.height == 0) {

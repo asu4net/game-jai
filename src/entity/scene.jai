@@ -11,7 +11,7 @@ Entity_Procs :: struct {
     DESTR0Y :: #type (entity : *Entity);
     INIT    :: #type (entity : *Entity);
     DEINIT  :: #type (entity : *Entity);
-    
+
     create  : CREATE;
     destroy : DESTR0Y;
     init    : INIT;
@@ -35,7 +35,7 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
 Scene :: struct($TEntity: Type = Entity) {
 
     #assert(is_entity(TEntity));
-    entities     : [] TEntity;
+    entities     : [..] TEntity;
     slot         : u32;
     count        : int;
     capacity     : u32;
@@ -47,23 +47,22 @@ Scene :: struct($TEntity: Type = Entity) {
     entity_procs : Entity_Procs;
 }
 
-init :: (scene       : *Scene($TEntity), 
-         slot        : u32, 
-         init_proc   : Entity_Procs.INIT   = null,
-         deinit_proc : Entity_Procs.DEINIT = null,
-         capacity    : u32 = DEF_SCENE_CAPACITY) 
+init :: (scene          : *Scene($TEntity), 
+         slot           : u32, 
+         init_proc      : Entity_Procs.INIT   = null,
+         deinit_proc    : Entity_Procs.DEINIT = null,
+         start_capacity : u32 = DEF_SCENE_CAPACITY) 
 {
     assert(scene && !initialized(scene));
     add_scene(scene.(*Scene(Entity)), slot);
-    scene.entities = NewArray(capacity, TEntity);
+    array_resize(*scene.entities, start_capacity + 1);
     scene.type     = type_info(TEntity);
-    scene.capacity = capacity;
-
-    init(*scene.used_ids, capacity);
-    init(*scene.free_ids, capacity + 1);
+    scene.capacity = start_capacity + 1;
     
-    for i : 0..capacity-1 push_back(*scene.free_ids, cast(u32) i);
-    pop_front(*scene.free_ids); // Pop the invalid id [0].
+    init(*scene.used_ids, start_capacity);
+    init(*scene.free_ids, start_capacity + 1);
+    
+    for i : 1..start_capacity push_back(*scene.free_ids, xx i);
 
     init(TEntity, *scene.entity_procs, init_proc, deinit_proc); 
 }
