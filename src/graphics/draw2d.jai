@@ -108,15 +108,15 @@ Draw2D_Context :: struct {
     circle_shader      : Shader;
 }
 
-#add_context draw_2d : Draw2D_Context;
+#add_context draw2d : Draw2D_Context;
 
-is_draw_2d_initialized :: () -> bool {
-    return context.draw_2d.initialized;
+is_draw2d_initialized :: () -> bool {
+    return context.draw2d.initialized;
 }
 
-init_draw_2d :: () {
-    assert(!is_draw_2d_initialized());
-    state := *context.draw_2d;
+init_draw2d :: () {
+    assert(!is_draw2d_initialized());
+    state := *context.draw2d;
 
     state.gui_width  = DEF_SCREEN_WIDTH;
     state.gui_height = DEF_SCREEN_HEIGHT;
@@ -194,7 +194,7 @@ init_draw_2d :: () {
     state.initialized = true;
 }
 
-deinit_draw_2d :: () {
+deinit_draw2d :: () {
     Draw2DStateHeader();
     deinit(*state.white_texture);
 
@@ -209,14 +209,14 @@ deinit_draw_2d :: () {
     state.* = .{};
 }
 
-draw_2d_begin :: (using settings := Draw2D_Settings.{}) {
+draw2d_begin :: (using settings := Draw2D_Settings.{}) {
     Draw2DStateHeader();
     state.camera.viewport_w = viewport_width;
     state.camera.viewport_h = viewport_height;
     //start_batch(); This now is being handled by the primitive header.
 }
 
-draw_2d_end :: () {
+draw2d_end :: () {
     flush();
 }
 
@@ -511,14 +511,14 @@ draw_gui_text :: (
 }
 
 Draw2DStateHeader :: () #expand {
-    assert(is_draw_2d_initialized());
-    `state := *context.draw_2d;
+    assert(is_draw2d_initialized());
+    `state := *context.draw2d;
 }
 
 Draw2DPrimitiveHeader :: (_primitive_type : Primitive_Type, _camera_mode : RenderCameraMode, _blend_mode : Blend) #expand {
-    assert(is_draw_2d_initialized());
+    assert(is_draw2d_initialized());
     
-    `state := *context.draw_2d;
+    `state := *context.draw2d;
     
     if !state.started_batch {
         start_batch();

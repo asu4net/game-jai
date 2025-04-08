@@ -41,6 +41,9 @@
 #load "entity/entity.jai";
 #load "entity/entity2d.jai";
 
+//Collisions
+#load "entity/collision/collision2d.jai";
+
 // Graphics
 #load "graphics/window.jai";
 #load "graphics/constants.jai";

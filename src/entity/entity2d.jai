@@ -28,7 +28,7 @@ Sprite :: struct {
     //particles
 }
 
-Logic_Sprite :: struct {
+AIEntity2D :: struct {
     #as using sprite : Sprite;
     //collisions
 }
@@ -41,18 +41,6 @@ init_2d_entity :: (entity : *Entity) {
     e.tint     = WHITE;
     e.blend    = .ALPHA;
 }
-
-/*
-draw_2d_entities :: (scene : *Scene(Entity2D)) {
-    draw_2d_begin(.{context.window.width, context.window.height});
-    for i : 1..scene.count {
-        e := *scene.entities[i];
-        if !should_update(e) continue;
-        draw_sprite(e);
-    }
-    draw_2d_end();
-}
-*/
 
 draw_sprite :: (e : *Sprite) {
     assert(e != null);

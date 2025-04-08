@@ -96,7 +96,7 @@ get_scene_unsafe :: (slot : u32) -> *Scene(Entity) {
 }
 
 get_scene :: (slot : u32) -> *Scene(Entity) {
-    assert(scene_count > 0 && slot < scene_count);
+    assert(scene_count > 0 && slot < MAX_SCENES);
     scene := get_scene_unsafe(slot);
     assert(scene != null);
     return xx scenes[slot];

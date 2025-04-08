@@ -3,11 +3,12 @@
 GAME_NAME :: "Game";
 
 Scenes :: enum {
-    ENTITIES_2D;
+    AI_ENTITIES_2D;
+    COLLISIONS_2D;
 }
 
 Game :: struct {
-    entities2d : Scene(Entity2D);
+    ai_entities : Scene(AIEntity2D);
 
     //enemies -> Logic_Sprite
     //projectiles -> Logic_Sprite
@@ -32,11 +33,14 @@ main :: () {
     init_window(GAME_NAME);
     defer deinit_window();
     
-    init_draw_2d();
-    defer deinit_draw_2d();
+    init_draw2d();
+    defer deinit_draw2d();
     
-    init(*entities2d, init_proc = init_2d_entity, slot = xx Scenes.ENTITIES_2D);
-    defer deinit(*entities2d);
+    //init(*entities2d, init_proc = init_2d_entity, slot = xx Scenes.ENTITIES_2D);
+    //defer deinit(*entities2d);
+
+    init_collisions2d();
+    defer deinit_collisions2d();
 
     #if IMGUI {
         draw_imgui_proc : IMGUI_DRAW_PROC;
@@ -51,9 +55,10 @@ main :: () {
     while !context.window.done {
         process_window_events();
         clear_screen();
-        //draw_2d_entities(*entities2d);
+        //draw2d_entities(*entities2d);
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
+        clean_destroyed_entities();
         reset_temporary_storage();
     }
 }

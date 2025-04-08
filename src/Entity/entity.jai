@@ -15,6 +15,15 @@ Entity_Ref :: struct {
     id    : Entity_ID; @JsonIgnore
 }
 
+hash_entity_ref :: (a : Entity_Ref) -> u32 {
+    return xx a.id;
+}
+
+compare_entity_ref :: (a : Entity_Ref, b : Entity_Ref) -> bool {
+    assert(is_not_cleaned(resolve_ref(*a)) && is_not_cleaned(resolve_ref(*b)));
+    return a.id == b.id;
+}
+
 Entity :: struct {
     tag      : string;
     flags    : Entity_Flag;
@@ -29,8 +38,7 @@ is_entity :: ($T: Type) -> bool {
     return type_info(Entity) == info || is_subclass_of(info, type_info(Entity).name);
 }
 
-initialized :: (scene : *Scene) -> bool {
-    assert(scene != null);
+initialized :: (scene : Scene) -> bool {
     return scene.entities.data != null;
 }
 
@@ -80,7 +88,7 @@ create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_F
         array_add(*scene.entities, .{});
         scene.capacity = xx scene.entities.allocated;
     }
-    
+
     id := pop_front(*scene.free_ids);
     index := insert_id(*scene.used_ids, id);
     entity := *scene.entities[index];
@@ -133,6 +141,7 @@ destroy_entity :: (entity : *Entity) {
 
 clean_destroyed_entities :: () {
     for scene : scenes {
+        if !scene continue;
         for _, id : scene.to_clean {        
             index := search(*scene.used_ids, id);
             assert(index != 0);
