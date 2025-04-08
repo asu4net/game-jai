@@ -19,6 +19,8 @@ hash_entity_ref :: (a : Entity_Ref) -> u32 {
     return xx a.id;
 }
 
+Entity_Ref_Set :: Table(Entity_Ref, struct{}, hash_entity_ref, compare_entity_ref);
+
 compare_entity_ref :: (a : Entity_Ref, b : Entity_Ref) -> bool {
     assert(is_not_cleaned(resolve_ref(*a)) && is_not_cleaned(resolve_ref(*b)));
     return a.id == b.id;
@@ -70,7 +72,7 @@ is_prefab :: (entity : *Entity) -> bool {
 }
 
 should_update :: (entity : *Entity) -> bool {
-    return !is_prefab(entity);
+    return !is_enabled(entity) || !is_prefab(entity);
 }
 
 deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
@@ -93,6 +95,7 @@ create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_F
     index := insert_id(*scene.used_ids, id);
     entity := *scene.entities[index];
     entity.tag = copy_string(tag);
+    entity.slot = scene.slot;
 
     if entity.flags & .SERIALIZABLE {
         if entity.tag.count == 0 {
@@ -125,7 +128,7 @@ create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_E
 
 destroy_entity :: (entity : *Entity) {
     if entity == null then {
-        log_error("You're trying to destroy a null entity dude");
+        log_error("You're trying to destroy a null dude");
         return;
     }
     

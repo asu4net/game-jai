@@ -11,9 +11,13 @@ data :: (buff : TextBuff) -> *u8 {
 Editor :: struct {
     show_demo           : bool;
     prefab_name         : TextBuff;
-    prefab_type         : string;
-    prefab_type_index   : int;
+    prefab_type         : PrefabEditorType;
     show_create_prefab  : bool;
+}
+
+PrefabEditorType :: struct {
+    name : string;
+    slot : u32;
 }
 
 #add_context editor : Editor;
@@ -50,22 +54,22 @@ draw_editor :: () {
     
     if ImGui.BeginPopupModal("Create Prefab", flags = .AlwaysAutoResize | .NoMove)  {
         ImGui.InputText("Name", data(prefab_name), TEXT_BUFF_SIZE);
-        prefab_types : [..] string;
+
+        prefab_types : [..] PrefabEditorType;
         
         for scene : scenes {
             if !scene continue;
-            array_add(*prefab_types, scene.type.name ,,temp);
+            array_add(*prefab_types, .{ scene.type.name, scene.slot } ,,temp);
         }
 
-        if prefab_type.count == 0 {
-           prefab_type = prefab_types[0]; 
+        if prefab_type.name.count == 0 {
+           prefab_type = prefab_types[0];
         }
 
-        if ImGui.BeginCombo("Type", to_c_string(prefab_type ,,temp)) {
+        if ImGui.BeginCombo("Type", to_c_string(prefab_type.name ,,temp)) {
             for type, i : prefab_types {
-                if ImGui.Selectable(to_c_string(type ,,temp)) {
+                if ImGui.Selectable(to_c_string(type.name ,,temp)) {
                     prefab_type = type;
-                    prefab_type_index = i;
                 }
             }
             ImGui.EndCombo();
@@ -73,7 +77,7 @@ draw_editor :: () {
         
         if ImGui.Button("Create") {
             show_create_prefab = false;
-            scene := scenes[prefab_type_index];
+            scene := scenes[prefab_type.slot];
             
             if scene && c_style_strlen(data(prefab_name)) > 0 {
                 prefab := scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));

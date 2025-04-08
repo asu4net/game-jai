@@ -55,6 +55,7 @@ main :: () {
     while !context.window.done {
         process_window_events();
         clear_screen();
+        query_collisions2d();
         //draw2d_entities(*entities2d);
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
