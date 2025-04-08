@@ -28,11 +28,6 @@ Sprite :: struct {
     //particles
 }
 
-AIEntity2D :: struct {
-    #as using sprite : Sprite;
-    //collisions
-}
-
 init_2d_entity :: (entity : *Entity) {
     assert(entity != null);
     e := entity.(*Entity2D);
@@ -40,6 +35,31 @@ init_2d_entity :: (entity : *Entity) {
     e.flags2d  = .VISIBLE | .AUTOSIZE;
     e.tint     = WHITE;
     e.blend    = .ALPHA;
+}
+
+AIEntity2D :: struct {
+    #as using sprite : Sprite;
+    //collisions
+}
+
+#add_context sprites : Scene(Sprite);
+
+init_sprites :: () {
+    init(*context.sprites, 0, init_proc = init_2d_entity);
+}
+
+deinit_sprites :: () {
+    deinit(*context.sprites);
+}
+
+draw_sprites :: () {
+    for i : 1..context.sprites.count {
+        sprite := *context.sprites.entities[i];
+        if !should_update(sprite) continue;
+        draw2d_begin(.{context.window.width, context.window.height});
+        draw_sprite(sprite);
+        draw2d_end();
+    }
 }
 
 draw_sprite :: (e : *Sprite) {

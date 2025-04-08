@@ -75,23 +75,41 @@ should_update :: (entity : *Entity) -> bool {
     return !is_enabled(entity) || !is_prefab(entity);
 }
 
-serialize_entity :: (entity : *$TEntity) {
+// #NOTE_asuarez we don't know if the children entities would be the same type as
+// the provided so a bit of function pointer mess is required :p.
+serialize_entity_recursive :: (entity : *Entity, builder : *String_Builder = null) {
     assert(entity != null);
-    entities : [..] TEntity;
-    array_add(*entities, entity.* ,,temp);
+    scene := get_scene(entity);
+    parent := entity;
+    parent_json := scene.entity_procs.serialize(parent);
+    append(builder, parent_json ,,temp);
     for ref : entity.children {
-        array_add(*entities, .{}); //#TODO_asuarez We need to make a generic resolve_ref...
+        child := resolve_ref(*ref);
+        serialize_entity_recursive(entity, builder);        
     }
-    json_write_file(tprint("assets/%.json", entity.tag ,,temp), entities);
+}
+
+serialize_entity :: (entity : *$TEntity) -> string {
+    assert(entity != null);
+    return json_write_string(entity ,,temp);
 }
 
 deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
     success, e := json_parse_string(json, TEntity ,,temp);
+    
     if !success {
-        log_error("Entity could not be created!");
+        log_error("Entity could not be deserialized!");
         return null;
     }
-    return clone_entity(TEntity, *e); 
+    
+    scene := get_scene(e);
+    entity := create_entity(TEntity, e.slot, e.tag);
+    id := entity.id;
+    entity.* = e.*;
+    entity.id = id;
+    array_copy(*entity.children, e.children);
+
+    return entity;
 }
 
 create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {

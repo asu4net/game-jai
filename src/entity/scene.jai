@@ -11,7 +11,7 @@ Entity_Procs :: struct {
     DESTR0Y     :: #type (entity : *Entity);
     INIT        :: #type (entity : *Entity);
     DEINIT      :: #type (entity : *Entity);
-    SERIALIZE   :: #type (entity : *Entity);
+    SERIALIZE   :: #type (entity : *Entity) -> string;
 
     create      : CREATE;
     destroy     : DESTR0Y;
@@ -32,9 +32,9 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
         e := entity.(*TEntity);
         immediate_destroy_entity(e);
     };
-    procs.serialize = (entity : *Entity) {
+    procs.serialize = (entity : *Entity) -> string {
         e := entity.(*TEntity);
-        serialize_entity(e);
+        return serialize_entity(e);
     };
     
     // User provided procs

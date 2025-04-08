@@ -42,6 +42,9 @@ main :: () {
     init_collisions2d();
     defer deinit_collisions2d();
 
+    init_sprites();
+    defer deinit_sprites();
+
     #if IMGUI {
         draw_imgui_proc : IMGUI_DRAW_PROC;
         init_imgui();
@@ -56,7 +59,7 @@ main :: () {
         process_window_events();
         clear_screen();
         query_collisions2d();
-        //draw2d_entities(*entities2d);
+        draw_sprites();
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
         clean_destroyed_entities();

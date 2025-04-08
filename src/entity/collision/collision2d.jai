@@ -88,13 +88,13 @@ query_collisions2d :: () {
     array_copy(*prev_collisions, collisions_in_last_frame);
     array_reset(*collisions_in_last_frame);
 
-    for i : 1..scene.count-1 {
+    for i : 1..scene.count {
         
         entity_A := scene.entities[i];
         if !should_update(entity_A) {
             continue;
         }
-        for j : (i + 1)..scene.count-1 {
+        for j : (i + 1)..scene.count {
             entity_B := scene.entities[i];
             if !should_update(entity_B) {
                 continue;

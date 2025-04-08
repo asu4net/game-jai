@@ -82,7 +82,9 @@ draw_editor :: () {
             if scene && c_style_strlen(data(prefab_name)) > 0 {
                 prefab := scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));
                 //#REVIEW_asuarez Until we have editor we are going to serialize directly the entity
-                scene.entity_procs.serialize(prefab);
+                builder : String_Builder;
+                serialize_entity_recursive(prefab, *builder);
+                write_entire_file(tprint("assets/%.json", prefab.tag ,,temp), *builder);
                 ImGui.CloseCurrentPopup();
             }
         } 
