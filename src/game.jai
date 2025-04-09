@@ -54,7 +54,7 @@ main :: () {
     #if EDITOR {
         draw_imgui_proc = draw_editor;
     }
-
+        
     while !context.window.done {
         process_window_events();
         clear_screen();

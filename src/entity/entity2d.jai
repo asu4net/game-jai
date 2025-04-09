@@ -30,11 +30,6 @@ Sprite :: struct {
 
 init_2d_entity :: (entity : *Entity) {
     assert(entity != null);
-    e := entity.(*Entity2D);
-    e.scl      = ONE_2D;
-    e.flags2d  = .VISIBLE | .AUTOSIZE;
-    e.tint     = WHITE;
-    e.blend    = .ALPHA;
 }
 
 AIEntity2D :: struct {

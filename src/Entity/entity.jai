@@ -96,7 +96,7 @@ serialize_entity :: (entity : *$TEntity) -> string {
 
 deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
     success, e := json_parse_string(json, TEntity ,,temp);
-    
+
     if !success {
         log_error("Entity could not be deserialized!");
         return null;
@@ -105,11 +105,65 @@ deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
     scene := get_scene(e);
     entity := create_entity(TEntity, e.slot, e.tag);
     id := entity.id;
-    entity.* = e.*;
+    entity.* = e;
     entity.id = id;
     array_copy(*entity.children, e.children);
 
     return entity;
+}
+
+deserialize_entity :: (json : string) -> *Entity {
+    //#REVIEW_asuarez Currently I'm deserializing the entity twice to get the scene slot.
+    // It would be better to have some kind of entity header, but for it is ok for now.
+    success, generic_entity := json_parse_string(json, Entity ,,temp);
+    if !success {
+        return null;
+    }
+    scene := get_scene(generic_entity.slot);
+    if !scene {
+        return null;
+    }
+    specific_entity := scene.entity_procs.deserialize(json);
+    return specific_entity;
+}
+
+deserialize_entity_recursive :: (json : string) -> *Entity {
+
+    tag_found : bool;
+    builder : String_Builder;
+    parent_entity : *Entity;
+
+    while 1 {
+        line, found := consume_next_line(*json);
+        line = trim(line);
+
+        deserialize_section :: (builder : *String_Builder, parent : **Entity) {
+            entity := deserialize_entity(builder_to_string(builder));
+            reset(builder);
+            assert(entity != null);
+            //#REVIEW_asuarez We expect that the first entity should be the parent.
+            parent.* = ifx !parent.* then entity;
+        }
+
+        // We asume end of file, so deserialize last entity
+        if !found {
+            assert(tag_found);
+            deserialize_section(*builder, *parent_entity);
+            break;
+        }
+
+        if contains(line, "#entity") {
+            if !tag_found {
+                tag_found = true;    
+                continue;
+            }
+            deserialize_section(*builder, *parent_entity);
+        } else {
+            append(*builder, line);
+        }    
+    }
+    
+    return parent_entity;
 }
 
 create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
@@ -140,7 +194,7 @@ create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_F
 
     entity.id    = id;
     entity.flags = flags;
-    scene.count =+ 1;
+    scene.count += 1;
 
     if scene.entity_procs.init {
         scene.entity_procs.init(entity);

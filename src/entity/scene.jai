@@ -12,12 +12,14 @@ Entity_Procs :: struct {
     INIT        :: #type (entity : *Entity);
     DEINIT      :: #type (entity : *Entity);
     SERIALIZE   :: #type (entity : *Entity) -> string;
+    DESERIALIZE :: #type (json : string) -> *Entity;
 
     create      : CREATE;
     destroy     : DESTR0Y;
     init        : INIT;
     deinit      : DEINIT;
     serialize   : SERIALIZE;
+    deserialize : DESERIALIZE;
 }
 
 init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null) {
@@ -37,6 +39,10 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
         e := entity.(*TEntity);
         return serialize_entity(e);
     };
+    procs.deserialize = (json : string) -> *Entity {
+        e := deserialize_entity(TEntity, json);
+        return xx e;
+    }
     
     // User provided procs
     procs.init   = init_proc;

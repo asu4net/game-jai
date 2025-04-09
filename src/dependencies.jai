@@ -7,6 +7,7 @@
 #import "Math";
 #import "File";
 #import "File_Utilities";
+#import "Text_File_Handler";
 
 // Vendor Modules
 #import "SDL";

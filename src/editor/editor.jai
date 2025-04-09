@@ -34,6 +34,21 @@ draw_editor :: () {
             if ImGui.MenuItem("New") {
                 show_create_prefab = true;
             }
+            if ImGui.BeginMenu("Load") {
+                // Load all the prefabs
+                visit_files("assets", true, null, (info: *File_Visit_Info, *void) {
+                    path, basename, ext := path_decomp(info.full_name ,,temp);
+                    if ext != "prefab" {
+                        return;
+                    }
+                    if ImGui.MenuItem(to_c_string(basename ,,temp)) {
+                        prefab_str, success := read_entire_file(info.full_name ,,temp);
+                        assert(success);
+                        deserialize_entity_recursive(prefab_str);
+                    }
+                });
+                ImGui.EndMenu();
+            }
             ImGui.EndMenu();
         }
         ImGui.EndMenuBar();
@@ -84,10 +99,11 @@ draw_editor :: () {
                 //#REVIEW_asuarez Until we have editor we are going to serialize directly the entity
                 builder : String_Builder;
                 serialize_entity_recursive(prefab, *builder);
-                write_entire_file(tprint("assets/%.json", prefab.tag ,,temp), *builder);
+                write_entire_file(tprint("assets/%.prefab", prefab.tag ,,temp), *builder);
                 ImGui.CloseCurrentPopup();
             }
-        } 
+        }
+
         ImGui.SameLine();
         if ImGui.Button("Cancel") {
             show_create_prefab = false;
