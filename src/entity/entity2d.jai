@@ -3,65 +3,55 @@ Entity2D_Flag :: enum_flags u16 {
     FLIP_X;
     FLIP_Y;
     AUTOSIZE;
-    GUI;
 }
 
 Entity2D :: struct {
     #as using entity : Entity;
-
-    flags2d    : Entity2D_Flag = .VISIBLE | .AUTOSIZE;
-    pos        : Vector2       = ZERO_2D;
-    scl        : Vector2       = ONE_2D;
-    ang        : float32       = 0;
-    size       : Vector2       = ONE_2D;
-    tint       : Vector4       = WHITE;
-    blend      : Blend         = .ALPHA;
-}
-
-Sprite :: struct {
-    #as using entity2d : Entity2D;
     
-    sheet  : *Spritesheet; @JsonIgnore
-    rect   : Rect; @JsonIgnore
-    item   : string; 
-    tiling : Vector2;
-    //particles
+    flags2d : Entity2D_Flag = .VISIBLE | .AUTOSIZE;
+    sheet   : *Spritesheet; @JsonIgnore
+    rect    : Rect;         @JsonIgnore
+    item    : string; 
+    pos     : Vector2       = ZERO_2D;
+    scl     : Vector2       = ONE_2D;
+    ang     : float32       = 0;
+    size    : Vector2       = ONE_2D;
+    tint    : Vector4       = WHITE;
+    blend   : Blend         = .ALPHA;
+    tiling  : Vector2       = ONE_2D;
 }
 
-AIEntity2D :: struct {
-    #as using sprite : Sprite;
-    //collisions
-}
+#add_context entities2d : Scene(Entity2D);
 
-#add_context sprites : Scene(Sprite);
-
-copy_sprite :: (dst : *Entity, src : *Entity) {
-    s_dst := dst.(*Sprite);
-    s_src := src.(*Sprite);
+copy_entity2d :: (dst : *Entity, src : *Entity) {
+    s_dst := dst.(*Entity2D);
+    s_src := src.(*Entity2D);
     base_entity := s_dst.entity;
     s_dst.* = s_src.*;
     s_dst.entity = base_entity;
 }
 
-init_sprites :: () {
-    init(*context.sprites, 0, copy_proc = copy_sprite);
+init_entities2d :: () {
+    init(*context.entities2d, xx Scenes.ENTITIES_2D, copy_proc = copy_entity2d);
 }
 
-deinit_sprites :: () {
-    deinit(*context.sprites);
+deinit_entities2d :: () {
+    deinit(*context.entities2d);
 }
 
-draw_sprites :: () {
-    for i : 1..context.sprites.count {
-        sprite := *context.sprites.entities[i];
-        if !should_update(sprite) continue;
+draw_entities2d :: () {
+    for i : 1..context.entities2d.count {
+        e := *context.entities2d.entities[i];
+        if !should_update(e) {
+            continue;
+        }
         draw2d_begin(.{context.window.width, context.window.height});
-        draw_sprite(sprite);
+        draw_entities2d(e);
         draw2d_end();
     }
 }
 
-draw_sprite :: (e : *Sprite) {
+draw_entities2d :: (e : *Entity2D) {
     assert(e != null);
     if !is_enabled(e) || !.VISIBLE & e.flags2d return;
     tex   := ifx e.item.count > 0 then *e.sheet.tex else null;
@@ -73,6 +63,6 @@ draw_sprite :: (e : *Sprite) {
         rect, found := table_find(*e.sheet.rects, e.item);
         e.rect = ifx found then rect;
     }
-        
+    
     draw_quad(e.pos, e.ang, e.scl, tex, e.tiling, e.size, e.blend, e.rect, e.tint, e.id, flags);
 }
