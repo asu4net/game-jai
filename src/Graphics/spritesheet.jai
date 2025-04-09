@@ -15,12 +15,6 @@ SpritesheetDef :: struct {
     rects : [..] SheetDefItem;
 }
 
-deinit :: (sheet : *Spritesheet) {
-    assert(sheet != null);
-    deinit(*sheet.tex);
-    deinit(*sheet.rects);
-}
-
 init :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
     
     full_path_png  := join(dst_path, "/", sheet_name, ".png" ,,temp);
@@ -36,7 +30,19 @@ init :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MA
     assert(success);
     
     init(*sheet.tex, full_path_png);
-    for sheet_def.rects table_add(*sheet.rects, it.name, it.rect);
+    
+    for sheet_def.rects {
+        table_add(*sheet.rects, copy_string(it.name), it.rect);
+    }
+}
+
+deinit :: (sheet : *Spritesheet) {
+    assert(sheet != null);
+    deinit(*sheet.tex);
+    for _, name : sheet.rects {
+        free(name);
+    }
+    deinit(*sheet.rects);
 }
 
 generate_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {

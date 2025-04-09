@@ -1,12 +1,7 @@
 #entity
 {
-	"tag": "test",
+	"tag": "player",
 	"flags": "VALID | LOCAL_ENABLED | ENABLED",
-	"slot": 0,
-	"parent": {
-		"tag": "",
-		"slot": 0
-	},
 	"children": [
 		{
 			"slot": 0,
@@ -14,15 +9,10 @@
 		}
 	],
 	"flags2d": "VISIBLE | AUTOSIZE",
-	"pos": {
-		"x": 0,
-		"y": 0
-	},
 	"scl": {
 		"x": 1,
 		"y": 1
 	},
-	"ang": 0,
 	"size": {
 		"x": 1,
 		"y": 1
@@ -34,10 +24,10 @@
 		"w": 1
 	},
 	"blend": "ALPHA",
-	"item": "",
+	"item": "player",
 	"tiling": {
-		"x": 0,
-		"y": 0
+		"x": 1,
+		"y": 1
 	}
 }
 #entity

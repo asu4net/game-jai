@@ -9,9 +9,8 @@ Entity2D :: struct {
     #as using entity : Entity;
     
     flags2d : Entity2D_Flag = .VISIBLE | .AUTOSIZE;
-    sheet   : *Spritesheet; @JsonIgnore
+    item    : string;
     rect    : Rect;         @JsonIgnore
-    item    : string; 
     pos     : Vector2       = ZERO_2D;
     scl     : Vector2       = ONE_2D;
     ang     : float32       = 0;
@@ -22,6 +21,7 @@ Entity2D :: struct {
 }
 
 #add_context entities2d : Scene(Entity2D);
+#add_context sheet : Spritesheet;
 
 copy_entity2d :: (dst : *Entity, src : *Entity) {
     s_dst := dst.(*Entity2D);
@@ -32,10 +32,12 @@ copy_entity2d :: (dst : *Entity, src : *Entity) {
 }
 
 init_entities2d :: () {
+    init(*context.sheet);
     init(*context.entities2d, xx Scenes.ENTITIES_2D, copy_proc = copy_entity2d);
 }
 
 deinit_entities2d :: () {
+    deinit(*context.sheet);
     deinit(*context.entities2d);
 }
 
@@ -54,13 +56,13 @@ draw_entities2d :: () {
 draw_entities2d :: (e : *Entity2D) {
     assert(e != null);
     if !is_enabled(e) || !.VISIBLE & e.flags2d return;
-    tex   := ifx e.item.count > 0 then *e.sheet.tex else null;
+    tex   := ifx e.item.count > 0 then *context.sheet.tex else null;
     flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
     if .AUTOSIZE & e.flags2d then flags |= .AUTOSIZE;
 
     // try find the item
     if tex && (e.rect.width == 0 || e.rect.height == 0) {
-        rect, found := table_find(*e.sheet.rects, e.item);
+        rect, found := table_find(*context.sheet.rects, e.item);
         e.rect = ifx found then rect;
     }
     
