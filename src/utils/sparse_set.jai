@@ -25,7 +25,7 @@ deinit :: (using s : *Sparse_Set) {
 
 test :: (using s : *Sparse_Set, element : u32) -> bool {
     assert(initialized(s));
-    return element < capacity && sparse[element] < count + 1 && sparse[element] != 0;
+    return element != 0 && element < capacity && sparse[element] <= count && sparse[element] != 0;
 }
 
 search :: (using s : *Sparse_Set, element : u32) -> u32 {
@@ -63,7 +63,7 @@ remove_id :: (using s : *Sparse_Set, element : u32) -> u32, u32 {
     assert(element < capacity && test(s, element));
     
     deleted := sparse[element];
-    last    := count - 1;
+    last    := count;
 
     sparse[element] = 0;
     count -= 1;

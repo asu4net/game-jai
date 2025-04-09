@@ -12,7 +12,8 @@ Entity_Procs :: struct {
     INIT        :: #type (entity : *Entity);
     DEINIT      :: #type (entity : *Entity);
     SERIALIZE   :: #type (entity : *Entity) -> string;
-    DESERIALIZE :: #type (json : string) -> *Entity;
+    DESERIALIZE :: #type (json   : string) -> *Entity;
+    COPY        :: #type (dst : *Entity, src : *Entity);
 
     create      : CREATE;
     destroy     : DESTR0Y;
@@ -20,16 +21,16 @@ Entity_Procs :: struct {
     deinit      : DEINIT;
     serialize   : SERIALIZE;
     deserialize : DESERIALIZE;
+    copy        : COPY;
 }
 
-init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null) {
+init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null, copy_proc : Entity_Procs.COPY) {
     assert(procs != null);
 
     // Automatic procs
     procs.create = (slot : u32, tag : string) -> *Entity {
         scene := get_scene(slot).(*Scene(TEntity));
-        flags := DEFAULT_ENTITY_FLAGS | .SERIALIZABLE;
-        return create_entity(scene, tag, flags);
+        return create_entity(scene, tag);
     };
     procs.destroy = (entity : *Entity) {
         e := entity.(*TEntity);
@@ -47,6 +48,7 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
     // User provided procs
     procs.init   = init_proc;
     procs.deinit = deinit_proc;
+    procs.copy   = copy_proc;
 }
 
 Scene :: struct($TEntity: Type = Entity) {
@@ -59,7 +61,7 @@ Scene :: struct($TEntity: Type = Entity) {
     free_ids     : Queue(Entity_ID);
     to_clean     : Table(Entity_ID, struct{});
     type         : *Type_Info_Struct;
-    to_serialize : Table(string, Entity_ID);
+    tag_to_id    : Table(string, Entity_ID);
     entity_procs : Entity_Procs;
 }
 
@@ -69,6 +71,7 @@ init :: (scene          : *Scene($TEntity),
          slot           : u32, 
          init_proc      : Entity_Procs.INIT   = null,
          deinit_proc    : Entity_Procs.DEINIT = null,
+         copy_proc      : Entity_Procs.COPY  = null,
          start_capacity : u32 = DEF_SCENE_CAPACITY) 
 {
     assert(scene && !initialized(scene));
@@ -82,7 +85,7 @@ init :: (scene          : *Scene($TEntity),
     
     for i : 1..start_capacity push_back(*scene.free_ids, xx i);
 
-    init(TEntity, *scene.entity_procs, init_proc, deinit_proc); 
+    init(TEntity, *scene.entity_procs, init_proc, deinit_proc, copy_proc); 
 }
 
 deinit :: (scene: *Scene) {
@@ -97,7 +100,7 @@ deinit :: (scene: *Scene) {
     free(scene.entities.data);
     deinit(*scene.used_ids);
     deinit(*scene.free_ids);
-    deinit(*scene.to_serialize);
+    deinit(*scene.tag_to_id);
     scene.* = .{};
 }
 

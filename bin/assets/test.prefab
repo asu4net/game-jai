@@ -1,7 +1,7 @@
 #entity
 {
 	"tag": "test",
-	"flags": "VALID | LOCAL_ENABLED | ENABLED | SERIALIZABLE",
+	"flags": "VALID | LOCAL_ENABLED | ENABLED",
 	"slot": 0,
 	"parent": {
 		"tag": "",
@@ -43,7 +43,7 @@
 #entity
 {
 	"tag": "child_test",
-	"flags": "VALID | LOCAL_ENABLED | ENABLED | SERIALIZABLE",
+	"flags": "VALID | LOCAL_ENABLED | ENABLED",
 	"slot": 0,
 	"parent": {
 		"tag": "",

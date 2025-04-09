@@ -9,13 +9,13 @@ Entity2D_Flag :: enum_flags u16 {
 Entity2D :: struct {
     #as using entity : Entity;
 
-    flags2d    : Entity2D_Flag;
-    pos        : Vector2;
-    scl        : Vector2;
-    ang        : float32;
-    size       : Vector2;
-    tint       : Vector4;
-    blend      : Blend;
+    flags2d    : Entity2D_Flag = .VISIBLE | .AUTOSIZE;
+    pos        : Vector2       = ZERO_2D;
+    scl        : Vector2       = ONE_2D;
+    ang        : float32       = 0;
+    size       : Vector2       = ONE_2D;
+    tint       : Vector4       = WHITE;
+    blend      : Blend         = .ALPHA;
 }
 
 Sprite :: struct {
@@ -28,10 +28,6 @@ Sprite :: struct {
     //particles
 }
 
-init_2d_entity :: (entity : *Entity) {
-    assert(entity != null);
-}
-
 AIEntity2D :: struct {
     #as using sprite : Sprite;
     //collisions
@@ -39,8 +35,16 @@ AIEntity2D :: struct {
 
 #add_context sprites : Scene(Sprite);
 
+copy_sprite :: (dst : *Entity, src : *Entity) {
+    s_dst := dst.(*Sprite);
+    s_src := src.(*Sprite);
+    base_entity := s_dst.entity;
+    s_dst.* = s_src.*;
+    s_dst.entity = base_entity;
+}
+
 init_sprites :: () {
-    init(*context.sprites, 0, init_proc = init_2d_entity);
+    init(*context.sprites, 0, copy_proc = copy_sprite);
 }
 
 deinit_sprites :: () {

@@ -1,11 +1,9 @@
 Entity_ID :: u32;
-DEFAULT_ENTITY_FLAGS :: (.VALID | .LOCAL_ENABLED | .ENABLED).(Entity_Flag);
 
 Entity_Flag :: enum_flags u16 {
     VALID;
     LOCAL_ENABLED;
     ENABLED;
-    SERIALIZABLE;
     PREFAB;
 }
 
@@ -28,7 +26,7 @@ compare_entity_ref :: (a : Entity_Ref, b : Entity_Ref) -> bool {
 
 Entity :: struct {
     tag      : string;
-    flags    : Entity_Flag;
+    flags    : Entity_Flag = .VALID | .LOCAL_ENABLED | .ENABLED;
     id       : Entity_ID; @JsonIgnore
     slot     : u32;
     parent   : Entity_Ref;
@@ -90,7 +88,7 @@ serialize_entity_recursive :: (entity : *Entity, builder : *String_Builder = nul
 }
 
 serialize_entity :: (entity : *$TEntity) -> string {
-    assert(entity != null && entity.flags & .SERIALIZABLE);
+    assert(entity != null && entity.tag.count > 0);
     return json_write_string(entity ,,temp);
 }
 
@@ -102,14 +100,8 @@ deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
         return null;
     }
     
-    scene := get_scene(e);
-    entity := create_entity(TEntity, e.slot, e.tag);
-    id := entity.id;
-    entity.* = e;
-    entity.id = id;
-    array_copy(*entity.children, e.children);
-
-    return entity;
+    entity := clone_entity(*e, deserialization = true);
+    return xx entity;
 }
 
 deserialize_entity :: (json : string) -> *Entity {
@@ -138,7 +130,7 @@ deserialize_entity_recursive :: (json : string) -> *Entity {
         line = trim(line);
 
         deserialize_section :: (builder : *String_Builder, parent : **Entity) {
-            entity := deserialize_entity(builder_to_string(builder));
+            entity := deserialize_entity(builder_to_string(builder ,,temp));
             reset(builder);
             assert(entity != null);
             //#REVIEW_asuarez We expect that the first entity should be the parent.
@@ -166,34 +158,29 @@ deserialize_entity_recursive :: (json : string) -> *Entity {
     return parent_entity;
 }
 
-create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
+create_entity :: (scene : *Scene($TEntity), tag := "") -> *TEntity {
     
     if scene.count <= scene.capacity {
         array_add(*scene.entities, .{});
         scene.capacity = xx scene.entities.allocated;
     }
-
+    
     id := pop_front(*scene.free_ids);
     index := insert_id(*scene.used_ids, id);
     entity := *scene.entities[index];
     entity.tag = copy_string(tag);
     entity.slot = scene.slot;
 
-    if entity.flags & .SERIALIZABLE {
-        if entity.tag.count == 0 {
-            log_error("Serializable cannot have an empty tag!");
-            return null;
-        }
-        _, found := table_find(*scene.to_serialize, tag);
+    if tag.count {
+         _, found := table_find(*scene.tag_to_id, tag);
         if found then {
             log_error("Serializable entity with the same tag already exists!");
             return null;
         }
-        table_add(*scene.to_serialize, tag, id);
+        table_add(*scene.tag_to_id, entity.tag, id);
     }
 
     entity.id    = id;
-    entity.flags = flags;
     scene.count += 1;
 
     if scene.entity_procs.init {
@@ -203,9 +190,9 @@ create_entity :: (scene : *Scene($TEntity), tag := "", flags := DEFAULT_ENTITY_F
     return entity;
 }
 
-create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "", flags := DEFAULT_ENTITY_FLAGS) -> *TEntity {
+create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "") -> *TEntity {
     scene := get_scene(slot).(*Scene(TEntity));
-    return create_entity(scene, tag, flags);
+    return create_entity(scene, tag);
 }
 
 destroy_entity :: (entity : *Entity) {
@@ -243,8 +230,16 @@ immediate_destroy_entity :: (entity : *$TEntity) {
     if scene.entity_procs.deinit {
         scene.entity_procs.deinit(entity);
     }
+    
     push_back(*scene.free_ids, entity.id);
-    free(entity.tag);
+ 
+    array_free(entity.children);
+
+    if entity.tag.count > 0 {
+        success, _ := table_remove(*scene.tag_to_id, entity.tag);
+        assert(success);
+        free(entity.tag);
+    }
     deleted, last := remove_id(*scene.used_ids, entity.id);       
     if deleted != last {
         scene.entities[deleted] = scene.entities[last];
@@ -261,7 +256,7 @@ resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     
     if ref.id == 0 then {
         assert(ref.tag.count > 0);
-        id, found := table_find(*scene.to_serialize, ref.tag);
+        id, found := table_find(*scene.tag_to_id, ref.tag);
         if found {
             ref.id = id;
         }
@@ -284,19 +279,25 @@ make_ref :: (entity : *Entity) -> Entity_Ref {
     };
 }
 
-clone_entity :: ($TEntity : Type, template : *TEntity) -> *TEntity {
-    //#REVIEW_asuarez Does it really matter if the entity we want to clone is destroyed?
-    //assert(is_not_destroyed(template));
-    entity := create_entity(TEntity, template.slot, template.tag);
-    id := entity.id;
-    entity.* = template.*;
-    entity.id = id;
+clone_entity :: (template : *Entity, deserialization := false) -> *Entity {
+    assert(template != null);
+    scene := get_scene(template);
+    entity := scene.entity_procs.create(template.slot, template.tag);
+    entity.flags = template.flags;
 
-    array_reset(*entity.children);
-    
-    for child : template.children {
-        cloned_child := clone_entity(TEntity, xx resolve_ref(*child));
-        set_parent(cloned_child, entity);
+    if deserialization {
+        entity.parent = template.parent;
+        array_copy(*entity.children, template.children);
+
+    } else {
+        for child : template.children {
+            cloned_child := clone_entity(resolve_ref(*child));
+            set_parent(cloned_child, entity);
+        }
+    }
+
+    if scene.entity_procs.copy {
+       scene.entity_procs.copy(entity, template); 
     }
 
     return entity;
