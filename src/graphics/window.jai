@@ -54,6 +54,10 @@ deinit_window :: () {
     SDL_Quit();
 }
 
+get_time :: () -> f64 {
+    return SDL_GetTicks().(f64) / 1000.0;
+}
+
 process_window_events :: () {
 
     using context.window;

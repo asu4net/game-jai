@@ -6,12 +6,12 @@ Blink :: struct {
     enabled    : bool;
     start_tint : v4;
     end_tint   : v4 = RED;
-    duration   : f32 = 0.25;
+    duration   : f32 = 0.5;
     progress   : f32;
 }
 
 update_vfx :: (vfx : *VFX2D, tint : *v4) {
-    
+
     // Blink
     {
         using vfx.blink;

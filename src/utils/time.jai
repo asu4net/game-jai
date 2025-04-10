@@ -17,12 +17,12 @@ time_step :: () {
     
     // Init
     if seconds < 0 {
-        last_time = SDL_GetTicks().(f64);
+        last_time = get_time();
         acc_fixed_delta = fixed_delta_seconds;
         seconds = 0;
     }
 
-    current_time : = SDL_GetTicks().(f64);
+    current_time : = get_time();
     frame_count += 1;
     time_between_frames := current_time - last_time;
     last_time = current_time;

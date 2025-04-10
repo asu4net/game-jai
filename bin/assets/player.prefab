@@ -9,73 +9,55 @@
 		"slot": 0
 	},
 	"children": [
-		{
-			"tag": "child_test",
-			"slot": 0
+	],
+	"pos": {
+		"x": 0,
+		"y": 0
+	},
+	"scl": {
+		"x": 1,
+		"y": 1
+	},
+	"ang": 0,
+	"sprite": {
+		"visible": true,
+		"item": "player",
+		"tint": {
+			"x": 1,
+			"y": 1,
+			"z": 1,
+			"w": 1
+		},
+		"size": {
+			"x": 1,
+			"y": 1
+		},
+		"tiling": {
+			"x": 1,
+			"y": 1
+		},
+		"blend": "ALPHA",
+		"flip_x": false,
+		"flip_y": false,
+		"autosize": true
+	},
+	"vfx": {
+		"blink": {
+			"enabled": true,
+			"start_tint": {
+				"x": 0,
+				"y": 0,
+				"z": 0,
+				"w": 0
+			},
+			"end_tint": {
+				"x": 1,
+				"y": 0,
+				"z": 0,
+				"w": 1
+			},
+			"duration": 0.5,
+			"progress": 0
 		}
-	],
-	"flags2d": "VISIBLE | AUTOSIZE",
-	"item": "player",
-	"pos": {
-		"x": 0,
-		"y": 0
-	},
-	"scl": {
-		"x": 1,
-		"y": 1
-	},
-	"ang": 0,
-	"size": {
-		"x": 1,
-		"y": 1
-	},
-	"tint": {
-		"x": 1,
-		"y": 1,
-		"z": 1,
-		"w": 1
-	},
-	"blend": "ALPHA",
-	"tiling": {
-		"x": 1,
-		"y": 1
-	}
-}
-#entity
-{
-	"tag": "child_test",
-	"flags": "VALID | LOCAL_ENABLED | ENABLED",
-	"slot": 0,
-	"parent": {
-		"tag": "",
-		"slot": 0
-	},
-	"children": [
-	],
-	"flags2d": "VISIBLE | AUTOSIZE",
-	"item": "",
-	"pos": {
-		"x": 0,
-		"y": 0
-	},
-	"scl": {
-		"x": 0.5,
-		"y": 0.5
-	},
-	"ang": 0,
-	"size": {
-		"x": 1,
-		"y": 1
-	},
-	"tint": {
-		"x": 1,
-		"y": 0,
-		"z": 0,
-		"w": 0
-	},
-	"blend": "ALPHA",
-	"tiling": {
-		"x": 0,
-		"y": 0
 	}
 }

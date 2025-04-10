@@ -1,25 +1,8 @@
-Entity2D_Flag :: enum_flags u16 {
-    VISIBLE;
-    FLIP_X;
-    FLIP_Y;
-    AUTOSIZE;
-}
-
 Entity2D :: struct {
     #as using entity : Entity;
-    
-    flags2d : Entity2D_Flag = .VISIBLE | .AUTOSIZE;
-    item    : string;
-    rect    : Rect;         @JsonIgnore
-    pos     : v2       = ZERO_2D;
-    scl     : v2       = ONE_2D;
-    ang     : f32       = 0;
-    size    : v2       = ONE_2D;
-    tint    : v4       = WHITE;
-    blend   : Blend         = .ALPHA;
-    tiling  : v2       = ONE_2D;
-
-    using vfx : VFX2D;
+    using transform : Transform2D;
+    sprite : Sprite;
+    vfx : VFX2D;
 }
 
 #add_context entities2d : Entities2D;
@@ -54,28 +37,9 @@ draw_entities2d :: () {
     using context.entities2d;
     for i : 1..scene.count {
         e := *scene.entities[i];
-        if !should_update(e) {
-            continue;
+        if should_update(e) {
+             update_vfx(*e.vfx, *e.sprite.tint);
+             draw_sprite(*e.transform, *e.sprite);
         }
-        draw2d_begin(.{context.window.width, context.window.height});
-        draw_entity2d(e);
-        draw2d_end();
     }
-}
-
-draw_entity2d :: (e : *Entity2D) {
-    using context.entities2d;
-    if !is_enabled(e) || !.VISIBLE & e.flags2d return;
-
-    tex   := ifx e.item.count > 0 then *sheet.tex else null;
-    flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
-    if .AUTOSIZE & e.flags2d then flags |= .AUTOSIZE;
-
-    // try find the item
-    if tex && (e.rect.width == 0 || e.rect.height == 0) {
-        rect, found := table_find(*sheet.rects, e.item);
-        if found e.rect = rect;
-    }
-    
-    draw_quad(e.pos, e.ang, e.scl, tex, e.tiling, e.size, e.blend, e.rect, e.tint, e.id, flags);
 }

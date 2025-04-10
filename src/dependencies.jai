@@ -58,3 +58,4 @@
 #load "graphics/font.jai";
 #load "graphics/render_camera.jai";
 #load "graphics/spritesheet.jai";
+#load "graphics/sprite.jai";

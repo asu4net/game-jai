@@ -9,6 +9,8 @@ Scenes :: enum {
 
 main :: () {
 
+    using context.window;
+
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
@@ -33,13 +35,17 @@ main :: () {
     #if EDITOR {
         draw_imgui_proc = draw_editor;
     }
-    
-    while !context.window.done {
+        
+    while !done {
         time_step();
         process_window_events();
         clear_screen();
         query_collisions2d();
-        draw_entities2d();
+        draw2d_begin(.{width, height});
+        {
+            draw_entities2d();
+        }
+        draw2d_end();
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
         clean_destroyed_entities();
