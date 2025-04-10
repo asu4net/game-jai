@@ -89,7 +89,7 @@ set_viewport :: (width: u32, height: u32, x: u32 = 0, y: u32 = 0) {
     glViewport(xx x, xx y, xx width, xx height);
 }
 
-set_clear_color :: (r: float32, g: float32, b: float32, a: float32) {
+set_clear_color :: (r: f32, g: f32, b: f32, a: f32) {
     glClearColor(r, g, b, a);
 }
 

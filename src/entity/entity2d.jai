@@ -13,11 +13,13 @@ Entity2D :: struct {
     rect    : Rect;         @JsonIgnore
     pos     : Vector2       = ZERO_2D;
     scl     : Vector2       = ONE_2D;
-    ang     : float32       = 0;
+    ang     : f32       = 0;
     size    : Vector2       = ONE_2D;
     tint    : Vector4       = WHITE;
     blend   : Blend         = .ALPHA;
     tiling  : Vector2       = ONE_2D;
+
+    using vfx : VFX2D;
 }
 
 #add_context entities2d : Entities2D;
@@ -56,14 +58,15 @@ draw_entities2d :: () {
             continue;
         }
         draw2d_begin(.{context.window.width, context.window.height});
-        draw_entities2d(e);
+        draw_entity2d(e);
         draw2d_end();
     }
 }
 
-draw_entities2d :: (e : *Entity2D) {
+draw_entity2d :: (e : *Entity2D) {
     using context.entities2d;
     if !is_enabled(e) || !.VISIBLE & e.flags2d return;
+
     tex   := ifx e.item.count > 0 then *sheet.tex else null;
     flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
     if .AUTOSIZE & e.flags2d then flags |= .AUTOSIZE;

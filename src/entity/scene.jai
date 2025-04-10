@@ -15,6 +15,9 @@ Entity_Procs :: struct {
     SERIALIZE   :: #type (entity : *Entity) -> string;
     DESERIALIZE :: #type (json   : string) -> *Entity;
     COPY        :: #type (dst : *Entity, src : *Entity);
+#if EDITOR {
+    DRAW_EDITOR :: #type (entity : *Entity); 
+}
 
     get_at      : GET_AT;
     create      : CREATE;
@@ -24,6 +27,9 @@ Entity_Procs :: struct {
     serialize   : SERIALIZE;
     deserialize : DESERIALIZE;
     copy        : COPY;
+#if EDITOR {
+    draw_editor : DRAW_EDITOR;
+}
 }
 
 init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null, copy_proc : Entity_Procs.COPY) {
@@ -51,7 +57,13 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
         e := deserialize_subclassed_entity(TEntity, json);
         return xx e;
     }
-    
+#if EDITOR {
+    procs.draw_editor = (entity : *Entity) {
+        e := entity.(*TEntity);
+        draw_editor_value(e.*);
+    }
+}
+
     // User provided procs
     procs.init   = init_proc;
     procs.deinit = deinit_proc;
@@ -127,7 +139,7 @@ deinit :: (scene : *Scene($TEntity)) {
     }
     
     clean_destroyed_entities(xx scene);
-
+    
     remove_scene(scene.slot);
     deinit(*scene.used_ids);
     deinit(*scene.free_ids);

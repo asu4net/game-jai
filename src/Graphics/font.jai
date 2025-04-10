@@ -1,6 +1,6 @@
 Glyph :: struct {
     quad           : AlignedQuad;
-    x_pos, y_pos   : float32;
+    x_pos, y_pos   : f32;
 }
 
 Font :: struct {
@@ -73,7 +73,7 @@ init :: (font : *Font, path : string) {
     font.atlas.channels = 4;
     
     for i : 0..255 {
-        x_pos, y_pos : float32;
+        x_pos, y_pos : f32;
         glyph : Glyph;
         get_baked_quad(
               baked_char.data

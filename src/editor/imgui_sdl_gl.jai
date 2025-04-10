@@ -3,7 +3,7 @@
 // Data
 g_Time: u64 = 0;
 g_MousePressed := bool.[false, false, false];
-g_MouseWheel: float = 0.0;
+g_MouseWheel: f32 = 0.0;
 g_FontTexture: GLuint = 0;
 g_ShaderHandle: GLuint = 0;
 g_VertHandle: GLuint = 0;
@@ -484,13 +484,13 @@ ImGui_ImplSdl_NewFrame :: (window: *SDL_Window) {
     SDL_GetWindowSize(window, *w, *h);
     SDL_GL_GetDrawableSize(window, *display_w, *display_h);
     io.DisplaySize = .{xx w, xx h};
-    io.DisplayFramebufferScale = .{cast(float) display_w / w, cast(float) display_h / h};
+    io.DisplayFramebufferScale = .{cast(f32) display_w / w, cast(f32) display_h / h};
 
     // Setup time step
     frequency := SDL_GetPerformanceFrequency();
     current_time := SDL_GetPerformanceCounter();
     if g_Time > 0 {
-        io.DeltaTime = cast(float)((cast(float64)(current_time - g_Time)) / frequency);
+        io.DeltaTime = cast(f32)((cast(f64)(current_time - g_Time)) / frequency);
     } else {
         io.DeltaTime = (1.0/60.0);
     }

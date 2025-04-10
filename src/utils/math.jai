@@ -1,7 +1,7 @@
 RAD_PER_DEG :: TAU/360.0;
 DEG_PER_RAD :: 360.0/TAU;
 
-map :: (value : float, min1 : float, max1 : float, min2 : float, max2 : float) -> float {
+map :: (value : f32, min1 : f32, max1 : f32, min2 : f32, max2 : f32) -> f32 {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
@@ -12,7 +12,7 @@ multiply :: (a : Vector2, b : Vector2) -> Vector2 {
     return r;
 }
 
-rotate_x :: (mat: Matrix4, angle_x: float32) -> Matrix4 {
+rotate_x :: (mat: Matrix4, angle_x: f32) -> Matrix4 {
     c := cos(angle_x);
     s := sin(angle_x);
     op := Matrix4_Identity;
@@ -23,7 +23,7 @@ rotate_x :: (mat: Matrix4, angle_x: float32) -> Matrix4 {
     return op * mat;
 }
 
-rotate_y :: (mat: Matrix4, angle_y: float32) -> Matrix4 {
+rotate_y :: (mat: Matrix4, angle_y: f32) -> Matrix4 {
     c := cos(angle_y);
     s := sin(angle_y);
     op := Matrix4_Identity;
@@ -34,7 +34,7 @@ rotate_y :: (mat: Matrix4, angle_y: float32) -> Matrix4 {
     return op * mat;
 }
 
-rotate_z :: (mat: Matrix4, angle_z: float32) -> Matrix4 {
+rotate_z :: (mat: Matrix4, angle_z: f32) -> Matrix4 {
     c := cos(angle_z);
     s := sin(angle_z);
     op := Matrix4_Identity;
@@ -56,7 +56,7 @@ make_transform :: (pos : Vector3, rot := ZERO_3D, sc := ONE_3D) -> Matrix4 {
     return translation_matrix;
 }
 
-make_transform :: (pos : Vector2, ang: float = 0, sca := ONE_2D) -> Matrix4 {
+make_transform :: (pos : Vector2, ang: f32 = 0, sca := ONE_2D) -> Matrix4 {
     p := Vector3.{ pos.x, pos.y, 0 };
     r := FRONT_3D * ang;
     s := Vector3.{ sca.x, sca.y, 0 };
@@ -79,16 +79,16 @@ look_at :: (eye: Vector3, f: Vector3, r: Vector3, u: Vector3, flip_z_axis := tru
 	};
 }
 
-ease_in_expo_interp :: (x: float32, min: float32, max: float32) -> float32 {
+ease_in_expo_interp :: (x: f32, min: f32, max: f32) -> f32 {
     factor := ifx x == 0 then 0 else pow(2, 10 * x - 10);
     return min + (max - min) * factor;
 }
 
-linear_interp :: (x: float32, min: float32, max: float32) -> float32 {
+linear_interp :: (x: f32, min: f32, max: f32) -> f32 {
     return min + (max - min) * x;
 }
 
-linear_interp :: (x : float32, min: Vector4, max: Vector4) -> (v : Vector4) {
+linear_interp :: (x : f32, min: Vector4, max: Vector4) -> (v : Vector4) {
     v : Vector4;
     v.x = linear_interp(x, min.x, max.x);
     v.y = linear_interp(x, min.y, max.y);

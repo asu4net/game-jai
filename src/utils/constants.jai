@@ -1,3 +1,10 @@
+f64 :: float64;
+f32 :: float32;
+v2  :: Vector2;
+v3  :: Vector3;
+v4  :: Vector4;
+m4  :: Matrix4; 
+
 ZERO_2D   :: Vector2.{ +0, +0 };
 ONE_2D    :: Vector2.{ +1, +1 };
 UP_2D     :: Vector2.{ +0, +1 };

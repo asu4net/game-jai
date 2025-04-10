@@ -26,8 +26,8 @@ DEFAULT_VERTEX_UVS_2D : V2Verts2D : .[
 ];
 
 Rect :: struct {
-    x: float32; 
-    y: float32; 
+    x: f32; 
+    y: f32; 
     width: int; 
     height: int;
 }
@@ -44,8 +44,8 @@ Circle_Vertex :: struct {
     position       : Vector4;
     local_position : Vector4;
     tint           : Vector4;
-    thickness      : float32;
-    fade           : float32;
+    thickness      : f32;
+    fade           : f32;
     entity         : s32;
 }
 
@@ -87,8 +87,8 @@ Draw2D_Context :: struct {
     curr_primitive   : Primitive_Type;
     initialized      : bool;
     started_batch    : bool;
-    gui_width        : float;
-    gui_height       : float; 
+    gui_width        : f32;
+    gui_height       : f32; 
     
     // Quad
     quad_ibo         : Index_Buffer;
@@ -222,7 +222,7 @@ draw2d_end :: () {
 
 draw_quad :: (
     pos    : Vector2  = ZERO_2D,
-    ang    : float32  = 0,
+    ang    : f32  = 0,
     scl    : Vector2  = ONE_2D,
     tex    : *Texture = null,
     tiling : Vector2  = ONE_2D,
@@ -287,11 +287,11 @@ draw_quad :: (
 
 draw_text :: (
     pos           : Vector2  = ZERO_2D,
-    ang           : float32  = 0,
+    ang           : f32  = 0,
     scl           : Vector2  = ONE_2D,
     text          : string   = "placeholder!",
     font          : *Font    = null,
-    size          : float    = 0.1,
+    size          : f32    = 0.1,
     blend         : Blend    = .ALPHA,
     tint          : Vector4  = WHITE,
     id            : u32      = 0
@@ -300,9 +300,9 @@ draw_text :: (
     assert(font != null);
     Draw2DPrimitiveHeader(.QUAD, .ORTHO_WORLD, blend);
 
-    text_size : float = size / cast(float) font.pixel_height;
+    text_size : f32 = size / cast(f32) font.pixel_height;
 
-    x_pos, y_pos : float;
+    x_pos, y_pos : f32;
 
     for c : text {
 
@@ -345,9 +345,9 @@ draw_text :: (
 
 draw_circle :: (
     pos       : Vector2  = ZERO_2D,
-    rad       : float32  = 0.5,
-    thickness : float32  = 0.05,
-    fade      : float32  = 0.01,
+    rad       : f32  = 0.5,
+    thickness : f32  = 0.05,
+    fade      : f32  = 0.01,
     tint      : Vector4  = .{ 1, 1, 1, 1 }, 
     id        : u32      = 0
 )
@@ -388,7 +388,7 @@ draw_circle :: (
 
 draw_gui_quad :: (
     pos    : Vector2     = ZERO_2D,
-    ang    : float32     = 0,
+    ang    : f32     = 0,
     scl    : Vector2     = ONE_2D,
     tex    : *Texture    = null,
     tiling : Vector2     = ONE_2D,
@@ -453,7 +453,7 @@ draw_gui_quad :: (
 
 draw_gui_text :: (
     pos   : Vector2  = ZERO_2D,
-    ang   : float32  = 0,
+    ang   : f32  = 0,
     scl   : Vector2  = ONE_2D,
     text  : string   = "placeholder!",
     font  : *Font    = null,
@@ -465,7 +465,7 @@ draw_gui_text :: (
     assert(font != null);
     Draw2DPrimitiveHeader(.QUAD, .ORTHO_SCREEN, blend);
 
-    x_pos, y_pos : float;
+    x_pos, y_pos : f32;
 
     for c : text {
 

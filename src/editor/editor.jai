@@ -127,6 +127,13 @@ draw_editor :: () {
         ImGui.EndPopup();
     }
     ImGui.PopStyleColor();
+
+    if prefab {
+        ImGui.Begin("Properties");
+        scene := get_scene(prefab);
+        scene.entity_procs.draw_editor(prefab);
+        ImGui.End();
+    }
 }
 
 save_prefab_and_close :: () {
@@ -138,6 +145,146 @@ save_prefab_and_close :: () {
     immediate_destroy_entity(prefab, true);
     ImGui.CloseCurrentPopup();
     prefab = null;
+}
+
+draw_editor_value :: (value : Any, inside_struct_or_array := true, may_be_uninitialized := false) {
+    using Type_Info_Tag;
+
+    //#TODO_asuarez Maybe I should draw this property anyway, with an empty value.
+    if !value.value_pointer {
+        return;
+    }
+
+    t := value.type.type;
+    if t == {
+        case STRING;
+
+            get_full_sized_string :: (any: Any) -> string {
+                assert(any.type && (any.type.type == .STRING));
+                tis := cast(*Type_Info_String) any.type;
+                return (.*) cast(*string) any.value_pointer;
+            }
+
+            s := get_full_sized_string(value);
+            ImGui.Text(s);
+
+        case BOOL;
+            b := (.*) cast(*u8) value.value_pointer;
+        case INTEGER;
+        case FLOAT;
+        case POINTER;
+            info_pt := cast(*Type_Info_Pointer) value.type;
+            if info_pt.pointer_to.type == {
+                // pasar por todos los tipos, castearlo al tipo que toca, construir un any, y llamar a esta función.
+            }
+        case STRUCT;
+            
+            info_struct := cast(*Type_Info_Struct) value.type;
+            
+            for * info_struct.members {
+
+                may_be_uninitialized := false;
+
+                for note: it.notes {
+                    if note == "---" {
+                        may_be_uninitialized = true;
+                        break;
+                    }
+                }
+
+                address := (cast(*u8) value.value_pointer) + it.offset_in_bytes;
+
+                any: Any = ---;
+                any.type = it.type;
+                any.value_pointer = address;
+
+                draw_editor_value(any, true, may_be_uninitialized);
+            }
+
+        case ARRAY;
+            info_array := cast(*Type_Info_Array) value.type;
+        case ENUM;
+            
+            info_enum := cast(*Type_Info_Enum) value.type;
+            info_int  := cast(*Type_Info_Integer) info_enum.internal_type;
+            assert(info_int.type == INTEGER);
+
+            size := info_int.runtime_size;
+
+            if info_enum.enum_type_flags & .FLAGS {
+                target_value := get_u64_from_void_pointer(value.value_pointer, size);  // Treat flags as unsigned, even for signed types. Simpler.
+
+                if target_value == 0 {
+                    // Check for a named 0-value before printing 0.
+                    name := "0";
+                    for info_enum.values  if it == 0 {
+                        name = info_enum.names[it_index];
+                        break;
+                    }
+                    
+                    //append(builder, name);
+                    return;
+                }
+
+                // I felt like doing this in unsigned for some reason!
+                flags_total := target_value;
+                flags_printed : u64 = 0;
+
+                first := true;
+                for info_enum.values {
+                    value := cast(u64) it;
+                    matching := flags_total & value;
+                    if matching != value  matching = 0;  // We need to match all of the bits in the enum member.
+
+                    if !matching continue;
+                    if !(matching & ~flags_printed) continue;
+
+                    flags_printed |= matching;
+
+                    //if !first  append(builder, " | ");
+                    //append(builder, info_enum.names[it_index]);
+                    first = false;
+                }
+
+                unmatched := flags_total & ~flags_printed;
+                if unmatched {
+                    //if !first  append(builder, " | 0x");
+                    format := FormatInt.{base=16};
+                    //print_u64_base_n(builder, unmatched, format);
+                }
+            } else {
+                assert(info_enum.names.count == info_enum.values.count);
+
+                target_value_s64 := get_s64_from_void_pointer(value.value_pointer, size);
+                if info_int.signed {
+                    for info_enum.values  if target_value_s64 == it {
+                        //append(builder, info_enum.names[it_index]);
+                        return;
+                    }
+                } else {
+                    target_value_u64 := get_u64_from_void_pointer(value.value_pointer, size);
+
+                    for info_enum.values  if target_value_u64 == cast,no_check(u64) it {
+                        //append(builder, info_enum.names[it_index]);
+                        return;
+                    }
+                }
+
+                if target_value_s64 {
+                    //append(builder, "(enum out of range: ");
+                    // Print an unsigned value if the enum is unsigned,
+                    // otherwise we allow it to be signed.
+                    //if info_int.signed  draw_editor_value(builder, target_value_s64);
+                    //else                draw_editor_value(builder, get_u64_from_void_pointer(value.value_pointer, size));
+                    //append(builder, ")");
+                } else {
+                    //draw_editor_value(builder, target_value_s64);
+                }
+            }
+
+        case;
+            return;
+    }
 }
 
 } //#if IMGUI

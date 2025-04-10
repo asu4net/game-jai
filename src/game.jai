@@ -45,3 +45,7 @@ main :: () {
         reset_temporary_storage();
     }
 }
+
+delta_seconds :: () -> f32 {
+    return 0;
+}
