@@ -33,13 +33,8 @@ Entity :: struct {
     children : [..] Entity_Ref; 
 }
 
-is_entity :: ($T: Type) -> bool {
-    info := type_info(T);
-    return type_info(Entity) == info || is_subclass_of(info, type_info(Entity).name);
-}
-
-initialized :: (scene : Scene) -> bool {
-    return scene.entities.data != null;
+is_subclass_of_entity :: inline ($T: Type) -> bool {
+    return is_subclass_of(type_info(T), type_info(Entity).name);
 }
 
 is_not_cleaned :: (entity : *Entity) -> bool {
@@ -87,12 +82,14 @@ serialize_entity_recursive :: (entity : *Entity, builder : *String_Builder = nul
     }
 }
 
-serialize_entity :: (entity : *$TEntity) -> string {
+serialize_subclassed_entity :: (entity : *$TEntity) -> string {
+    #assert(is_subclass_of_entity(TEntity));
     assert(entity != null && entity.tag.count > 0);
     return json_write_string(entity ,,temp);
 }
 
-deserialize_entity :: ($TEntity : Type, json : string) -> *TEntity {
+deserialize_subclassed_entity :: ($TEntity : Type, json : string) -> *TEntity {
+    #assert(is_subclass_of_entity(TEntity));
     success, e := json_parse_string(json, TEntity ,,temp);
 
     if !success {
@@ -134,7 +131,7 @@ deserialize_entity_recursive :: (json : string) -> *Entity {
             reset(builder);
             assert(entity != null);
             //#REVIEW_asuarez We expect that the first entity should be the parent.
-            parent.* = ifx !parent.* then entity;
+            if !parent.* parent.* = entity;
         }
 
         // We asume end of file, so deserialize last entity
@@ -159,7 +156,7 @@ deserialize_entity_recursive :: (json : string) -> *Entity {
 }
 
 create_entity :: (scene : *Scene($TEntity), tag := "") -> *TEntity {
-    
+    #assert(is_subclass_of_entity(TEntity));
     if scene.count <= scene.capacity {
         array_add(*scene.entities, .{});
         scene.capacity = xx scene.entities.allocated;
@@ -191,13 +188,14 @@ create_entity :: (scene : *Scene($TEntity), tag := "") -> *TEntity {
 }
 
 create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "") -> *TEntity {
+    #assert(is_subclass_of_entity(TEntity));
     scene := get_scene(slot).(*Scene(TEntity));
     return create_entity(scene, tag);
 }
 
 destroy_entity :: (entity : *Entity) {
-    if entity == null then {
-        log_error("You're trying to destroy a null dude");
+    assert(is_not_cleaned(entity));
+    if !is_not_destroyed(entity) {
         return;
     }
     
@@ -206,33 +204,36 @@ destroy_entity :: (entity : *Entity) {
     for child : entity.children {
         destroy_entity(resolve_ref(*child));
     }
-    
+
     scene := get_scene(entity);
     table_add(*scene.to_clean, entity.id, .{});
 }
 
-clean_destroyed_entities :: () {
-    for scene : context.scenes {
-        if !scene continue;
-        for _, id : scene.to_clean {        
-            index := search(*scene.used_ids, id);
-            assert(index != 0);
-            entity := *scene.entities[index];
-            scene.entity_procs.destroy(entity);
-        }
-        table_reset(*scene.to_clean);
-    }
-}
-
-immediate_destroy_entity :: (entity : *$TEntity) {
-    assert(is_not_destroyed(entity));
-    scene := get_scene(entity);
+immediate_destroy_subclassed_entity :: (entity : *$TEntity, recursive := false) {
+    #assert(is_subclass_of_entity(TEntity));
+    assert(is_not_cleaned(entity));
+    scene := get_scene(entity).(*Scene(TEntity));
+    
     if scene.entity_procs.deinit {
         scene.entity_procs.deinit(entity);
     }
     
+    parent := resolve_ref(*entity.parent);
+
+    if parent {
+        remove_child(parent, entity);
+    }
+
     push_back(*scene.free_ids, entity.id);
- 
+    
+    if recursive {
+        for ref : entity.children {
+            child := resolve_ref(*ref);
+            child_scene := get_scene(child);
+            child_scene.entity_procs.destroy(child, recursive = true);
+        }
+    }
+
     array_free(entity.children);
 
     if entity.tag.count > 0 {
@@ -250,12 +251,21 @@ immediate_destroy_entity :: (entity : *$TEntity) {
     scene.count-=1;
 }
 
+immediate_destroy_entity :: (entity : *Entity, recursive := false) {
+    assert(is_not_cleaned(entity));
+    scene := get_scene(entity);
+    scene.entity_procs.destroy(entity, recursive);
+}
+
 resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     assert(ref != null);
     scene := get_scene(ref.slot);
     
     if ref.id == 0 then {
-        assert(ref.tag.count > 0);
+        if ref.tag.count == 0 {
+            return null;
+        }
+
         id, found := table_find(*scene.tag_to_id, ref.tag);
         if found {
             ref.id = id;
@@ -267,7 +277,7 @@ resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     exists := test(*scene.used_ids, ref.id);
     if !exists then return null;
     index := search(*scene.used_ids, ref.id);
-    return *scene.entities[index];
+    return scene.entity_procs.get_at(scene, index);
 }
 
 make_ref :: (entity : *Entity) -> Entity_Ref {

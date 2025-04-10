@@ -7,14 +7,16 @@ DEF_SCENE_CAPACITY :: 100;
 
 Entity_Procs :: struct {
 
+    GET_AT      :: #type (scene : *Scene(Entity), index : int) -> *Entity;
     CREATE      :: #type (slot : u32, tag : string) -> *Entity;
-    DESTR0Y     :: #type (entity : *Entity);
+    DESTR0Y     :: #type (entity : *Entity, recursive : bool);
     INIT        :: #type (entity : *Entity);
     DEINIT      :: #type (entity : *Entity);
     SERIALIZE   :: #type (entity : *Entity) -> string;
     DESERIALIZE :: #type (json   : string) -> *Entity;
     COPY        :: #type (dst : *Entity, src : *Entity);
 
+    get_at      : GET_AT;
     create      : CREATE;
     destroy     : DESTR0Y;
     init        : INIT;
@@ -28,20 +30,25 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
     assert(procs != null);
 
     // Automatic procs
+    procs.get_at = (scene : *Scene(Entity), index : int) -> *Entity {
+        assert(initialized(scene));
+        subclassed_scene := scene.(*Scene(TEntity));
+        return get_subclassed_entity_at(subclassed_scene, index);
+    }
     procs.create = (slot : u32, tag : string) -> *Entity {
         scene := get_scene(slot).(*Scene(TEntity));
         return create_entity(scene, tag);
     };
-    procs.destroy = (entity : *Entity) {
+    procs.destroy = (entity : *Entity, recursive : bool) {
         e := entity.(*TEntity);
-        immediate_destroy_entity(e);
+        immediate_destroy_subclassed_entity(e, recursive);
     };
     procs.serialize = (entity : *Entity) -> string {
         e := entity.(*TEntity);
-        return serialize_entity(e);
+        return serialize_subclassed_entity(e);
     };
     procs.deserialize = (json : string) -> *Entity {
-        e := deserialize_entity(TEntity, json);
+        e := deserialize_subclassed_entity(TEntity, json);
         return xx e;
     }
     
@@ -51,8 +58,7 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
     procs.copy   = copy_proc;
 }
 
-Scene :: struct($TEntity: Type = Entity) {
-    #assert(is_entity(TEntity));
+Scene :: struct($TEntity: Type) {
     entities     : [..] TEntity;
     slot         : u32;
     count        : int;
@@ -65,7 +71,11 @@ Scene :: struct($TEntity: Type = Entity) {
     entity_procs : Entity_Procs;
 }
 
-#add_context scenes: [MAX_SCENES] *Scene;
+#add_context scenes: [MAX_SCENES] *Scene(Entity);
+
+initialized :: (scene : Scene) -> bool {
+    return scene.entities.data != null;
+}
 
 init :: (scene          : *Scene($TEntity), 
          slot           : u32, 
@@ -74,7 +84,8 @@ init :: (scene          : *Scene($TEntity),
          copy_proc      : Entity_Procs.COPY  = null,
          start_capacity : u32 = DEF_SCENE_CAPACITY) 
 {
-    assert(scene && !initialized(scene));
+    #assert(is_subclass_of_entity(TEntity));
+    assert(!initialized(scene));
     add_scene(scene.(*Scene(Entity)), slot);
     array_resize(*scene.entities, start_capacity + 1);
     scene.type     = type_info(TEntity);
@@ -88,20 +99,52 @@ init :: (scene          : *Scene($TEntity),
     init(TEntity, *scene.entity_procs, init_proc, deinit_proc, copy_proc); 
 }
 
-deinit :: (scene: *Scene) {
-    assert(scene != null);
+get_entity_at :: (scene : *Scene(Entity), index : int) -> *Entity {
+    assert(initialized(scene));
+    entity := scene.entity_procs.get_at(scene, index);
+    return entity;
+}
+
+get_subclassed_entity_at :: (scene : *Scene($TEntity), index : int) -> *TEntity {
+    #assert(is_subclass_of_entity(TEntity));
+    assert(initialized(scene));
+    return *scene.entities[index];
+}
+
+clean_destroyed_entities :: (scene : *Scene(Entity)) {
+    for _, id : scene.to_clean {
+        index := search(*scene.used_ids, id);
+        assert(index != 0);
+        entity := get_entity_at(scene, index);
+        scene.entity_procs.destroy(entity, recursive = false);
+    }
+    table_reset(*scene.to_clean);
+}
+
+deinit :: (scene : *Scene($TEntity)) {
+    #assert(is_subclass_of_entity(TEntity));
 
     for i : 1..scene.count {
         e := (*scene.entities[i]).(*Entity2D);
-        scene.entity_procs.destroy(e);
+        destroy_entity(e);
     }
 
+    clean_destroyed_entities(xx scene);
+
     remove_scene(scene.slot);
-    free(scene.entities.data);
+    array_reset(*scene.entities);
     deinit(*scene.used_ids);
     deinit(*scene.free_ids);
     deinit(*scene.tag_to_id);
+    deinit(*scene.to_clean);
     scene.* = .{};
+}
+
+clean_destroyed_entities :: () {
+    for scene : context.scenes {
+        if !scene continue;
+        clean_destroyed_entities(scene);
+    }
 }
 
 get_scene :: (entity : *Entity) -> *Scene(Entity) {

@@ -63,7 +63,7 @@ draw_entities2d :: (e : *Entity2D) {
     // try find the item
     if tex && (e.rect.width == 0 || e.rect.height == 0) {
         rect, found := table_find(*context.sheet.rects, e.item);
-        e.rect = ifx found then rect;
+        if found e.rect = rect;
     }
     
     draw_quad(e.pos, e.ang, e.scl, tex, e.tiling, e.size, e.blend, e.rect, e.tint, e.id, flags);

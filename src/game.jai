@@ -20,7 +20,7 @@ main :: () {
     
     init_collisions2d();
     defer deinit_collisions2d();
-    
+
     init_entities2d();
     defer deinit_entities2d();
 

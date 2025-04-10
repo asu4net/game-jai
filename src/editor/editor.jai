@@ -12,6 +12,7 @@ Editor :: struct {
     show_demo           : bool;
     prefab_name         : TextBuff;
     prefab_type         : PrefabEditorType;
+    prefab              : *Entity;
     show_create_prefab  : bool;
 }
 
@@ -42,12 +43,20 @@ draw_editor :: () {
                         return;
                     }
                     if ImGui.MenuItem(to_c_string(basename ,,temp)) {
+                        if context.editor.prefab {
+                            immediate_destroy_entity(context.editor.prefab, true);
+                            context.editor.prefab = null;
+                        }
                         prefab_str, success := read_entire_file(info.full_name ,,temp);
                         assert(success);
-                        deserialize_entity_recursive(prefab_str);
+                        context.editor.prefab = deserialize_entity_recursive(prefab_str);
                     }
                 });
                 ImGui.EndMenu();
+            }
+            if prefab && ImGui.MenuItem("Close") {
+                immediate_destroy_entity(prefab, true);
+                prefab = null;
             }
             ImGui.EndMenu();
         }
@@ -95,7 +104,11 @@ draw_editor :: () {
             scene := context.scenes[prefab_type.slot];
             
             if scene && c_style_strlen(data(prefab_name)) > 0 {
-                prefab := scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));
+                if prefab {
+                    destroy_entity(prefab);
+                    prefab = null;
+                }
+                prefab = scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));
                 //#REVIEW_asuarez Until we have editor we are going to serialize directly the entity
                 builder : String_Builder;
                 serialize_entity_recursive(prefab, *builder);
