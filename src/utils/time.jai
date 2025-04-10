@@ -17,8 +17,9 @@ time_step :: () {
     
     // Init
     if seconds < 0 {
-        last_time = xx SDL_GetTicks();
+        last_time = SDL_GetTicks().(f64);
         acc_fixed_delta = fixed_delta_seconds;
+        seconds = 0;
     }
 
     current_time : = SDL_GetTicks().(f64);
