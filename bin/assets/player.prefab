@@ -1,18 +1,30 @@
+
 #entity
 {
 	"tag": "player",
 	"flags": "VALID | LOCAL_ENABLED | ENABLED",
+	"slot": 0,
+	"parent": {
+		"tag": "",
+		"slot": 0
+	},
 	"children": [
 		{
-			"slot": 0,
-			"tag": "child_test"
+			"tag": "child_test",
+			"slot": 0
 		}
 	],
 	"flags2d": "VISIBLE | AUTOSIZE",
+	"item": "player",
+	"pos": {
+		"x": 0,
+		"y": 0
+	},
 	"scl": {
 		"x": 1,
 		"y": 1
 	},
+	"ang": 0,
 	"size": {
 		"x": 1,
 		"y": 1
@@ -24,7 +36,6 @@
 		"w": 1
 	},
 	"blend": "ALPHA",
-	"item": "player",
 	"tiling": {
 		"x": 1,
 		"y": 1
@@ -42,6 +53,7 @@
 	"children": [
 	],
 	"flags2d": "VISIBLE | AUTOSIZE",
+	"item": "",
 	"pos": {
 		"x": 0,
 		"y": 0
@@ -62,7 +74,6 @@
 		"w": 1
 	},
 	"blend": "ALPHA",
-	"item": "",
 	"tiling": {
 		"x": 0,
 		"y": 0

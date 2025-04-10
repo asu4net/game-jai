@@ -33,6 +33,9 @@ draw_editor :: () {
         }
         if ImGui.BeginMenu("Prefab")  {
             if ImGui.MenuItem("New") {
+                if prefab {
+                    save_prefab_and_close();
+                }
                 show_create_prefab = true;
             }
             if ImGui.BeginMenu("Load") {
@@ -53,6 +56,9 @@ draw_editor :: () {
                     }
                 });
                 ImGui.EndMenu();
+            }
+            if prefab && ImGui.MenuItem("Save and Close") {
+                save_prefab_and_close();
             }
             if prefab && ImGui.MenuItem("Close") {
                 immediate_destroy_entity(prefab, true);
@@ -109,10 +115,6 @@ draw_editor :: () {
                     prefab = null;
                 }
                 prefab = scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));
-                //#REVIEW_asuarez Until we have editor we are going to serialize directly the entity
-                builder : String_Builder;
-                serialize_entity_recursive(prefab, *builder);
-                write_entire_file(tprint("assets/%.prefab", prefab.tag ,,temp), *builder);
                 ImGui.CloseCurrentPopup();
             }
         }
@@ -125,6 +127,17 @@ draw_editor :: () {
         ImGui.EndPopup();
     }
     ImGui.PopStyleColor();
+}
+
+save_prefab_and_close :: () {
+    using context.editor;
+    assert(prefab != null);
+    builder : String_Builder;
+    serialize_entity_recursive(prefab, *builder);
+    write_entire_file(tprint("assets/%.prefab", prefab.tag ,,temp), *builder);
+    immediate_destroy_entity(prefab, true);
+    ImGui.CloseCurrentPopup();
+    prefab = null;
 }
 
 } //#if IMGUI

@@ -73,12 +73,11 @@ should_update :: (entity : *Entity) -> bool {
 serialize_entity_recursive :: (entity : *Entity, builder : *String_Builder = null) {
     assert(entity != null);
     scene := get_scene(entity);
-    parent := entity;
-    parent_json := scene.entity_procs.serialize(parent);
-    append(builder, parent_json ,,temp);
+    serialized_entity := scene.entity_procs.serialize(entity);
+    append(builder, serialized_entity ,,temp);
     for ref : entity.children {
         child := resolve_ref(*ref);
-        serialize_entity_recursive(entity, builder);        
+        serialize_entity_recursive(child, builder);        
     }
 }
 
@@ -86,8 +85,9 @@ serialize_subclassed_entity :: (entity : *$TEntity) -> string {
     #assert(is_subclass_of_entity(TEntity));
     assert(entity != null && entity.tag.count > 0);
     builder : String_Builder;
-    append(*builder, "#entity\n" ,,temp);
-    append(*builder, json_write_string(entity ,,temp) ,,temp);
+    entity_str := json_write_string(entity ,,temp);
+    append(*builder, "\n#entity\n" ,,temp);
+    append(*builder, entity_str ,,temp);
     return builder_to_string(*builder ,,temp);
 }
 
