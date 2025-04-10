@@ -35,6 +35,7 @@ main :: () {
     }
     
     while !context.window.done {
+        time_step();
         process_window_events();
         clear_screen();
         query_collisions2d();
@@ -44,8 +45,4 @@ main :: () {
         clean_destroyed_entities();
         reset_temporary_storage();
     }
-}
-
-delta_seconds :: () -> f32 {
-    return 0;
 }

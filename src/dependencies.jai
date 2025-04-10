@@ -26,6 +26,7 @@
 #load "utils/math.jai";
 #load "utils/queue.jai";
 #load "utils/sparse_set.jai";
+#load "utils/time.jai";
 
 // Editor
 #if EDITOR then {
