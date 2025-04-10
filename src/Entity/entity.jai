@@ -195,14 +195,16 @@ create_entity :: ($TEntity : Type, slot : u32 = 0, tag := "") -> *TEntity {
 
 destroy_entity :: (entity : *Entity) {
     assert(is_not_cleaned(entity));
+    
     if !is_not_destroyed(entity) {
         return;
     }
     
     entity.flags = entity.flags &~ .VALID;
     
-    for child : entity.children {
-        destroy_entity(resolve_ref(*child));
+    for ref : entity.children {
+        child := resolve_ref(*ref);    
+        destroy_entity(child);
     }
 
     scene := get_scene(entity);
