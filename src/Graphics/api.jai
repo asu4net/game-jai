@@ -93,7 +93,7 @@ set_clear_color :: (r: f32, g: f32, b: f32, a: f32) {
     glClearColor(r, g, b, a);
 }
 
-set_clear_color :: (v: Vector4) {
+set_clear_color :: (v: v4) {
     glClearColor(xx v.x, xx v.y, xx v.z, xx v.w);
 }
 

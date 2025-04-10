@@ -6,15 +6,15 @@ RenderCameraMode :: enum {
 
 RenderCamera :: struct {
     mode       : RenderCameraMode;
-    viewport_w : s32      = DEF_SCREEN_WIDTH;
-    viewport_h : s32      = DEF_SCREEN_HEIGHT;
-    eye        : Vector3  = ZERO_3D;
+    viewport_w : s32  = DEF_SCREEN_WIDTH;
+    viewport_h : s32  = DEF_SCREEN_HEIGHT;
+    eye        : v3   = ZERO_3D;
     near       : f32  = -1;
     far        : f32  = +1;
-    front      : Vector3  = FRONT_3D;
-    right      : Vector3  = RIGHT_3D;
-    up         : Vector3  = UP_3D;
-    pv_matrix  : Matrix4  = Matrix4_Identity;
+    front      : v3   = FRONT_3D;
+    right      : v3   = RIGHT_3D;
+    up         : v3   = UP_3D;
+    pv_matrix  : m4   = IDENTITY;
 
     //2D Specific
     size : f32 = +1;

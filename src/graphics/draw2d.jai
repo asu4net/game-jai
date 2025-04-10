@@ -8,8 +8,8 @@ Default_Texture_Slots :: enum {
     COUNT;
 }
 
-V4Verts2D :: [VERTICES_PER_2D_PRIMITIVE] Vector4;
-V2Verts2D :: [VERTICES_PER_2D_PRIMITIVE] Vector2;
+V4Verts2D :: [VERTICES_PER_2D_PRIMITIVE] v4;
+V2Verts2D :: [VERTICES_PER_2D_PRIMITIVE] v2;
 
 DEFAULT_VERTEX_POSITIONS_2D : V4Verts2D : .[
     .{-0.5, -0.5,  0.0,  1.0 }, // bottom-left
@@ -33,17 +33,17 @@ Rect :: struct {
 }
 
 Quad_Vertex :: struct {
-    position : Vector4;
-    tint     : Vector4;
-    uv       : Vector2;
+    position : v4;
+    tint     : v4;
+    uv       : v2;
     texture  : s32;
     entity   : s32;
 }
 
 Circle_Vertex :: struct {
-    position       : Vector4;
-    local_position : Vector4;
-    tint           : Vector4;
+    position       : v4;
+    local_position : v4;
+    tint           : v4;
     thickness      : f32;
     fade           : f32;
     entity         : s32;
@@ -221,15 +221,15 @@ draw2d_end :: () {
 }
 
 draw_quad :: (
-    pos    : Vector2  = ZERO_2D,
-    ang    : f32  = 0,
-    scl    : Vector2  = ONE_2D,
+    pos    : v2       = ZERO_2D,
+    ang    : f32      = 0,
+    scl    : v2       = ONE_2D,
     tex    : *Texture = null,
-    tiling : Vector2  = ONE_2D,
-    size   : Vector2  = ONE_2D,
+    tiling : v2       = ONE_2D,
+    size   : v2       = ONE_2D,
     blend  : Blend    = .ALPHA,
     rect   : Rect     = .{},
-    tint   : Vector4  = WHITE,
+    tint   : v4       = WHITE,
     id     : u32      = 0,
     flags  : QuadFlag = DEFAULT_QUAD_FLAGS
 )
@@ -259,7 +259,7 @@ draw_quad :: (
 
         if .AUTOSIZE & flags {
             
-            pixel_size := Vector2.{xx pixel_width, xx pixel_height};
+            pixel_size := v2.{xx pixel_width, xx pixel_height};
             final_size := multiply(pixel_size, size);
 
             pos := normalize(final_size) / 2.0;
@@ -286,15 +286,15 @@ draw_quad :: (
 }
 
 draw_text :: (
-    pos           : Vector2  = ZERO_2D,
-    ang           : f32  = 0,
-    scl           : Vector2  = ONE_2D,
-    text          : string   = "placeholder!",
-    font          : *Font    = null,
-    size          : f32    = 0.1,
-    blend         : Blend    = .ALPHA,
-    tint          : Vector4  = WHITE,
-    id            : u32      = 0
+    pos    : v2     = ZERO_2D,
+    ang    : f32    = 0,
+    scl    : v2     = ONE_2D,
+    text   : string = "placeholder!",
+    font   : *Font  = null,
+    size   : f32    = 0.1,
+    blend  : Blend  = .ALPHA,
+    tint   : v4     = WHITE,
+    id     : u32    = 0
 )
 {
     assert(font != null);
@@ -344,18 +344,18 @@ draw_text :: (
 }
 
 draw_circle :: (
-    pos       : Vector2  = ZERO_2D,
-    rad       : f32  = 0.5,
-    thickness : f32  = 0.05,
-    fade      : f32  = 0.01,
-    tint      : Vector4  = .{ 1, 1, 1, 1 }, 
-    id        : u32      = 0
+    pos       : v2  = ZERO_2D,
+    rad       : f32 = 0.5,
+    thickness : f32 = 0.05,
+    fade      : f32 = 0.01,
+    tint      : v4  = .{ 1, 1, 1, 1 }, 
+    id        : u32 = 0
 )
 {
     Draw2DPrimitiveHeader(.CIRCLE, .ORTHO_WORLD, .ALPHA);
 
     vertex_positions : V4Verts2D = ---;
-    scale_mat := scale(Matrix4_Identity, .{ rad * 2.0, rad * 2.0, 1.0 });
+    scale_mat := scale(IDENTITY, .{ rad * 2.0, rad * 2.0, 1.0 });
     vertex_positions[0] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[0];
     vertex_positions[1] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[1];
     vertex_positions[2] = scale_mat * DEFAULT_VERTEX_POSITIONS_2D[2];
@@ -366,7 +366,7 @@ draw_circle :: (
     vertex_colors    : V4Verts2D = ---;
     for *vertex_colors it.* = tint;
 
-    for *vertex_positions it.* = translate(Matrix4_Identity, .{pos.x, pos.y, 0}) * it.*;
+    for *vertex_positions it.* = translate(IDENTITY, .{pos.x, pos.y, 0}) * it.*;
     
     default_vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
     
@@ -387,15 +387,15 @@ draw_circle :: (
 }
 
 draw_gui_quad :: (
-    pos    : Vector2     = ZERO_2D,
-    ang    : f32     = 0,
-    scl    : Vector2     = ONE_2D,
+    pos    : v2          = ZERO_2D,
+    ang    : f32         = 0,
+    scl    : v2          = ONE_2D,
     tex    : *Texture    = null,
-    tiling : Vector2     = ONE_2D,
-    size   : Vector2     = ONE_2D,
+    tiling : v2          = ONE_2D,
+    size   : v2          = ONE_2D,
     blend  : Blend       = .ALPHA,
     rect   : Rect        = .{},
-    tint   : Vector4     = WHITE,
+    tint   : v4          = WHITE,
     id     : u32         = 0,
     flags  : GUIQuadFlag = DEFAULT_GUI_QUAD_FLAGS
 )
@@ -415,15 +415,15 @@ draw_gui_quad :: (
     GUI_QUAD_PIXEL_WIDTH  :: 200;
     GUI_QUAD_PIXEL_HEIGHT :: 200;
 
-    pixel_size := Vector2.{ GUI_QUAD_PIXEL_WIDTH, GUI_QUAD_PIXEL_HEIGHT };
+    pixel_size := v2.{ GUI_QUAD_PIXEL_WIDTH, GUI_QUAD_PIXEL_HEIGHT };
 
     if tex != null {
         
         if .USE_SUBTEX & flags then {
-            pixel_size = Vector2.{ xx rect.width, xx rect.height };
+            pixel_size = v2.{ xx rect.width, xx rect.height };
             sub_tex_uv(*vertex_uvs, tex, rect);
         }
-        else pixel_size = Vector2.{ xx tex.width, xx tex.height };
+        else pixel_size = v2.{ xx tex.width, xx tex.height };
 
         for *vertex_uvs multiply(it.*, tiling);
         flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
@@ -452,14 +452,14 @@ draw_gui_quad :: (
 }
 
 draw_gui_text :: (
-    pos   : Vector2  = ZERO_2D,
-    ang   : f32  = 0,
-    scl   : Vector2  = ONE_2D,
-    text  : string   = "placeholder!",
-    font  : *Font    = null,
-    blend : Blend    = .ALPHA,
-    tint  : Vector4  = WHITE,
-    id    : u32      = 0
+    pos   : v2     = ZERO_2D,
+    ang   : f32    = 0,
+    scl   : v2     = ONE_2D,
+    text  : string = "placeholder!",
+    font  : *Font  = null,
+    blend : Blend  = .ALPHA,
+    tint  : v4     = WHITE,
+    id    : u32    = 0
 )
 {
     assert(font != null);
@@ -655,11 +655,11 @@ flip_quad_vertex_uv :: (vertex_uvs : *V2Verts2D, flip_x : bool, flip_y : bool) {
 sub_tex_uv :: (vertex_uvs : *V2Verts2D, texture : *Texture, rect : Rect) {
     assert(texture && vertex_uvs);
     
-    item_px_pos  := Vector2.{ xx rect.x, xx rect.y };
-    texture_size := Vector2.{ xx texture.width, xx texture.height };
-    item_size    := Vector2.{ xx rect.width, xx rect.height };
-
-    top_right, bottom_left : Vector2;
+    item_px_pos  := v2.{ xx rect.x, xx rect.y };
+    texture_size := v2.{ xx texture.width, xx texture.height };
+    item_size    := v2.{ xx rect.width, xx rect.height };
+    
+    top_right, bottom_left : v2;
     top_right.x = (item_px_pos.x + item_size.x) * (1 / texture_size.x);
     top_right.y = (item_px_pos.y + item_size.y) * (1 / texture_size.y);
     

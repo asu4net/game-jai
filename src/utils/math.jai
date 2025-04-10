@@ -5,17 +5,17 @@ map :: (value : f32, min1 : f32, max1 : f32, min2 : f32, max2 : f32) -> f32 {
     return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
 }
 
-multiply :: (a : Vector2, b : Vector2) -> Vector2 {
-    r : Vector2;
+multiply :: (a : v2, b : v2) -> v2 {
+    r : v2;
     r.x = a.x * b.x;
     r.y = a.y * b.y;
     return r;
 }
 
-rotate_x :: (mat: Matrix4, angle_x: f32) -> Matrix4 {
+rotate_x :: (mat: m4, angle_x: f32) -> m4 {
     c := cos(angle_x);
     s := sin(angle_x);
-    op := Matrix4_Identity;
+    op := IDENTITY;
     op.coef[1][1] =  c;
     op.coef[1][2] = -s;
     op.coef[2][1] =  s;
@@ -23,10 +23,10 @@ rotate_x :: (mat: Matrix4, angle_x: f32) -> Matrix4 {
     return op * mat;
 }
 
-rotate_y :: (mat: Matrix4, angle_y: f32) -> Matrix4 {
+rotate_y :: (mat: m4, angle_y: f32) -> m4 {
     c := cos(angle_y);
     s := sin(angle_y);
-    op := Matrix4_Identity;
+    op := IDENTITY;
     op.coef[0][0] =  c;
     op.coef[0][2] =  s;
     op.coef[2][0] = -s;
@@ -34,10 +34,10 @@ rotate_y :: (mat: Matrix4, angle_y: f32) -> Matrix4 {
     return op * mat;
 }
 
-rotate_z :: (mat: Matrix4, angle_z: f32) -> Matrix4 {
+rotate_z :: (mat: m4, angle_z: f32) -> m4 {
     c := cos(angle_z);
     s := sin(angle_z);
-    op := Matrix4_Identity;
+    op := IDENTITY;
     op.coef[0][0] =  c;
     op.coef[0][1] = -s;
     op.coef[1][0] =  s;
@@ -45,25 +45,25 @@ rotate_z :: (mat: Matrix4, angle_z: f32) -> Matrix4 {
     return op * mat;
 }
 
-rotate :: (mat: Matrix4, rotation : Vector3) -> Matrix4 {
+rotate :: (mat: m4, rotation : v3) -> m4 {
     return rotate_z(rotate_y(rotate_x(mat, rotation.x), rotation.y), rotation.z);
 }
 
-make_transform :: (pos : Vector3, rot := ZERO_3D, sc := ONE_3D) -> Matrix4 {
-    scale_matrix := scale(Matrix4_Identity, sc);
+make_transform :: (pos : v3, rot := ZERO_3D, sc := ONE_3D) -> m4 {
+    scale_matrix := scale(IDENTITY, sc);
     rotation_matrix :=  ifx rot != ZERO_3D then rotate(scale_matrix, RAD_PER_DEG * rot) else scale_matrix;
     translation_matrix := translate(rotation_matrix, pos);
     return translation_matrix;
 }
 
-make_transform :: (pos : Vector2, ang: f32 = 0, sca := ONE_2D) -> Matrix4 {
-    p := Vector3.{ pos.x, pos.y, 0 };
+make_transform :: (pos : v2, ang: f32 = 0, sca := ONE_2D) -> m4 {
+    p := v3.{ pos.x, pos.y, 0 };
     r := FRONT_3D * ang;
-    s := Vector3.{ sca.x, sca.y, 0 };
+    s := v3.{ sca.x, sca.y, 0 };
     return make_transform(p, r, s);
 }
 
-look_at :: (eye: Vector3, f: Vector3, r: Vector3, u: Vector3, flip_z_axis := true) -> (m: Matrix4) {
+look_at :: (eye: v3, f: v3, r: v3, u: v3, flip_z_axis := true) -> (m: m4) {
 	
     f, s, u := f, r, u;
 	f = normalize(f);
@@ -88,8 +88,8 @@ linear_interp :: (x: f32, min: f32, max: f32) -> f32 {
     return min + (max - min) * x;
 }
 
-linear_interp :: (x : f32, min: Vector4, max: Vector4) -> (v : Vector4) {
-    v : Vector4;
+linear_interp :: (x : f32, min: v4, max: v4) -> (v : v4) {
+    v : v4;
     v.x = linear_interp(x, min.x, max.x);
     v.y = linear_interp(x, min.y, max.y);
     v.z = linear_interp(x, min.z, max.z);

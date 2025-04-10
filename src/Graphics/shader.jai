@@ -41,7 +41,7 @@ get_constant_location :: (shader : *Shader, name : string) -> s32 {
     return glGetUniformLocation(shader.program, name.data);
 }
 
-set_constant_matrix4 :: (using shader : *Shader, name : string, value : Matrix4) {
+set_constant_matrix4 :: (using shader : *Shader, name : string, value : m4) {
     location := get_constant_location(shader, name);
     glUniformMatrix4fv(location, 1, true, *value.floats[0]);
 }

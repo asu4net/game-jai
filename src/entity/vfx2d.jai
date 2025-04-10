@@ -4,13 +4,13 @@ VFX2D :: struct {
 
 Blink :: struct {
     enabled    : bool;
-    start_tint : Vector4;
-    end_tint   : Vector4 = RED;
+    start_tint : v4;
+    end_tint   : v4 = RED;
     duration   : f32 = 0.25;
     progress   : f32;
 }
 
-update_vfx :: (vfx : *VFX2D, tint : *Vector4) {
+update_vfx :: (vfx : *VFX2D, tint : *v4) {
     
     // Blink
     {

@@ -11,13 +11,13 @@ Entity2D :: struct {
     flags2d : Entity2D_Flag = .VISIBLE | .AUTOSIZE;
     item    : string;
     rect    : Rect;         @JsonIgnore
-    pos     : Vector2       = ZERO_2D;
-    scl     : Vector2       = ONE_2D;
+    pos     : v2       = ZERO_2D;
+    scl     : v2       = ONE_2D;
     ang     : f32       = 0;
-    size    : Vector2       = ONE_2D;
-    tint    : Vector4       = WHITE;
+    size    : v2       = ONE_2D;
+    tint    : v4       = WHITE;
     blend   : Blend         = .ALPHA;
-    tiling  : Vector2       = ONE_2D;
+    tiling  : v2       = ONE_2D;
 
     using vfx : VFX2D;
 }
