@@ -161,6 +161,7 @@ deserialize_entity_recursive :: (json : string) -> *Entity {
 add_tag :: (entity : *Entity, tag : string) {
     assert(is_not_destroyed(entity));
     assert(tag.count > 0);
+    assert(entity.tag.count == 0);
     scene := get_scene(entity.slot);
      _, found := table_find(*scene.tag_to_id, tag);
     assert(!found);
