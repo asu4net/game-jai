@@ -51,7 +51,7 @@ init_collider_2d :: (e : *Entity) {
 
 collisions2d_initialized :: () -> bool {
     using context.collisions2d;
-    return initialized(scene);
+    return scene.entities.data != null;
 }
 
 init_collisions2d :: () {

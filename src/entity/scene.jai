@@ -58,11 +58,11 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
     procs.copy   = copy_proc;
 }
 
-Scene :: struct($TEntity: Type) {
-    entities     : [..] TEntity;
+Scene :: struct($TEntity: Type, capacity : u32 = DEF_SCENE_CAPACITY ) {
+    CAPACITY :: capacity;
+    entities     : [] TEntity;
     slot         : u32;
     count        : int;
-    capacity     : u32;
     used_ids     : Sparse_Set;
     free_ids     : Queue(Entity_ID);
     to_clean     : Table(Entity_ID, struct{});
@@ -74,27 +74,24 @@ Scene :: struct($TEntity: Type) {
 #add_context scenes: [MAX_SCENES] *Scene(Entity);
 
 initialized :: (scene : Scene) -> bool {
-    return scene.entities.data != null;
+    return scene.type != null;
 }
 
 init :: (scene          : *Scene($TEntity), 
          slot           : u32, 
          init_proc      : Entity_Procs.INIT   = null,
          deinit_proc    : Entity_Procs.DEINIT = null,
-         copy_proc      : Entity_Procs.COPY  = null,
-         start_capacity : u32 = DEF_SCENE_CAPACITY) 
+         copy_proc      : Entity_Procs.COPY  = null) 
 {
     #assert(is_subclass_of_entity(TEntity));
     assert(!initialized(scene));
-    add_scene(scene.(*Scene(Entity)), slot);
-    array_resize(*scene.entities, start_capacity + 1);
-    scene.type     = type_info(TEntity);
-    scene.capacity = start_capacity + 1;
+    add_scene(xx scene, slot);
+    scene.type = type_info(TEntity);
+    scene.entities = NewArray(Scene(TEntity).CAPACITY + 1, TEntity);
+    init(*scene.used_ids, Scene(TEntity).CAPACITY);
+    init(*scene.free_ids, Scene(TEntity).CAPACITY + 1);
     
-    init(*scene.used_ids, start_capacity);
-    init(*scene.free_ids, start_capacity + 1);
-    
-    for i : 1..start_capacity push_back(*scene.free_ids, xx i);
+    for i : 1..Scene(TEntity).CAPACITY push_back(*scene.free_ids, xx i);
 
     init(TEntity, *scene.entity_procs, init_proc, deinit_proc, copy_proc); 
 }
@@ -128,15 +125,15 @@ deinit :: (scene : *Scene($TEntity)) {
         e := (*scene.entities[i]).(*Entity2D);
         destroy_entity(e);
     }
-
+    
     clean_destroyed_entities(xx scene);
 
     remove_scene(scene.slot);
-    array_reset(*scene.entities);
     deinit(*scene.used_ids);
     deinit(*scene.free_ids);
     deinit(*scene.tag_to_id);
     deinit(*scene.to_clean);
+    array_free(scene.entities);
     scene.* = .{};
 }
 
@@ -166,7 +163,7 @@ get_scene :: (slot : u32) -> *Scene(Entity) {
     return xx context.scenes[slot];
 }
 
-add_scene :: (scene : *Scene, slot : u32) {
+add_scene :: (scene : *Scene(Entity), slot : u32) {
     assert(scene != null);
     assert(context.scenes[slot] == null);
     context.scenes[slot] = scene;

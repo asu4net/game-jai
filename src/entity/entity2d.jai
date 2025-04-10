@@ -20,8 +20,12 @@ Entity2D :: struct {
     tiling  : Vector2       = ONE_2D;
 }
 
-#add_context entities2d : Scene(Entity2D);
-#add_context sheet : Spritesheet;
+#add_context entities2d : Entities2D;
+
+Entities2D :: struct {
+    scene : Scene(Entity2D);
+    sheet : Spritesheet;
+}
 
 copy_entity2d :: (dst : *Entity, src : *Entity) {
     s_dst := dst.(*Entity2D);
@@ -32,18 +36,22 @@ copy_entity2d :: (dst : *Entity, src : *Entity) {
 }
 
 init_entities2d :: () {
-    init(*context.sheet);
-    init(*context.entities2d, xx Scenes.ENTITIES_2D, copy_proc = copy_entity2d);
+    using context.entities2d;
+    init(*sheet);
+    init(*scene, xx Scenes.ENTITIES_2D, copy_proc = copy_entity2d);
 }
 
 deinit_entities2d :: () {
-    deinit(*context.sheet);
-    deinit(*context.entities2d);
+    using context.entities2d;
+    deinit(*sheet);
+    deinit(*scene);
+    context.entities2d = .{};
 }
 
 draw_entities2d :: () {
-    for i : 1..context.entities2d.count {
-        e := *context.entities2d.entities[i];
+    using context.entities2d;
+    for i : 1..scene.count {
+        e := *scene.entities[i];
         if !should_update(e) {
             continue;
         }
@@ -54,15 +62,15 @@ draw_entities2d :: () {
 }
 
 draw_entities2d :: (e : *Entity2D) {
-    assert(e != null);
+    using context.entities2d;
     if !is_enabled(e) || !.VISIBLE & e.flags2d return;
-    tex   := ifx e.item.count > 0 then *context.sheet.tex else null;
+    tex   := ifx e.item.count > 0 then *sheet.tex else null;
     flags := ifx e.item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
     if .AUTOSIZE & e.flags2d then flags |= .AUTOSIZE;
 
     // try find the item
     if tex && (e.rect.width == 0 || e.rect.height == 0) {
-        rect, found := table_find(*context.sheet.rects, e.item);
+        rect, found := table_find(*sheet.rects, e.item);
         if found e.rect = rect;
     }
     

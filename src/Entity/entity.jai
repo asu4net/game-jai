@@ -160,10 +160,7 @@ deserialize_entity_recursive :: (json : string) -> *Entity {
 
 create_entity :: (scene : *Scene($TEntity), tag := "") -> *TEntity {
     #assert(is_subclass_of_entity(TEntity));
-    if scene.count <= scene.capacity {
-        array_add(*scene.entities, .{});
-        scene.capacity = xx scene.entities.allocated;
-    }
+    assert(scene.count < Scene(TEntity).CAPACITY);
     
     id := pop_front(*scene.free_ids);
     index := insert_id(*scene.used_ids, id);
