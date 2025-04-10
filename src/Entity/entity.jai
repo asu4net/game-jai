@@ -100,7 +100,7 @@ deserialize_subclassed_entity :: ($TEntity : Type, json : string) -> *TEntity {
         return null;
     }
     
-    entity := clone_entity(*e, deserialization = true);
+    entity := clone_entity(*e, e.tag, deserialization = true);
     return xx entity;
 }
 
@@ -158,6 +158,16 @@ deserialize_entity_recursive :: (json : string) -> *Entity {
     return parent_entity;
 }
 
+add_tag :: (entity : *Entity, tag : string) {
+    assert(is_not_destroyed(entity));
+    assert(tag.count > 0);
+    scene := get_scene(entity.slot);
+     _, found := table_find(*scene.tag_to_id, tag);
+    assert(!found);
+    entity.tag = copy_string(tag);
+    table_add(*scene.tag_to_id, entity.tag, entity.id);
+}
+
 create_entity :: (scene : *Scene($TEntity), tag := "") -> *TEntity {
     #assert(is_subclass_of_entity(TEntity));
     assert(scene.count < Scene(TEntity).CAPACITY);
@@ -165,19 +175,10 @@ create_entity :: (scene : *Scene($TEntity), tag := "") -> *TEntity {
     id := pop_front(*scene.free_ids);
     index := insert_id(*scene.used_ids, id);
     entity := *scene.entities[index];
-    entity.tag = copy_string(tag);
     entity.slot = scene.slot;
+    entity.id = id;
+    add_tag(entity, tag);
 
-    if tag.count {
-         _, found := table_find(*scene.tag_to_id, tag);
-        if found then {
-            log_error("Serializable entity with the same tag already exists!");
-            return null;
-        }
-        table_add(*scene.tag_to_id, entity.tag, id);
-    }
-
-    entity.id    = id;
     scene.count += 1;
 
     if scene.entity_procs.init {
@@ -291,10 +292,10 @@ make_ref :: (entity : *Entity) -> Entity_Ref {
     };
 }
 
-clone_entity :: (template : *Entity, deserialization := false) -> *Entity {
+clone_entity :: (template : *Entity, tag := "", deserialization := false) -> *Entity {
     assert(template != null);
     scene := get_scene(template);
-    entity := scene.entity_procs.create(template.slot, template.tag);
+    entity := scene.entity_procs.create(template.slot, tag);
     entity.flags = template.flags;
 
     if deserialization {
