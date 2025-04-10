@@ -42,7 +42,6 @@
 #load "entity/scene.jai";
 #load "entity/entity.jai";
 #load "entity/entity2d.jai";
-#load "entity/vfx2d.jai";
 
 //Collisions
 #load "entity/collision/collision2d.jai";
@@ -59,3 +58,4 @@
 #load "graphics/render_camera.jai";
 #load "graphics/spritesheet.jai";
 #load "graphics/sprite.jai";
+#load "graphics/vfx2d.jai";
