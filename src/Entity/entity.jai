@@ -85,7 +85,10 @@ serialize_entity_recursive :: (entity : *Entity, builder : *String_Builder = nul
 serialize_subclassed_entity :: (entity : *$TEntity) -> string {
     #assert(is_subclass_of_entity(TEntity));
     assert(entity != null && entity.tag.count > 0);
-    return json_write_string(entity ,,temp);
+    builder : String_Builder;
+    append(*builder, "#entity\n" ,,temp);
+    append(*builder, json_write_string(entity ,,temp) ,,temp);
+    return builder_to_string(*builder ,,temp);
 }
 
 deserialize_subclassed_entity :: ($TEntity : Type, json : string) -> *TEntity {
