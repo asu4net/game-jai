@@ -32,14 +32,6 @@ Entity_Procs :: struct {
 }
 }
 
-copy_entity2d :: (dst : *Entity, src : *Entity) {
-    s_dst := dst.(*Entity2D);
-    s_src := src.(*Entity2D);
-    base_entity := s_dst.entity;
-    s_dst.* = s_src.*;
-    s_dst.entity = base_entity;
-}
-
 init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null, copy_proc : Entity_Procs.COPY) {
     assert(procs != null);
 
@@ -68,7 +60,7 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
 #if EDITOR {
     procs.draw_editor = (entity : *Entity) {
         e := entity.(*TEntity);
-        draw_editor_value(e.*);
+        inspect(e.tag.data, e, type_info(TEntity));
     }
 }
 
@@ -85,6 +77,8 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
             d.* = s.*;
             d.entity = base;
         }
+    } else {
+        procs.copy = copy_proc;
     }
 }
 

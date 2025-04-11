@@ -42,11 +42,7 @@ main :: () {
         process_window_events();
         clear_screen();
         query_collisions2d();
-        draw2d_begin(.{width, height});
-        {
-            draw_logic2d();
-        }
-        draw2d_end();
+        draw_logic2d();
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
         clean_destroyed_entities();

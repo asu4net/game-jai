@@ -81,7 +81,7 @@ draw_editor :: () {
     ImGui.PushStyleColor(.PopupBg, .{0.0, 0.0, 0.0, 1});
     viewpor_size := ImGui.GetMainViewport().WorkSize;
     ImGui.SetNextWindowPos(viewpor_size / 2, .Appearing, .{0.5, 0.5});
-    
+
     if ImGui.BeginPopupModal("Create Prefab", flags = .AlwaysAutoResize | .NoMove)  {
         ImGui.InputText("Name", data(prefab_name), TEXT_BUFF_SIZE);
 
@@ -147,6 +147,7 @@ save_prefab_and_close :: () {
     prefab = null;
 }
 
+/*
 draw_editor_value :: (value : Any, inside_struct_or_array := true, may_be_uninitialized := false) {
     using Type_Info_Tag;
 
@@ -285,6 +286,118 @@ draw_editor_value :: (value : Any, inside_struct_or_array := true, may_be_uninit
         case;
             return;
     }
+}
+*/
+
+MAX_BUFFER_SIZE :: 8000;
+input_buffer: [MAX_BUFFER_SIZE] u8;
+text: string;
+insert_point: int;
+
+inspect :: (name: *u8, data: *void, info:*Type_Info) {
+    default_size: ImGui.ImVec2;
+
+    using Type_Info_Tag;
+    if #complete info.type == {
+        case INTEGER;
+            info_int := cast(*Type_Info_Integer) info;
+            ImGui.InputInt(name, data); // @@ Add support for unsigned, and larger int types.
+        case FLOAT;
+            ImGui.DragFloat(name, data, v_speed = 0.1, format = "%.5f");
+        case BOOL;
+            ImGui.Checkbox(name, data);
+            //index : s32 = xx <<cast(*bool)data;
+            //if ImGui.Combo(name, *index, "false\0true\0\0") { <<cast(*bool)data = xx index; };
+        case STRING;
+            
+            s := data.(*string).*;
+            if s.count >= input_buffer.count  s.count = input_buffer.count;
+            memcpy(input_buffer.data, s.data, s.count);
+
+            if !text.data  text.data = input_buffer.data;
+            text.count   = s.count;
+            insert_point = s.count;
+
+            if ImGui.InputText(name, text.data, xx text.count) {
+                free(s);
+                s = copy_string(text);
+            }
+
+        case POINTER;
+            // @@ Open in new window?
+            ImGui.Text("pointer");
+        case PROCEDURE;
+            ImGui.Text("procedure");
+        case VOID;
+            ImGui.Text("void");
+        case CODE;
+            ImGui.Text("Code");
+        case STRUCT;
+            info_struct := cast(*Type_Info_Struct) info;
+            if ImGui.TreeNode(name, "%: %", to_string(name), info_struct.name) {
+                for member: info_struct.members {
+                    inspect(temp_c_string(member.name), data + member.offset_in_bytes, member.type);
+                }
+                ImGui.TreePop();
+            }
+        case ARRAY;
+            info_array := cast(*Type_Info_Array) info;
+            array_count, array_data := get_array_count_and_data(data, info_array);
+            array_name := to_string(name);
+            element_size := info_array.element_type.runtime_size;
+            if ImGui.TreeNode(name, "% (count = %)", array_name, array_count) {
+                for 0..array_count-1 {
+                    item_name := temp_c_string(tprint("%[%]", array_name, it));
+                    inspect(item_name, array_data + it * element_size, info_array.element_type);
+                }
+                ImGui.TreePop();
+            }
+        case ANY;
+            // @@ Display type and inspect value.
+            ImGui.Text("Any!");
+        case ENUM;
+            info_enum := cast(*Type_Info_Enum) info;
+
+            if info_enum.enum_type_flags & .FLAGS {
+                // @@ How to handle flags?
+            }
+            else {
+                value := get_enum_value(data, info_enum);
+                value_name := "";
+                for info_enum.names {
+                    if value == info_enum.values[it_index]  value_name = it;
+                }
+
+                if ImGui.BeginCombo(name, temp_c_string(value_name)) {
+                    for info_enum.names {
+                        is_selected := value == info_enum.values[it_index];
+                        if ImGui.Selectable(temp_c_string(it), is_selected, size=*default_size) {
+                            set_enum_value(data, info_enum, info_enum.values[it_index]);
+                        }
+                        if is_selected ImGui.SetItemDefaultFocus();
+                    }
+
+                    ImGui.EndCombo();
+                }
+            }
+
+
+        case POLYMORPHIC_VARIABLE;
+            // @@ ??
+        case TYPE;
+            // @@
+        case OVERLOAD_SET;
+            // @@
+        case VARIANT;
+        // @Incomplete: Can do something better here.
+            tiv := cast(*Type_Info_Variant) info;
+            inspect(name, data, tiv.variant_of);
+        case UNTYPED_LITERAL;
+            ImGui.Text("(untyped literal)");
+        case UNTYPED_ENUM;
+            ImGui.Text("(untyped enum)");
+    }
+
 }
 
 } //#if IMGUI

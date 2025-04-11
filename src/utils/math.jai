@@ -50,17 +50,17 @@ rotate :: (mat: m4, rotation : v3) -> m4 {
 }
 
 make_transform :: (pos : v3, rot := ZERO_3D, sc := ONE_3D) -> m4 {
-    scale_matrix := scale(IDENTITY, sc);
-    rotation_matrix :=  ifx rot != ZERO_3D then rotate(scale_matrix, RAD_PER_DEG * rot) else scale_matrix;
-    translation_matrix := translate(rotation_matrix, pos);
-    return translation_matrix;
+    scale_matrix       := scale(IDENTITY, sc);
+    rotation_matrix    := rotate(IDENTITY, RAD_PER_DEG * rot);
+    translation_matrix := translate(IDENTITY, pos);
+    return translation_matrix * rotation_matrix * scale_matrix;
 }
 
-make_transform :: (pos : v2, ang: f32 = 0, sca := ONE_2D) -> m4 {
-    p := v3.{ pos.x, pos.y, 0 };
-    r := FRONT_3D * ang;
-    s := v3.{ sca.x, sca.y, 0 };
-    return make_transform(p, r, s);
+make_transform :: (pos : v2, rot : f32 = 0, sc := ONE_2D) -> m4 {
+    scale_matrix       := scale(IDENTITY, .{sc.x, sc.y, 0 });
+    rotation_matrix    := rotate_z(IDENTITY, RAD_PER_DEG * rot);
+    translation_matrix := translate(IDENTITY, .{pos.x, pos.y, 0 });
+    return translation_matrix * rotation_matrix * scale_matrix;
 }
 
 look_at :: (eye: v3, f: v3, r: v3, u: v3, flip_z_axis := true) -> (m: m4) {

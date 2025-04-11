@@ -8,6 +8,7 @@
 #import "File";
 #import "File_Utilities";
 #import "Text_File_Handler";
+#import "Reflection";
 
 // Vendor Modules
 #import "SDL";
