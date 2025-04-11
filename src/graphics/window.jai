@@ -8,7 +8,7 @@ Window :: struct {
 
 #add_context window: Window;
 
-init_window :: (name :string = "the window", w: s32 = 1920, h: s32 = 1080) {
+init_window :: (name :string = "the window", w: s32 = 1280, h: s32 = 720) {
     using context.window;
     assert(handle == null);
     

@@ -26,10 +26,18 @@ Entity_Procs :: struct {
     deinit      : DEINIT;
     serialize   : SERIALIZE;
     deserialize : DESERIALIZE;
-    copy        : COPY;
+    copy        : COPY; //#REVIEW_asuarez Maybe call this post-clone
 #if EDITOR {
     draw_editor : DRAW_EDITOR;
 }
+}
+
+copy_entity2d :: (dst : *Entity, src : *Entity) {
+    s_dst := dst.(*Entity2D);
+    s_src := src.(*Entity2D);
+    base_entity := s_dst.entity;
+    s_dst.* = s_src.*;
+    s_dst.entity = base_entity;
 }
 
 init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = null, deinit_proc : Entity_Procs.DEINIT = null, copy_proc : Entity_Procs.COPY) {
@@ -67,7 +75,17 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
     // User provided procs
     procs.init   = init_proc;
     procs.deinit = deinit_proc;
-    procs.copy   = copy_proc;
+
+    if !copy_proc {
+
+        procs.copy = (dst : *Entity, src : *Entity) {
+            d := dst.(*TEntity);
+            s := src.(*TEntity);
+            base := d.entity;
+            d.* = s.*;
+            d.entity = base;
+        }
+    }
 }
 
 Scene :: struct($TEntity: Type, capacity : u32 = DEF_SCENE_CAPACITY ) {
@@ -172,7 +190,7 @@ get_scene :: (slot : u32) -> *Scene(Entity) {
     assert(slot < MAX_SCENES);
     scene := get_scene_unsafe(slot);
     assert(scene != null);
-    return xx context.scenes[slot];
+    return xx scene;
 }
 
 add_scene :: (scene : *Scene(Entity), slot : u32) {

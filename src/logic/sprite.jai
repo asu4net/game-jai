@@ -17,11 +17,11 @@ Sprite :: struct {
     rect     : Rect; @JsonIgnore
 }
 
-draw_sprite :: (using transform : *Transform2D, using sprite : *Sprite, id : u32 = 0) {
+draw_sprite :: (using transform : *Transform2D, using sprite : *Sprite, sheet : *Spritesheet, id : u32 = 0) {
     
     if !visible then return;
 
-    tex := ifx item.count > 0 then *context.entities2d.sheet.tex else null;
+    tex := ifx item.count > 0 then *sheet.tex else null;
     flags := ifx item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
     
     if autosize then flags |= .AUTOSIZE;
@@ -30,7 +30,7 @@ draw_sprite :: (using transform : *Transform2D, using sprite : *Sprite, id : u32
 
     // try find the item
     if tex && (rect.width == 0 || rect.height == 0) {
-        r, found := table_find(*context.entities2d.sheet.rects, item);
+        r, found := table_find(*sheet.rects, item);
         if found rect = r;
     }
     

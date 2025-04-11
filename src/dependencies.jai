@@ -41,10 +41,13 @@
 // Entity
 #load "entity/scene.jai";
 #load "entity/entity.jai";
-#load "entity/entity2d.jai";
 
-//Collisions
-#load "entity/collision/collision2d.jai";
+// Logic
+#load "logic/collision2d.jai";
+#load "logic/vfx2d.jai";
+#load "logic/text.jai";
+#load "logic/sprite.jai";
+#load "logic/logic2d.jai";
 
 // Graphics
 #load "graphics/window.jai";
@@ -57,5 +60,3 @@
 #load "graphics/font.jai";
 #load "graphics/render_camera.jai";
 #load "graphics/spritesheet.jai";
-#load "graphics/sprite.jai";
-#load "graphics/vfx2d.jai";

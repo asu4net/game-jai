@@ -5,10 +5,11 @@ GAME_NAME :: "Game";
 Scenes :: enum {
     ENTITIES_2D;
     COLLISIONS_2D;
+    GUI_TEXTS;
 }
 
 main :: () {
-
+    
     using context.window;
 
     defer report_memory_leaks();
@@ -23,8 +24,8 @@ main :: () {
     init_collisions2d();
     defer deinit_collisions2d();
 
-    init_entities2d();
-    defer deinit_entities2d();
+    init_logic2d();
+    defer deinit_logic2d();
 
     #if IMGUI {
         draw_imgui_proc : IMGUI_DRAW_PROC;
@@ -35,7 +36,7 @@ main :: () {
     #if EDITOR {
         draw_imgui_proc = draw_editor;
     }
-        
+    
     while !done {
         time_step();
         process_window_events();
@@ -43,7 +44,7 @@ main :: () {
         query_collisions2d();
         draw2d_begin(.{width, height});
         {
-            draw_entities2d();
+            draw_logic2d();
         }
         draw2d_end();
         #if EDITOR draw_imgui(draw_imgui_proc);

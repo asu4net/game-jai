@@ -43,7 +43,7 @@
 	},
 	"vfx": {
 		"blink": {
-			"enabled": true,
+			"enabled": false,
 			"start_tint": {
 				"x": 0,
 				"y": 0,

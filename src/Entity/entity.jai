@@ -263,21 +263,23 @@ immediate_destroy_entity :: (entity : *Entity, recursive := false) {
 
 resolve_ref :: (ref : *Entity_Ref) -> *Entity {
     assert(ref != null);
-    scene := get_scene(ref.slot);
+    scene := get_scene_unsafe(ref.slot);
     
     if ref.id == 0 then {
         if ref.tag.count == 0 {
             return null;
         }
 
+        assert(scene != null);
         id, found := table_find(*scene.tag_to_id, ref.tag);
         if found {
             ref.id = id;
         }
     }
-
+    
     if ref.id == 0 then return null;
 
+    assert(scene != null);
     exists := test(*scene.used_ids, ref.id);
     if !exists then return null;
     index := search(*scene.used_ids, ref.id);

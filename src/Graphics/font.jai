@@ -1,3 +1,5 @@
+DEF_FONT_PATH :: "assets/fonts/AlbertSans-VariableFont_wght.ttf"; 
+
 Glyph :: struct {
     quad           : AlignedQuad;
     x_pos, y_pos   : f32;
@@ -16,7 +18,7 @@ font_is_init :: (font : *Font) -> bool {
     return font.is_init;
 }
 
-init :: (font : *Font, path : string) {
+init :: (font : *Font, path : string = DEF_FONT_PATH) {
     assert(!font_is_init(font));
     
     file, success := file_open(path);
