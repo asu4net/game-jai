@@ -309,28 +309,7 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
             //index : s32 = xx <<cast(*bool)data;
             //if ImGui.Combo(name, *index, "false\0true\0\0") { <<cast(*bool)data = xx index; };
         case STRING;
-            
-            s := data.(*string).*;
-            MAX_LEN :: 500;
-            buffer: [MAX_LEN] u8;
-            len := min(s.count, MAX_LEN);
-            memcpy(*buffer, s.data, len);
-            buffer[len] = #char "\0";
-            
-            if ImGui.InputText(name, buffer.data, MAX_LEN, .EnterReturnsTrue) {
-                new_len := c_style_strlen(buffer.data);
-                if new_len != s.count {
-                    new_data := alloc(new_len).(*u8);
-                    memcpy(new_data, *buffer, new_len);
-                    free(s);
-                    s_ptr := data.(*string);
-                    s_ptr.data  = new_data;
-                    s_ptr.count = new_len; 
-                } else {
-                    memcpy(s.data, *buffer, new_len);
-                }
-            }
-
+            draw_editor_string(name, data.(*string));
         case POINTER;
             // @@ Open in new window?
             ImGui.Text("pointer");

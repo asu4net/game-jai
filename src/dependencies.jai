@@ -32,6 +32,7 @@
 // Editor
 #if EDITOR then {
     #load "editor/editor.jai";
+    #load "editor/editor_utils.jai";
 }
 
 #if IMGUI then {
