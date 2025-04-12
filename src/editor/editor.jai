@@ -311,16 +311,24 @@ inspect :: (name: *u8, data: *void, info:*Type_Info) {
         case STRING;
             
             s := data.(*string).*;
-            if s.count >= input_buffer.count  s.count = input_buffer.count;
-            memcpy(input_buffer.data, s.data, s.count);
-
-            if !text.data  text.data = input_buffer.data;
-            text.count   = s.count;
-            insert_point = s.count;
-
-            if ImGui.InputText(name, text.data, xx text.count) {
-                free(s);
-                s = copy_string(text);
+            MAX_LEN :: 500;
+            buffer: [MAX_LEN] u8;
+            len := min(s.count, MAX_LEN);
+            memcpy(*buffer, s.data, len);
+            buffer[len] = #char "\0";
+            
+            if ImGui.InputText(name, buffer.data, MAX_LEN, .EnterReturnsTrue) {
+                new_len := c_style_strlen(buffer.data);
+                if new_len != s.count {
+                    new_data := alloc(new_len).(*u8);
+                    memcpy(new_data, *buffer, new_len);
+                    free(s);
+                    s_ptr := data.(*string);
+                    s_ptr.data  = new_data;
+                    s_ptr.count = new_len; 
+                } else {
+                    memcpy(s.data, *buffer, new_len);
+                }
             }
 
         case POINTER;
