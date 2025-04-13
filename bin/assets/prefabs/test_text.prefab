@@ -1,7 +1,7 @@
 
 #entity
 {
-	"tag": "test text",
+	"tag": "test_text",
 	"flags": "VALID | LOCAL_ENABLED | ENABLED",
 	"slot": 2,
 	"parent": {
@@ -21,7 +21,7 @@
 	"ang": 0,
 	"text": {
 		"visible": true,
-		"text": "placeholder!",
+		"text": "Buenas tardes!",
 		"blend": "ALPHA",
 		"tint": {
 			"x": 1,

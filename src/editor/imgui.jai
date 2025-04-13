@@ -27,11 +27,11 @@ init_imgui :: () {
 
     using style := ImGui.GetStyle();
 
-    //TabBarOverlineSize = 0;
-    //FrameRounding = 9;
+    TabBarOverlineSize = 0;
+    FrameRounding = 9;
     
     Colors[xx ImGui.Col.DockingEmptyBg]     = .{ 0.000, 0.000, 0.000, 0.000 };
-    /*
+    
     Colors[xx ImGui.Col.WindowBg]           = .{ 0.192, 0.200, 0.219, 1.000 };
     Colors[xx ImGui.Col.TabUnfocusedActive] = .{ 0.168, 0.176, 0.192, 1.000 };
     Colors[xx ImGui.Col.Tab]                = .{ 0.168, 0.176, 0.192, 1.000 };
@@ -42,7 +42,6 @@ init_imgui :: () {
     Colors[xx ImGui.Col.FrameBg]            = .{ 0.100, 0.100, 0.100, 1.000 };
     Colors[xx ImGui.Col.Button]             = .{ 0.356, 0.356, 0.416, 1.000 };
     //Colors[xx ImGui.Col.ModalWindowDimBg]   = .{ 0.000, 0.000, 0.000, 0.000 };
-    */
 }
 
 IMGUI_DRAW_PROC :: #type ();

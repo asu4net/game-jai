@@ -60,7 +60,7 @@ init :: ($TEntity: Type, procs : *Entity_Procs, init_proc : Entity_Procs.INIT = 
 #if EDITOR {
     procs.draw_editor = (entity : *Entity) {
         e := entity.(*TEntity);
-        inspect(e.tag.data, e, type_info(TEntity));
+        draw_editor(e.tag.data, e, type_info(TEntity));
     }
 }
 
