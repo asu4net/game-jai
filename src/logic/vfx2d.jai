@@ -4,8 +4,8 @@ VFX2D :: struct {
 
 Blink :: struct {
     enabled    : bool;
-    start_tint : v4;
-    end_tint   : v4 = RED;
+    start_tint : v4; @Color
+    end_tint   : v4 = RED; @Color
     duration   : f32 = 0.5;
     progress   : f32;
 }

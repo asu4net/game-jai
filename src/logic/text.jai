@@ -2,7 +2,7 @@ Text :: struct {
     visible : bool   = true;
     text    : string = "placeholder!";
     blend   : Blend  = .ALPHA;
-    tint    : v4     = WHITE;
+    tint    : v4     = WHITE; @Color
 }
 
 draw_text :: (using transform : Transform2D, using t : Text, font : *Font, id : u32 = 0) {

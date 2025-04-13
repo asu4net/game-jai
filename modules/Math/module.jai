@@ -214,36 +214,36 @@ Vector2 :: struct {
     x, y: float;
 
 #place x;
-    component: [2] float = ---; @JsonIgnore
+    component: [2] float = ---; @JsonIgnore @EditorIgnore
 }
 
 Vector3 :: struct {
     x, y, z: float;
 
 #place x;
-    xy: Vector2 = ---; @JsonIgnore
+    xy: Vector2 = ---; @JsonIgnore @EditorIgnore
 #place y;
-    yz: Vector2 = ---; @JsonIgnore
+    yz: Vector2 = ---; @JsonIgnore @EditorIgnore
 
 #place x;
-    component: [3] float = ---; @JsonIgnore
+    component: [3] float = ---; @JsonIgnore @EditorIgnore
 }
 
 Vector4 :: struct {
     x, y, z, w: float;
 
 #place x;
-    xy: Vector2 = ---; @JsonIgnore
+    xy: Vector2 = ---; @JsonIgnore @EditorIgnore
 #place y;
-    yz: Vector2 = ---; @JsonIgnore
+    yz: Vector2 = ---; @JsonIgnore @EditorIgnore
 #place z;
-    zw: Vector2 = ---; @JsonIgnore
+    zw: Vector2 = ---; @JsonIgnore @EditorIgnore
 #place x;
-    xyz: Vector3 = ---; @JsonIgnore
+    xyz: Vector3 = ---; @JsonIgnore @EditorIgnore
 #place y;
-    yzw: Vector3 = ---; @JsonIgnore
+    yzw: Vector3 = ---; @JsonIgnore @EditorIgnore
 #place x;
-    component: [4] float = ---; @JsonIgnore
+    component: [4] float = ---; @JsonIgnore @EditorIgnore
 }
 
 Quaternion :: struct {

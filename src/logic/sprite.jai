@@ -7,14 +7,14 @@ Transform2D :: struct {
 Sprite :: struct {
     visible  : bool   = true;
     item     : string;
-    tint     : v4     = WHITE;
+    tint     : v4     = WHITE; @Color
     size     : v2     = ONE_2D;
     tiling   : v2     = ONE_2D;
     blend    : Blend  = .ALPHA;
     flip_x   : bool;
     flip_y   : bool;
     autosize : bool   = true;
-    rect     : Rect; @JsonIgnore
+    rect     : Rect; @JsonIgnore @EditorReadOnly
 }
 
 draw_sprite :: (using transform : *Transform2D, using sprite : *Sprite, sheet : *Spritesheet, id : u32 = 0) {

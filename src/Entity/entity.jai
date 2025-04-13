@@ -27,10 +27,10 @@ compare_entity_ref :: (a : Entity_Ref, b : Entity_Ref) -> bool {
 Entity :: struct {
     tag      : string;
     flags    : Entity_Flag = .VALID | .LOCAL_ENABLED | .ENABLED;
-    id       : Entity_ID; @JsonIgnore
-    slot     : u32;
-    parent   : Entity_Ref;
-    children : [..] Entity_Ref; 
+    id       : Entity_ID; @JsonIgnore @EditorReadOnly
+    slot     : u32; @EditorReadOnly
+    parent   : Entity_Ref; @EditorIgnore
+    children : [..] Entity_Ref; @EditorIgnore 
 }
 
 is_subclass_of_entity :: inline ($T: Type) -> bool {
