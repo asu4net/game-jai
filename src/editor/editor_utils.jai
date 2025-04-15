@@ -42,9 +42,7 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
                             } else {
                                 editor_draw_color_palette(member.name, member_data);
                             }
-                        } else if member.type == type_info(Entity_Ref) {
-                            //todo
-                        }  else {
+                        } else {
                             editor_draw_property(temp_c_string(member.name), member_data, member.type);
                         }
                     }

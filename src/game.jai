@@ -21,12 +21,6 @@ main :: () {
     init_draw2d();
     defer deinit_draw2d();
     
-    init_collisions2d();
-    defer deinit_collisions2d();
-
-    init_logic2d();
-    defer deinit_logic2d();
-
     #if IMGUI {
         draw_imgui_proc : IMGUI_DRAW_PROC;
         init_imgui();
@@ -41,11 +35,9 @@ main :: () {
         time_step();
         process_window_events();
         clear_screen();
-        query_collisions2d();
-        draw_logic2d();
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
-        clean_destroyed_entities();
+        //clean_destroyed_entities();
         reset_temporary_storage();
     }
 }

@@ -40,16 +40,12 @@
     #load "editor/imgui.jai";
 }
 
-// Entity
-#load "entity/scene.jai";
-#load "entity/entity.jai";
-
 // Logic
-#load "logic/collision2d.jai";
-#load "logic/vfx2d.jai";
+//#load "logic/collision2d.jai";
+//#load "logic/vfx2d.jai";
 #load "logic/text.jai";
 #load "logic/sprite.jai";
-#load "logic/logic2d.jai";
+//#load "logic/logic2d.jai";
 
 // Graphics
 #load "graphics/window.jai";
