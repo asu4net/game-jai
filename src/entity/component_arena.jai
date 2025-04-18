@@ -1,6 +1,3 @@
-Component :: struct {
-}
-
 Component_Arena_Base :: struct {
     data      : *void;    
     count     : s64;
@@ -9,7 +6,7 @@ Component_Arena_Base :: struct {
     used_ids  : Sparse_Set;
 }
 
-Component_Arena :: struct($T : Type, n : s64 = 100) {
+Component_Arena :: struct($T : Type, n : s64) {
     #as using base : Component_Arena_Base;
     CAPACITY :: n;
     components : []T;
