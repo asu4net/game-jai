@@ -2,16 +2,15 @@
 
 GAME_NAME :: "Game";
 
-Scenes :: enum {
-    ENTITIES_2D;
-    COLLISIONS_2D;
-    GUI_TEXTS;
+Some_Component :: struct @Component @Max(100) {
+    dummy : float;
 }
+
+#add_context entity_storage : Entity_Storage;
 
 main :: () {
     
     using context.window;
-
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     

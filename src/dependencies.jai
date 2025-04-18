@@ -40,6 +40,10 @@
     #load "editor/imgui.jai";
 }
 
+// Entity
+#load "entity/entity_storage.jai";
+#load "entity/component_arena.jai";
+
 // Logic
 //#load "logic/collision2d.jai";
 //#load "logic/vfx2d.jai";
