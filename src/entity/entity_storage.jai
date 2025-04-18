@@ -3,10 +3,6 @@ Entity_Storage :: struct {
     component_arenas : [..] *Component_Arena_Base;
 }
 
-Some_Component :: struct @Component @Max(100) {
-    dummy : float;
-}
-
 #add_context entity_storage : Entity_Storage;
 
 init_entity_storage :: () {
@@ -21,5 +17,5 @@ deinit_entity_storage :: () {
 }
 
 clean_destroyed_entities :: () {
-    
+
 }

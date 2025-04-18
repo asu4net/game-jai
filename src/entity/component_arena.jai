@@ -13,9 +13,19 @@ Component_Arena :: struct($T : Type, n : s64) {
 }
 
 init :: (arena : *Component_Arena($T, $N)) {
-    
+    print("inited component arena!\n");    
 }
 
 deinit :: (arena : *Component_Arena($T, $N)) {
-        
-} 
+    print("deinited component arena!\n");
+}
+
+//---------------------------
+
+Some_Component :: struct @Component @Max(100) {
+    dummy : float;
+}
+
+Some_Other_Component :: struct @Component @Max(100) {
+    dummy : float;
+}
