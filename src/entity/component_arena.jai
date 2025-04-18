@@ -15,3 +15,7 @@ Component_Arena :: struct($T : Type, n : s64) {
 init :: (arena : *Component_Arena($T, $N)) {
     
 }
+
+deinit :: (arena : *Component_Arena($T, $N)) {
+        
+} 

@@ -9,8 +9,25 @@ CompileFlags :: enum_flags {
 EXECUTABLE_NAME               :: "game";
 OUTPUT_PATH                   :: "bin";
 BUILD_FILE                    :: "src/game.jai";
-DEFAULT_COMPONENT_ARENA_COUNT :: 30;
 COMPILE_FLAGS                 :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
+
+// Component arena code generation.
+DEFAULT_COMPONENT_ARENA_COUNT :: 30;
+GENERATED_COMPONENT_ARENAS :: #string SCOPE 
+
+Generated_Component_Arenas :: struct {
+    %1
+}
+
+init_generated_component_arenas :: (using a : *Generated_Component_Arenas) {
+    %2    
+}
+
+deinit_generated_component_arenas :: (using a : *Generated_Component_Arenas) {
+    %3    
+}
+
+SCOPE
 
 #run {
     set_build_options_dc(.{do_output=false});
@@ -23,7 +40,7 @@ COMPILE_FLAGS                 :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
         print("Workspace creation failed.\n");
         assert(false);
     }
-    
+
     // Build options.
     {
         target_options := get_build_options(w);
@@ -131,28 +148,30 @@ COMPILE_FLAGS                 :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
                             
                             // Generate the code.
                             {
-                                GENERATED_COMPONENT_ARENAS :: #string SCOPE 
-                                #add_context generated_component_arenas : Generated_Component_Arenas;
-
-                                Generated_Component_Arenas :: struct {
-                                    %1
-                                }
-
-                                SCOPE
-
-                                arenas_string : string;
+                                arenas_string      : string;
+                                arenas_init_string : string;
+                                arenas_deinit_string : string;
                                 {
-                                    builder : String_Builder;
+                                    arenas_builder : String_Builder;
+                                    arenas_init_builder : String_Builder;
+                                    arenas_deinit_builder : String_Builder; 
+
                                     for value, _ : component_info {
                                         arena_name := to_lower_copy(value.type_name);
                                         max := ifx value.max > 0 then value.max else DEFAULT_COMPONENT_ARENA_COUNT; 
-                                        print_to_builder(*builder, " %1_arena: Component_Arena(%2, %3);", arena_name, value.type_name, max);
+                                        print_to_builder(*arenas_builder, "%1_arena: Component_Arena(%2, %3);", arena_name, value.type_name, max);
+                                        print_to_builder(*arenas_init_builder, "init(*%1_arena);", arena_name);
+                                        print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);", arena_name);
+                                        
                                         print("Registered component arena of type: %. Max elements: %. \n", value.type_name, max);
                                     }
-                                    arenas_string = builder_to_string(*builder);
+
+                                    arenas_string = builder_to_string(*arenas_builder);
+                                    arenas_init_string = builder_to_string(*arenas_init_builder);
+                                    arenas_deinit_string = builder_to_string(*arenas_deinit_builder);
                                 }
 
-                                generated_arenas_string := sprint(GENERATED_COMPONENT_ARENAS, arenas_string);
+                                generated_arenas_string := sprint(GENERATED_COMPONENT_ARENAS, arenas_string, arenas_init_string, arenas_deinit_string);
                                 add_build_string(generated_arenas_string, w);
                                 generated_code = true;
 

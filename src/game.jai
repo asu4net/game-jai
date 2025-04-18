@@ -2,12 +2,6 @@
 
 GAME_NAME :: "Game";
 
-Some_Component :: struct @Component @Max(100) {
-    dummy : float;
-}
-
-#add_context entity_storage : Entity_Storage;
-
 main :: () {
     
     using context.window;
@@ -29,6 +23,9 @@ main :: () {
     #if EDITOR {
         draw_imgui_proc = draw_editor;
     }
+
+    init_entity_storage();
+    defer deinit_entity_storage();
     
     while !done {
         time_step();
@@ -36,7 +33,7 @@ main :: () {
         clear_screen();
         #if EDITOR draw_imgui(draw_imgui_proc);
         swap_buffers();
-        //clean_destroyed_entities();
+        clean_destroyed_entities();
         reset_temporary_storage();
     }
 }
