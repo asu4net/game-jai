@@ -9,6 +9,7 @@
 #import "File_Utilities";
 #import "Text_File_Handler";
 #import "Reflection";
+#import "Random";
 
 // Vendor Modules
 #import "SDL";
@@ -41,8 +42,7 @@
 }
 
 // Entity
-#load "entity/entity_storage.jai";
-#load "entity/component_arena.jai";
+#load "entity/entity.jai";
 
 // Logic
 //#load "logic/collision2d.jai";

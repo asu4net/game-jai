@@ -5,10 +5,8 @@ Queue :: struct($T: Type) {
 	offset: u32;
 }
 
-DEFAULT_CAPACITY :: 16;
-
 // procedure to initialize a queue
-init :: (q: *Queue($T), capacity := DEFAULT_CAPACITY) {
+init :: (q: *Queue($T), capacity := 100) {
 	clear(q);
 	reserve(q, capacity);
 }
@@ -186,5 +184,3 @@ grow :: (q: *Queue($T), min_capacity: u32 = 0) {
         q.offset += new_capacity - n;
     }
 }
-
-//#import "Basic";

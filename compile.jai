@@ -11,21 +11,33 @@ OUTPUT_PATH                   :: "bin";
 BUILD_FILE                    :: "src/game.jai";
 COMPILE_FLAGS                 :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
 
-// Component arena code generation.
+// Entity code generation.
+
+MAX_ENTITIES                  :: 3000;
 DEFAULT_COMPONENT_ARENA_COUNT :: 30;
-GENERATED_COMPONENT_ARENAS :: #string SCOPE 
+
+GENERATED_COMPONENT_ARENAS    :: #string SCOPE 
 
 Generated_Component_Arenas :: struct {
     %1
 }
 
-init_generated_component_arenas :: (using a : *Generated_Component_Arenas) {
+init_generated_component_arenas :: (using a : *Generated_Component_Arenas, all : *[..] *Component_Arena_Base) {
     %2    
 }
 
 deinit_generated_component_arenas :: (using a : *Generated_Component_Arenas) {
     %3    
 }
+
+get_generated_component_arena :: (using a : *Generated_Component_Arenas, $T : Type) -> *Component_Arena(T) {
+    #if T == {
+        %4
+        case; return null;
+    }
+}
+
+MAX_ENTITIES :: %5;
 
 SCOPE
 
@@ -128,18 +140,28 @@ SCOPE
                                         }
                                         if begins_with(note, "max(") {
                                             expected_num := slice(note, 4, note.count-5);
-                                            max, success := parse_int(*expected_num);
-                                            if !success {
-                                                log_error("Error parsing the @Max attribute for %. Expected something like Max(30) but got this % \n", it.defined_type.name, note_obj.text);
-                                                continue;
-                                            } else {
+                                            if expected_num == "max_entities" {
                                                 info, found := table_find(*component_info, it.defined_type.name);
                                                 if !found {
                                                     log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
                                                     continue;
                                                 }
-                                                info.max = max;
+                                                info.max = MAX_ENTITIES;
                                                 table_set(*component_info, info.type_name, info);
+                                            } else {
+                                                max, success := parse_int(*expected_num);
+                                                if !success {
+                                                    log_error("Error parsing the @Max attribute for %. Expected something like Max(30) but got this % \n", it.defined_type.name, note_obj.text);
+                                                    continue;
+                                                } else {
+                                                    info, found := table_find(*component_info, it.defined_type.name);
+                                                    if !found {
+                                                        log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
+                                                        continue;
+                                                    }
+                                                    info.max = max;
+                                                    table_set(*component_info, info.type_name, info);
+                                                }
                                             }
                                         }
                                     }
@@ -151,17 +173,21 @@ SCOPE
                                 arenas_string      : string;
                                 arenas_init_string : string;
                                 arenas_deinit_string : string;
+                                arenas_get_string : string;
                                 {
                                     arenas_builder : String_Builder;
                                     arenas_init_builder : String_Builder;
                                     arenas_deinit_builder : String_Builder; 
+                                    arenas_get_builder : String_Builder;
 
                                     for value, _ : component_info {
                                         arena_name := to_lower_copy(value.type_name);
                                         max := ifx value.max > 0 then value.max else DEFAULT_COMPONENT_ARENA_COUNT; 
-                                        print_to_builder(*arenas_builder, "%1_arena: Component_Arena(%2, %3);", arena_name, value.type_name, max);
-                                        print_to_builder(*arenas_init_builder, "init(*%1_arena);", arena_name);
-                                        print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);", arena_name);
+                                        print_to_builder(*arenas_builder, "%1_arena: Component_Arena(%2);\n", arena_name, value.type_name);
+                                        print_to_builder(*arenas_init_builder, "init(*%1_arena, %2);\n", arena_name, max);
+                                        print_to_builder(*arenas_init_builder, "array_add(all, *%1_arena);\n", arena_name);
+                                        print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);\n", arena_name);
+                                        print_to_builder(*arenas_get_builder, "case %1; return *%2_arena;\n", value.type_name, arena_name);
                                         
                                         print("Registered component arena of type: %. Max elements: %. \n", value.type_name, max);
                                     }
@@ -169,9 +195,11 @@ SCOPE
                                     arenas_string = builder_to_string(*arenas_builder);
                                     arenas_init_string = builder_to_string(*arenas_init_builder);
                                     arenas_deinit_string = builder_to_string(*arenas_deinit_builder);
+                                    arenas_get_string = builder_to_string(*arenas_get_builder);
                                 }
 
-                                generated_arenas_string := sprint(GENERATED_COMPONENT_ARENAS, arenas_string, arenas_init_string, arenas_deinit_string);
+                                generated_arenas_string := sprint(GENERATED_COMPONENT_ARENAS, arenas_string, 
+                                    arenas_init_string, arenas_deinit_string, arenas_get_string, MAX_ENTITIES);
                                 add_build_string(generated_arenas_string, w);
                                 generated_code = true;
 

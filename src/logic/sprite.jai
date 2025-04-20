@@ -17,7 +17,7 @@ Sprite :: struct {
     rect     : Rect; @JsonIgnore @EditorReadOnly
 }
 
-draw_sprite :: (using transform : *Transform2D, using sprite : *Sprite, sheet : *Spritesheet, id : u32 = 0) {
+draw_sprite :: (using transform : Transform2D, using sprite : *Sprite, sheet : *Spritesheet, id : u32 = 0) {
     
     if !visible then return;
 

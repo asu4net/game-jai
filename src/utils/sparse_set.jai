@@ -1,5 +1,6 @@
 Sparse_Set :: struct {
     NULL :: U32_MAX; 
+    
     sparse   : [..] u32;
     dense    : [..] u32;
     count    : u32;
@@ -68,7 +69,7 @@ remove_id :: (using s : *Sparse_Set, element : u32) -> u32, u32 {
     assert(element < capacity && test(s, element));
     
     deleted := sparse[element];
-    last    := count;
+    last    := count - 1;
     
     sparse[element] = Sparse_Set.NULL;
     count -= 1;
