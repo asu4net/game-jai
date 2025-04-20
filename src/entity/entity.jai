@@ -127,8 +127,8 @@ Info_Component :: struct @Component @Max(MAX_ENTITIES) {
     uuid  : u64;
 }
 
-Prefab_Component :: struct @Component @Max(MAX_ENTITIES) {
-    name : string;
+Tag_Component :: struct @Component @Max(MAX_ENTITIES) {
+    text : string;
 }
 
 #add_context entity_storage : Entity_Storage;
@@ -157,14 +157,14 @@ init_entity_storage :: () {
     }
 
     // Callbacks for default components.
-    set_copy_callback(Prefab_Component, (e : Entity, d : *void, s : *void) {
-        dst := d.(*Prefab_Component); src := s.(*Prefab_Component);
-        dst.name = copy_string(src.name);
+    set_copy_callback(Tag_Component, (e : Entity, d : *void, s : *void) {
+        dst := d.(*Tag_Component); src := s.(*Tag_Component);
+        dst.text = copy_string(src.text);
     });
 
-    set_remove_callback(Prefab_Component, (e : Entity, c : *void) {
-        component := c.(*Prefab_Component);
-        free(component.name);
+    set_remove_callback(Tag_Component, (e : Entity, c : *void) {
+        component := c.(*Tag_Component);
+        free(component.text);
     });
 }
 

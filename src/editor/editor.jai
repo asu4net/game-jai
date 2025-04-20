@@ -91,8 +91,8 @@ draw_editor :: () {
                     prefab = NULL_ENTITY;
                 }
                 prefab = create_entity();
-                prefab_cmp := add_component(Prefab_Component, prefab);
-                prefab_cmp.name = to_string(data(prefab_name));
+                tag := add_component(Tag_Component, prefab);
+                tag.text = to_string(data(prefab_name));
                 ImGui.CloseCurrentPopup();
             }
         }
@@ -124,8 +124,8 @@ save_prefab_and_close :: () {
 save_prefab :: () {
     using context.editor;
     assert(prefab != NULL_ENTITY);
-    prefab_cmp := get_component(Prefab_Component, prefab);
-    write_entire_file(tprint("assets/%.prefab", prefab_cmp.name ,,temp), serialize_entity(prefab ,,temp));
+    tag := get_component(Tag_Component, prefab);
+    write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), serialize_entity(prefab ,,temp));
 }
 
 } //#if IMGUI
