@@ -104,6 +104,7 @@ SCOPE
     {
         generated_code := false;
         struct_expressions: [..] *Code_Struct;
+        proc_headers: [..] *Code_Procedure_Header;
 
         while true {
             message := compiler_wait_for_message();
@@ -115,6 +116,10 @@ SCOPE
                         code_struct := it.expression; 
                         array_add(*struct_expressions, code_struct);
                     }
+                    for typechecked.procedure_headers {
+                        code_header := it.expression;
+                        array_add(*proc_headers, code_header);
+                    }
                 
                 case .PHASE;
                     phase := cast(*Message_Phase) message;
@@ -122,8 +127,11 @@ SCOPE
                         if !generated_code {
                             
                             Component_Info :: struct {
-                                type_name : string;
-                                max : s64;
+                                type_name      : string;
+                                max            : s64;
+                                cpy_proc := "null";
+                                rem_proc := "null";
+                                add_proc := "null";
                             }
 
                             // Info
@@ -167,6 +175,36 @@ SCOPE
                                     }
                                 }
                             } // Done collecting info.
+
+                            {
+                                // This is fucking ugly but who cares.
+                                for proc_headers {
+                                    for note_obj : it.notes {
+                                        note := to_lower_copy(note_obj.text);
+                                        if begins_with(note, "copycomponentcallback(") {
+                                            expected_component_type := slice(note_obj.text, 22, note.count-23);
+                                            info := table_find_pointer(*component_info, expected_component_type);
+                                            if info
+                                            then info.cpy_proc = it.name;
+                                            else log_error("Error: Detected @CopyComponentCallback attribute in a procedure named %1, for a non-component struct called %2", it.name, expected_component_type); 
+                                        }
+                                        else if begins_with(note, "removecomponentcallback(") {
+                                            expected_component_type := slice(note_obj.text, 24, note.count-25);
+                                            info := table_find_pointer(*component_info, expected_component_type);
+                                            if info
+                                            then info.rem_proc = it.name;
+                                            else log_error("Error: Detected @RemoveComponentCallback attribute in a procedure named %1, for a non-component struct called %2", it.name, expected_component_type); 
+                                        }
+                                        else if begins_with(note, "addcomponentcallback(") {
+                                            expected_component_type := slice(note_obj.text, 21, note.count-22);
+                                            info := table_find_pointer(*component_info, expected_component_type);
+                                            if info
+                                            then info.add_proc = it.name;
+                                            else log_error("Error: Detected @AddComponentCallback attribute in a procedure named %1, for a non-component struct called %2", it.name, expected_component_type); 
+                                        }
+                                    }
+                                }
+                            }
                             
                             // Generate the code.
                             {
@@ -184,7 +222,7 @@ SCOPE
                                         arena_name := to_lower_copy(value.type_name);
                                         max := ifx value.max > 0 then value.max else DEFAULT_COMPONENT_ARENA_COUNT; 
                                         print_to_builder(*arenas_builder, "%1_arena: Component_Arena(%2);\n", arena_name, value.type_name);
-                                        print_to_builder(*arenas_init_builder, "init(*%1_arena, %2);\n", arena_name, max);
+                                        print_to_builder(*arenas_init_builder, "init(*%1_arena, %2, cpy_proc = %3, add_proc = %4, rem_proc = %5);\n", arena_name, max, value.cpy_proc, value.add_proc, value.rem_proc);
                                         print_to_builder(*arenas_init_builder, "array_add(all, *%1_arena);\n", arena_name);
                                         print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);\n", arena_name);
                                         print_to_builder(*arenas_get_builder, "case %1; return *%2_arena;\n", value.type_name, arena_name);

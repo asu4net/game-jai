@@ -16,11 +16,13 @@ Component_Arena_Base :: struct {
 }
 
     // Callbacks.
-    add_cbk : (entity : Entity, component : *void);
-    rem_cbk : (entity : Entity, component : *void);
+    CPY_CBK :: #type (entity : Entity, dst : *void, src : *void);
+    REM_CBK :: #type (entity : Entity, component : *void);
+    ADD_CBK :: #type (entity : Entity, component : *void);   
     
-    // Copy callback is going to have a default implementation.
-    cpy_cbk : (entity : Entity, dst : *void, src : *void);
+    add_cbk : ADD_CBK;
+    rem_cbk : REM_CBK;
+    cpy_cbk : CPY_CBK;   
 }
 
 Component_Arena :: struct($T : Type) {
@@ -28,7 +30,12 @@ Component_Arena :: struct($T : Type) {
     components : []T;
 }
 
-init :: (using arena : *Component_Arena($T), cap : s64) {
+init :: (using arena : *Component_Arena($T), cap : s64, 
+cpy_proc : Component_Arena_Base.CPY_CBK = null, 
+rem_proc : Component_Arena_Base.REM_CBK = null, 
+add_proc : Component_Arena_Base.ADD_CBK = null
+) 
+{
     array := NewArray(cap, T);
     data = array.data;
     capacity = cap;
@@ -57,11 +64,11 @@ init :: (using arena : *Component_Arena($T), cap : s64) {
 
     }
 }
-    cpy_cbk = (entity : Entity, dst : *void, src : *void) {
+    cpy_cbk = ifx !cpy_proc then (entity : Entity, dst : *void, src : *void) {
         d := dst.(*T);    
         s := src.(*T);    
         d.* = s.*;
-    }
+    } else cpy_proc;
 }
 
 deinit :: (using arena : *Component_Arena($T)) {
@@ -69,18 +76,6 @@ deinit :: (using arena : *Component_Arena($T)) {
     free(data);
     deinit(*entities);
     arena.* = .{};
-}
-
-set_copy_callback :: ($T : Type, c : (entity : Entity, dst : *void, src : *void)) {
-    component_arena := get_component_arena(T);
-    assert(c != null);
-    component_arena.cpy_cbk = c;
-}
-
-set_remove_callback :: ($T : Type, c : (entity : Entity, c : *void)) {
-    component_arena := get_component_arena(T);
-    assert(c != null);
-    component_arena.rem_cbk = c;
 }
 
 //---------------------------
@@ -131,6 +126,16 @@ Tag_Component :: struct @Component @Max(MAX_ENTITIES) {
     text : string;
 }
 
+on_copy_tag_component :: (e : Entity, d : *void, s : *void) {
+    dst := d.(*Tag_Component); src := s.(*Tag_Component);
+    dst.text = copy_string(src.text);
+} @CopyComponentCallback(Tag_Component)
+
+on_remove_tag_component :: (e : Entity, c : *void) {
+    component := c.(*Tag_Component);
+    free(component.text);
+} @RemoveComponentCallback(Tag_Component)
+
 #add_context entity_storage : Entity_Storage;
 
 is_entity_storage_initialized :: inline () -> bool {
@@ -155,17 +160,6 @@ init_entity_storage :: () {
     for 0..MAX_ENTITIES {
         push_back(*state.free_queue, xx it);
     }
-
-    // Callbacks for default components.
-    set_copy_callback(Tag_Component, (e : Entity, d : *void, s : *void) {
-        dst := d.(*Tag_Component); src := s.(*Tag_Component);
-        dst.text = copy_string(src.text);
-    });
-
-    set_remove_callback(Tag_Component, (e : Entity, c : *void) {
-        component := c.(*Tag_Component);
-        free(component.text);
-    });
 }
 
 deinit_entity_storage :: () {
