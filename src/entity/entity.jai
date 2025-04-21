@@ -11,31 +11,31 @@ Component_Arena_Base :: struct {
     has : (entity : Entity) -> bool;
     rem : (entity : Entity);
     slz : (entity : Entity) -> string;
-#if EDITOR {
-    drw : (entity : Entity);
-}
-
-    // Callbacks.
-    CPY_CBK :: #type (entity : Entity, dst : *void, src : *void);
-    REM_CBK :: #type (entity : Entity, component : *void);
-    ADD_CBK :: #type (entity : Entity, component : *void);   
     
-    add_cbk : ADD_CBK;
-    rem_cbk : REM_CBK;
-    cpy_cbk : CPY_CBK;   
+    #if EDITOR then drw : (entity : Entity);
+
+    // Callbacks generic callers.
+    call_add_cbk : (fn : *void, entity : Entity, component : *void);
+    call_cpy_cbk : (fn : *void, entity : Entity, dst : *void, src : *void);
+    call_rem_cbk : (fn : *void, entity : Entity, component : *void);
+
+    // Callback generic proc ptrs.
+    add_cbk_fn : *void;
+    rem_cbk_fn : *void;
+    cpy_cbk_fn : *void;
 }
 
 Component_Arena :: struct($T : Type) {
     #as using base : Component_Arena_Base;
+
+    ADD_CBK :: #type (entity : Entity, cmp : *T);
+    REM_CBK :: #type (entity : Entity, cmp : *T);
+    CPY_CBK :: #type (entity : Entity, dst : *T, src : *T);
+    
     components : []T;
 }
 
-init :: (using arena : *Component_Arena($T), cap : s64, 
-cpy_proc : Component_Arena_Base.CPY_CBK = null, 
-rem_proc : Component_Arena_Base.REM_CBK = null, 
-add_proc : Component_Arena_Base.ADD_CBK = null
-) 
-{
+init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Arena(T).ADD_CBK = null, rem_proc : Component_Arena(T).REM_CBK = null, cpy_proc : Component_Arena(T).CPY_CBK = null) {
     array := NewArray(cap, T);
     data = array.data;
     capacity = cap;
@@ -64,11 +64,33 @@ add_proc : Component_Arena_Base.ADD_CBK = null
 
     }
 }
-    cpy_cbk = ifx !cpy_proc then (entity : Entity, dst : *void, src : *void) {
-        d := dst.(*T);    
-        s := src.(*T);    
-        d.* = s.*;
-    } else cpy_proc;
+    add_cbk_fn = xx add_proc;
+    rem_cbk_fn = xx rem_proc;
+    
+    def_cpy :: (entity : Entity, dst : *T, src : *T) {
+        dst.* = src.*;
+    }
+
+    cpy_cbk_fn = xx ifx cpy_proc then cpy_proc else def_cpy;
+
+    call_add_cbk = (fn : *void, entity : Entity, cmp : *void) {
+        add_typed := fn.(Component_Arena(T).ADD_CBK);
+        cmp_typed := cmp.(*T);
+        add_typed(entity, cmp_typed);
+    }
+    
+    call_rem_cbk = (fn : *void, entity : Entity, cmp : *void) {
+        rem_typed := fn.(Component_Arena(T).REM_CBK);
+        cmp_typed := cmp.(*T);
+        rem_typed(entity, cmp_typed);
+    }
+
+    call_cpy_cbk = (fn : *void, entity : Entity, src : *void, dst : *void) {
+        cpy_typed := fn.(Component_Arena(T).CPY_CBK);
+        src_typed := src.(*T);
+        dst_typed := dst.(*T);
+        cpy_typed(entity, src, dst);
+    }
 }
 
 deinit :: (using arena : *Component_Arena($T)) {
@@ -126,14 +148,13 @@ Tag_Component :: struct @Component @Max(MAX_ENTITIES) {
     text : string;
 }
 
-on_copy_tag_component :: (e : Entity, d : *void, s : *void) {
-    dst := d.(*Tag_Component); src := s.(*Tag_Component);
+on_copy_tag_component :: (e : Entity, dst : *Tag_Component, src : *Tag_Component) {
+    dst.* = src.*;
     dst.text = copy_string(src.text);
 } @CopyComponentCallback(Tag_Component)
 
-on_remove_tag_component :: (e : Entity, c : *void) {
-    component := c.(*Tag_Component);
-    free(component.text);
+on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
+    free(cmp.text);
 } @RemoveComponentCallback(Tag_Component)
 
 #add_context entity_storage : Entity_Storage;
@@ -216,6 +237,7 @@ immediate_destroy_entity :: (entity : Entity) {
         if it.has(entity)
         then it.rem(entity);
     }
+    state.count -= 1;
     push_back(*state.free_queue, entity);
 }
 

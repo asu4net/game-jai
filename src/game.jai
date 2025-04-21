@@ -10,7 +10,7 @@ main :: () {
     
     init_window(GAME_NAME);
     defer deinit_window();
-    
+
     init_draw2d();
     defer deinit_draw2d();
     
