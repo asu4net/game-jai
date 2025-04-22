@@ -181,26 +181,23 @@ SCOPE
                                 for proc_headers {
                                     for note_obj : it.notes {
                                         note := to_lower_copy(note_obj.text);
-                                        if begins_with(note, "copycomponentcallback(") {
-                                            expected_component_type := slice(note_obj.text, 22, note.count-23);
-                                            info := table_find_pointer(*component_info, expected_component_type);
-                                            if info
-                                            then info.cpy_proc = it.name;
-                                            else log_error("Error: Detected @CopyComponentCallback attribute in a procedure named %1, for a non-component struct called %2", it.name, expected_component_type); 
-                                        }
-                                        else if begins_with(note, "removecomponentcallback(") {
-                                            expected_component_type := slice(note_obj.text, 24, note.count-25);
-                                            info := table_find_pointer(*component_info, expected_component_type);
-                                            if info
-                                            then info.rem_proc = it.name;
-                                            else log_error("Error: Detected @RemoveComponentCallback attribute in a procedure named %1, for a non-component struct called %2", it.name, expected_component_type); 
-                                        }
-                                        else if begins_with(note, "addcomponentcallback(") {
-                                            expected_component_type := slice(note_obj.text, 21, note.count-22);
-                                            info := table_find_pointer(*component_info, expected_component_type);
-                                            if info
-                                            then info.add_proc = it.name;
-                                            else log_error("Error: Detected @AddComponentCallback attribute in a procedure named %1, for a non-component struct called %2", it.name, expected_component_type); 
+                                        if note == "copycomponentcallback" || note == "removecomponentcallback"  {
+                                            for argument : it.arguments {
+                                                argument_type := argument.entry.base.type;
+                                                if argument_type.type == .POINTER {
+                                                    pointer_type := argument_type.(*Type_Info_Pointer);
+                                                    if pointer_type.pointer_to.type == .STRUCT {
+                                                        struct_type := pointer_type.pointer_to.(*Type_Info_Struct);
+                                                        info := table_find_pointer(*component_info, struct_type.name);
+                                                        if info {
+                                                            if note == "copycomponentcallback"
+                                                            then info.cpy_proc = it.name;
+                                                            else if note == "removecomponentcallback"
+                                                            then info.rem_proc = it.name;
+                                                        }
+                                                    } 
+                                                }
+                                            }
                                         }
                                     }
                                 }
