@@ -106,9 +106,9 @@ draw_editor :: () {
     }
     ImGui.PopStyleColor();
 
-    if prefab {
+    if prefab != NULL_ENTITY {
         ImGui.Begin("Properties");
-        //scene.entity_procs.draw_editor(prefab);
+        drw_entity(prefab);
         ImGui.End();
     }
 }

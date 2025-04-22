@@ -43,34 +43,19 @@ init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Are
     components.count = cap;
     type = type_info(T);
     init(*entities, xx cap);
+     
+    get = (entity : Entity) -> *void        { return get_component(T, entity); }
+    add = (entity : Entity) -> *void        { return add_component(T, entity); }
+    has = (entity : Entity) -> bool         { return has_component(T, entity); }
+    rem = (entity : Entity)                 {        rem_component(T, entity); }
+    slz = (entity : Entity) -> string       { return slz_component(T, entity); }
     
-    get = (entity : Entity) -> *void {
-        return get_component(T, entity);
-    }
-    add = (entity : Entity) -> *void {
-        return add_component(T, entity);
-    }
-    has = (entity : Entity) -> bool {
-        return has_component(T, entity);
-    }
-    rem = (entity : Entity) {
-        rem_component(T, entity);
-    }
-    slz = (entity : Entity) -> string {
-        return slz_component(T, entity);
-    }
-#if EDITOR {
-    drw = (entity : Entity) {
+    #if EDITOR then drw = (entity : Entity) { drw_component(T, entity); }
 
-    }
-}
     add_cbk_fn = xx add_proc;
     rem_cbk_fn = xx rem_proc;
     
-    def_cpy :: (entity : Entity, dst : *T, src : *T) {
-        dst.* = src.*;
-    }
-
+    def_cpy :: (entity : Entity, dst : *T, src : *T) { dst.* = src.*; }
     cpy_cbk_fn = xx ifx cpy_proc then cpy_proc else def_cpy;
 
     call_add_cbk = (fn : *void, entity : Entity, cmp : *void) {
@@ -315,11 +300,21 @@ slz_component :: ($T : Type, entity : Entity) -> string {
     return json_write_string(component);
 }
 
-/*
-drw_component :: ($T : Type, entity : Entity) -> {
-
+#if EDITOR {
+    drw_component :: ($T : Type, entity : Entity) {
+        component := get_component(T, entity);
+        info := type_info(T);
+        editor_draw_property(null, component, info);
+    }
+    drw_entity :: (entity : Entity) {
+        EntityStorageContext();
+        for state.component_arenas {
+            if !it.has(entity)
+            then continue;
+            it.drw(entity);
+        }
+    }
 }
-*/
 
 clean_destroyed_entities :: () {
     EntityStorageContext();

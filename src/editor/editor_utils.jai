@@ -18,7 +18,11 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
             editor_draw_input_text(name, data.(*string));
         case STRUCT;
             info_struct := cast(*Type_Info_Struct) info;
-            if ImGui.TreeNode(name_c, "%: %", name, info_struct.name) {
+            tree_opened := false;
+            if name_c
+            then tree_opened = ImGui.TreeNode(name_c, "%: %", name, info_struct.name);
+            else tree_opened = ImGui.TreeNode(to_c_string(info_struct.name ,,temp));
+            if tree_opened {
                 for member: info_struct.members {
                     ignore : bool;
                     is_color : bool;
