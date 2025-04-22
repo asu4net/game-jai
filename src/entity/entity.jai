@@ -100,22 +100,6 @@ deinit :: (using arena : *Component_Arena($T)) {
     arena.* = .{};
 }
 
-//---------------------------
-
-Some_Component :: struct @Component @Max(100) {
-    dummy : float;
-}
-
-on_copy_some_component :: (entity : Entity, d : *Some_Component, s : *Some_Component) {
-    
-} @CopyComponentCallback
-
-Some_Other_Component :: struct @Component @Max(100) {
-    dummy : float;
-}
-
-//---------------------------
-
 Entity :: u32;
 NULL_ENTITY :: U32_MAX;
 
@@ -147,19 +131,6 @@ Info_Component :: struct @Component @Max(MAX_ENTITIES) {
     flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
     uuid  : u64;
 }
-
-Tag_Component :: struct @Component @Max(MAX_ENTITIES) {
-    text : string;
-}
-
-on_copy_tag_component :: (e : Entity, dst : *Tag_Component, src : *Tag_Component) {
-    dst.* = src.*;
-    dst.text = copy_string(src.text);
-} @CopyComponentCallback
-
-on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
-    free(cmp.text);
-} @RemoveComponentCallback
 
 #add_context entity_storage : Entity_Storage;
 
