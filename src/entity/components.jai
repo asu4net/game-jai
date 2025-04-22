@@ -14,24 +14,24 @@ on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
 // ------------------------------------------------
 
 Transform2D_Component :: struct @Component @Max(100) {
-    pos : v2  = ZERO_2D;
-    scl : v2  = ONE_2D;
-    ang : f32 = 0;
+    pos := ZERO_2D;
+    scl := ONE_2D;
+    ang := (0.0).(f32);
 }
 
 // ------------------------------------------------
 
 Sprite_Component :: struct @Component @Max(100) {
-    visible  : bool   = true;
-    item     : string;
-    tint     : v4     = WHITE; @Color
-    size     : v2     = ONE_2D;
-    tiling   : v2     = ONE_2D;
-    blend    : Blend  = .ALPHA;
-    flip_x   : bool;
-    flip_y   : bool;
-    autosize : bool   = true;
-    rect     : Rect; @JsonIgnore @EditorReadOnly 
+    visible  := true;
+    item     := "";
+    tint     := WHITE;       @Color
+    size     := ONE_2D;
+    tiling   := ONE_2D;
+    blend    := Blend.ALPHA;
+    flip_x   := false;
+    flip_y   := false;
+    autosize := true;
+    rect     := Rect.{};     @JsonIgnore @EditorReadOnly 
 }
 
 draw_sprite :: (using transform : Transform2D_Component, using sprite : *Sprite_Component, sheet : *Spritesheet, id : u32 = 0) {
@@ -57,10 +57,10 @@ draw_sprite :: (using transform : Transform2D_Component, using sprite : *Sprite_
 // ------------------------------------------------
 
 Text_Component :: struct @Component @Max(100) {
-    visible : bool   = true;
-    text    : string = "placeholder!";
-    blend   : Blend  = .ALPHA;
-    tint    : v4     = WHITE; @Color
+    visible := true;
+    text    := "placeholder!";
+    blend   := Blend.ALPHA;
+    tint    := WHITE;          @Color
 }
 
 draw_text :: (using transform : Transform2D_Component, using t : Text_Component, font : *Font, id : u32 = 0) {
@@ -72,31 +72,28 @@ draw_text :: (using transform : Transform2D_Component, using t : Text_Component,
 // ------------------------------------------------
 
 Blink_Component :: struct @Component @Max(100) {
-    enabled    : bool;
-    start_tint : v4; @Color
-    end_tint   : v4 = RED; @Color
-    duration   : f32 = 0.5;
-    progress   : f32;
+    enabled    := false;
+    start_tint := WHITE;        @Color
+    end_tint   := RED;          @Color
+    duration   := (0.5).(f32);
+    progress   := (0.0).(f32);
 }
 
 update_blink :: (using blink : *Blink_Component, tint : *v4) {
 
-    // Blink
-    {
-        if enabled && tint {
+    if enabled && tint {
 
-            progress += delta_seconds();
-            progress = clamp(progress, 0.0, duration);
-            normalized_progress := progress / duration;
-            tint.* = linear_interp(normalized_progress, start_tint, end_tint); 
+        progress += delta_seconds();
+        progress = clamp(progress, 0.0, duration);
+        normalized_progress := progress / duration;
+        tint.* = linear_interp(normalized_progress, start_tint, end_tint); 
             
-            if normalized_progress == 1 {
+        if normalized_progress == 1 {
                 
-                new_target := start_tint;
-                start_tint = end_tint;
-                end_tint   = new_target;
-                progress   = 0;
-            }
-        }      
-    }
+            new_target := start_tint;
+            start_tint = end_tint;
+            end_tint   = new_target;
+            progress   = 0;
+        }
+    } 
 }
