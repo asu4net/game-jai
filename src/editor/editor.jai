@@ -108,7 +108,7 @@ draw_editor :: () {
 
     if prefab != NULL_ENTITY {
         ImGui.Begin("Properties");
-        drw_entity(prefab);
+        editor_draw_entity(prefab);
         ImGui.End();
     }
 }
@@ -127,5 +127,18 @@ save_prefab :: () {
     tag := get_component(Tag_Component, prefab);
     write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), serialize_entity(prefab ,,temp));
 }
+
+editor_draw_entity :: (entity : Entity) {
+        EntityStorageContext();
+        for state.component_arenas {
+            if !it.has(entity)
+            then continue;
+            it.drw(entity);
+            editor_draw_separator();
+            editor_draw_spacing();
+        }
+        if editor_draw_centered_button("Add Component")
+        then print("Add component\n");
+    }
 
 } //#if IMGUI

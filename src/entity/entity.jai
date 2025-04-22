@@ -306,14 +306,6 @@ slz_component :: ($T : Type, entity : Entity) -> string {
         info := type_info(T);
         editor_draw_property(null, component, info);
     }
-    drw_entity :: (entity : Entity) {
-        EntityStorageContext();
-        for state.component_arenas {
-            if !it.has(entity)
-            then continue;
-            it.drw(entity);
-        }
-    }
 }
 
 clean_destroyed_entities :: () {

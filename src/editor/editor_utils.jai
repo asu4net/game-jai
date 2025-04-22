@@ -75,8 +75,12 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
     }
 }
 
-editor_draw_spacing :: inline (spacing : u32) {
-    for 1..spacing ImGui.Spacing();
+editor_draw_spacing :: inline (spacing : u32 = 1) {
+    for 0..spacing-1 ImGui.Spacing();
+}
+
+editor_draw_separator :: inline () {
+    ImGui.Separator();
 }
 
 editor_draw_input_text :: (name : string, s : *string) {
@@ -246,6 +250,16 @@ editor_draw_color_palette :: (name: string, color: *Vector4) -> bool {
     changed := ImGui.ColorEdit4("", *color.component, .NoLabel | .NoInputs);
     end_property();
     return changed;
+}
+
+editor_draw_centered_button :: (name: string, alignment : f32 = 0.5) -> bool {
+    style := ImGui.GetStyle();
+    size  := ImGui.CalcTextSize(name).x + style.FramePadding.x * 2.0;
+    avail := ImGui.GetContentRegionAvail().x;
+    off   := (avail - size) * alignment;
+    if off > 0
+    then ImGui.SetCursorPosX(ImGui.GetCursorPosX() + off);
+    return ImGui.Button(to_c_string(name ,,temp));
 }
 
 #scope_file

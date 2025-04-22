@@ -35,7 +35,6 @@ Sprite_Component :: struct @Component @Max(100) {
 }
 
 draw_sprite :: (using transform : Transform2D_Component, using sprite : *Sprite_Component, sheet : *Spritesheet, id : u32 = 0) {
-    
     if !visible then return;
 
     tex := ifx item.count > 0 then *sheet.tex else null;
@@ -63,8 +62,7 @@ Text_Component :: struct @Component @Max(100) {
     tint    := WHITE;          @Color
 }
 
-draw_text :: (using transform : Transform2D_Component, using t : Text_Component, font : *Font, id : u32 = 0) {
-    
+draw_text :: (using transform : Transform2D_Component, using t : Text_Component, font : *Font, id : u32 = 0) {    
     if !visible then return;
     draw_gui_text(pos, ang, scl, text, font, blend, tint, id); 
 }
@@ -80,7 +78,6 @@ Blink_Component :: struct @Component @Max(100) {
 }
 
 update_blink :: (using blink : *Blink_Component, tint : *v4) {
-
     if enabled && tint {
 
         progress += delta_seconds();
