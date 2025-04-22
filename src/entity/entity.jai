@@ -315,6 +315,12 @@ slz_component :: ($T : Type, entity : Entity) -> string {
     return json_write_string(component);
 }
 
+/*
+drw_component :: ($T : Type, entity : Entity) -> {
+
+}
+*/
+
 clean_destroyed_entities :: () {
     EntityStorageContext();
     for entity : state.to_clean {
