@@ -2,6 +2,8 @@
 
 GAME_NAME :: "Game";
 
+sheet : Spritesheet;
+
 main :: () {
     
     using context.window;
@@ -27,11 +29,23 @@ main :: () {
     init_entity_storage();
     defer deinit_entity_storage();
     
+    init(*sheet);
+    deinit(*sheet);
+
     while !done {
         time_step();
         process_window_events();
         clear_screen();
         #if EDITOR draw_imgui(draw_imgui_proc);
+        draw2d_begin(.{width, height});
+        for 0..context.entity_storage.sprite_component_arena.count-1 {
+            entity := context.entity_storage.sprite_component_arena.entities.dense[it];
+            if is_not_destroyed(entity) && has_component(Transform2D_Component, entity) {
+                sprite := *context.entity_storage.sprite_component_arena.components[it];
+                draw_sprite(get_component(Transform2D_Component, entity), sprite, *sheet);
+            }
+        }
+        draw2d_end();
         swap_buffers();
         clean_destroyed_entities();
         reset_temporary_storage();

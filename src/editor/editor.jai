@@ -130,6 +130,7 @@ save_prefab :: () {
 
 editor_draw_entity :: (entity : Entity) {
         EntityStorageContext();
+        
         for state.component_arenas {
             if !it.has(entity)
             then continue;
@@ -137,8 +138,21 @@ editor_draw_entity :: (entity : Entity) {
             editor_draw_separator();
             editor_draw_spacing();
         }
-        if editor_draw_centered_button("Add Component")
-        then print("Add component\n");
+
+        if editor_draw_centered_button("Add Component") {
+            ImGui.OpenPopup("Add Component");
+        }
+
+        if ImGui.BeginPopup("Add Component") {
+            for state.component_arenas {
+                if it.has(entity)
+                then continue;
+                if ImGui.MenuItem(to_c_string(it.type.name ,,temp)) {
+                    it.add(entity);
+                }
+            }
+            ImGui.EndPopup();
+        }
     }
 
 } //#if IMGUI
