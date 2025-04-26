@@ -76,13 +76,15 @@ init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Are
         dst_typed := dst.(*T);
         cpy_typed(entity, src, dst);
     }
+    log("Initialized % component arena.", arena.type.name);
 }
 
 deinit :: (using arena : *Component_Arena($T)) {
-    print("deinited component arena!\n");
+    arena_name := copy_string(arena.type.name ,,temp);
     free(data);
     deinit(*entities);
     arena.* = .{};
+    log("Freed % component arena.", arena_name);
 }
 
 Entity :: u32;
@@ -282,7 +284,10 @@ add_component :: ($T : Type, entity : Entity, unsafe := false) -> *T {
     assert(count < capacity);
     count += 1;
     index := insert_id(*entities, entity);
-    return *components[index];    
+    component := *components[index]; 
+    if add_cbk_fn != null
+    then call_add_cbk(add_cbk_fn, entity, component);
+    return component;    
 }
 
 rem_component :: ($T : Type, entity : Entity, unsafe := false) {
@@ -290,6 +295,8 @@ rem_component :: ($T : Type, entity : Entity, unsafe := false) {
     if !unsafe
     then assert(T != Info_Component);
     using component_arena := get_component_arena(T);
+    if rem_cbk_fn != null
+    then call_rem_cbk(rem_cbk_fn, entity, get_component(T, entity));
     count -= 1;
     deleted, last := remove_id(*entities, entity);
     if deleted != last {

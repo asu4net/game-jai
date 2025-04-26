@@ -92,7 +92,7 @@ draw_editor :: () {
                 }
                 prefab = create_entity();
                 tag := add_component(Tag_Component, prefab);
-                tag.text = to_string(data(prefab_name));
+                tag.text = copy_string(to_string(data(prefab_name)));
                 ImGui.CloseCurrentPopup();
             }
         }

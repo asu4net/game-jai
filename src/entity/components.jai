@@ -34,6 +34,15 @@ Sprite_Component :: struct @Component @Max(100) {
     rect     := Rect.{};     @JsonIgnore @EditorReadOnly 
 }
 
+on_copy_sprite_component :: (e : Entity, dst : *Sprite_Component, src : *Sprite_Component) {
+    dst.* = src.*;
+    dst.item = copy_string(src.item);
+} @CopyComponentCallback
+
+on_remove_sprite_component :: (e : Entity, cmp : *Sprite_Component) {
+    free(cmp.item);
+} @RemoveComponentCallback
+
 draw_sprite :: (using transform : Transform2D_Component, using sprite : *Sprite_Component, sheet : *Spritesheet, id : u32 = 0) {
     if !visible then return;
 
@@ -46,6 +55,7 @@ draw_sprite :: (using transform : Transform2D_Component, using sprite : *Sprite_
 
     // try find the item
     if tex && (rect.width == 0 || rect.height == 0) {
+        assert(tex.id != 0);
         r, found := table_find(*sheet.rects, item);
         if found rect = r;
     }

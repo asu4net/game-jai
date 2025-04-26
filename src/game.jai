@@ -30,7 +30,7 @@ main :: () {
     defer deinit_entity_storage();
     
     init(*sheet);
-    deinit(*sheet);
+    defer deinit(*sheet);
 
     while !done {
         time_step();

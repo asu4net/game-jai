@@ -1,0 +1,47 @@
+
+@Entity
+
+@Component(Tag_Component)
+{
+	"text": "player"
+}
+@Component(Sprite_Component)
+{
+	"visible": true,
+	"item": "player",
+	"tint": {
+		"x": 1,
+		"y": 1,
+		"z": 1,
+		"w": 1
+	},
+	"size": {
+		"x": 1,
+		"y": 1
+	},
+	"tiling": {
+		"x": 1,
+		"y": 1
+	},
+	"blend": "ALPHA",
+	"flip_x": false,
+	"flip_y": false,
+	"autosize": true
+}
+@Component(Transform2D_Component)
+{
+	"pos": {
+		"x": 0,
+		"y": 0
+	},
+	"scl": {
+		"x": 1,
+		"y": 1
+	},
+	"ang": 0
+}
+@Component(Info_Component)
+{
+	"flags": "LOCAL_ENABLED | ENABLED",
+	"uuid": 0
+}
