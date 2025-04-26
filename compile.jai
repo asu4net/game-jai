@@ -37,6 +37,13 @@ get_generated_component_arena :: (using a : *Generated_Component_Arenas, $T : Ty
     }
 }
 
+get_generated_component_arena_base :: (using a : *Generated_Component_Arenas, t : Type) -> *Component_Arena_Base {
+    if t == {
+        %4
+        case; return null;
+    }
+}
+
 MAX_ENTITIES :: %5;
 
 SCOPE

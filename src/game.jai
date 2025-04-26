@@ -38,12 +38,9 @@ main :: () {
         clear_screen();
         #if EDITOR draw_imgui(draw_imgui_proc);
         draw2d_begin(.{width, height});
-        for 0..context.entity_storage.sprite_component_arena.count-1 {
-            entity := context.entity_storage.sprite_component_arena.entities.dense[it];
-            if is_not_destroyed(entity) && has_component(Transform2D_Component, entity) {
-                sprite := *context.entity_storage.sprite_component_arena.components[it];
-                draw_sprite(get_component(Transform2D_Component, entity), sprite, *sheet);
-            }
+        view := get_entity_view(Transform2D_Component, Sprite_Component);
+        for entity : view {
+            draw_sprite(get_component(Transform2D_Component, entity), get_component(Sprite_Component, entity), *sheet);
         }
         draw2d_end();
         swap_buffers();
