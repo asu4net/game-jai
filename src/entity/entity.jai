@@ -313,7 +313,7 @@ Entity_View :: struct {
 get_entity_view :: (types : ..Type) -> Entity_View {
     EntityStorageContext();
     using view : Entity_View;
-    // First we find the shortest arena of the given types.
+    // Optimization: We find the shortest arena of the given types.
     for types {
         arena := get_component_arena_base(it);
         assert(arena != null);
