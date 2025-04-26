@@ -330,7 +330,7 @@ for_expansion :: (view: Entity_View, body: Code, flags: For_Flags) #expand {
     for i : 0..view.shortest_arena.count-1 {
         entity := view.shortest_arena.entities.dense[i];
         
-        // If the entity is destroyed we don't care
+        // If the entity is destroyed we don't care.
         if !is_not_destroyed(entity)
         then continue;
 
