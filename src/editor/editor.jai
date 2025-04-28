@@ -40,13 +40,13 @@ draw_editor :: () {
                         return;
                     }
                     if ImGui.MenuItem(to_c_string(basename ,,temp)) {
-                        if context.editor.prefab {
+                        if context.editor.prefab != NULL_ENTITY{
                             immediate_destroy_entity(context.editor.prefab);
                             context.editor.prefab = NULL_ENTITY;
                         }
                         prefab_str, success := read_entire_file(info.full_name ,,temp);
                         assert(success);
-                        //context.editor.prefab = deserialize_entity_recursive(prefab_str);
+                        context.editor.prefab = deserialize_entity(prefab_str);
                     }
                 });
                 ImGui.EndMenu();

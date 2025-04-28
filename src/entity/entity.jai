@@ -6,12 +6,13 @@ Component_Arena_Base :: struct {
     entities  : Sparse_Set;
 
     // Generic procs.
-    get : (entity : Entity) -> *void;
-    add : (entity : Entity) -> *void;
-    has : (entity : Entity) -> bool;
+    get : (entity : Entity)             -> *void;
+    add : (entity : Entity)             -> *void;
+    has : (entity : Entity)             -> bool;
     rem : (entity : Entity);
-    slz : (entity : Entity) -> string;
-    
+    slz : (entity : Entity)             -> string;
+    dlz : (entity : Entity, s : string) -> *void;
+
     #if EDITOR then drw : (entity : Entity);
 
     // Callbacks generic callers.
@@ -44,12 +45,13 @@ init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Are
     type = type_info(T);
     init(*entities, xx cap);
      
-    get = (entity : Entity) -> *void        { return get_component(T, entity); }
-    add = (entity : Entity) -> *void        { return add_component(T, entity); }
-    has = (entity : Entity) -> bool         { return has_component(T, entity); }
-    rem = (entity : Entity)                 {        rem_component(T, entity); }
-    slz = (entity : Entity) -> string       { return slz_component(T, entity); }
-    
+    get = (entity : Entity)             -> *void        { return get_component(T, entity);    }
+    add = (entity : Entity)             -> *void        { return add_component(T, entity);    }
+    has = (entity : Entity)             -> bool         { return has_component(T, entity);    }
+    rem = (entity : Entity)                             {        rem_component(T, entity);    }
+    slz = (entity : Entity)             -> string       { return slz_component(T, entity);    }
+    dlz = (entity : Entity, s : string) -> *void        { return dlz_component(T, entity, s); } 
+
     #if EDITOR then drw = (entity : Entity) { drw_component(T, entity); }
 
     add_cbk_fn = xx add_proc;
@@ -262,6 +264,59 @@ serialize_entity :: (entity : Entity) -> string {
     return builder_to_string(*builder);
 }
 
+deserialize_entity :: (s : string) -> Entity {
+    EntityStorageContext();
+    
+    entity  : Entity = NULL_ENTITY;
+    builder : String_Builder;
+    arena   : *Component_Arena_Base;
+
+    while 1 {
+        line, found := consume_next_line(*s);
+        line = trim(line);
+
+        // First create the entity.
+        // #TODO_asuarez check if an entity was created and decide if it is a children entity.
+        if begins_with(line, "@Entity") {
+            entity = create_entity();
+            continue;
+        }
+
+        if begins_with(line, "@Component(") || !found {
+
+            // Check if we have been storing component lines.
+            // If it is the case we add it to the entity and reset the builder.
+            if arena != null {
+                arena.dlz(entity, builder_to_string(*builder));
+                arena = null;
+                reset(*builder);
+            }
+
+            // If it is the end of the line we're done.
+            if !found
+            then return entity;
+
+            // If not, store next the component type.
+            assert(entity != NULL_ENTITY);
+            expected_component_type := slice(line, 11, line.count-12);
+            for state.component_arenas {
+                if it.type.name != expected_component_type
+                then continue;
+                arena = it;
+                break;
+            }
+            assert(arena != null);
+            continue;
+        }
+
+        // Append component line to the builder.
+        if entity != NULL_ENTITY && arena
+        then append(*builder, line);
+    }
+
+    return NULL_ENTITY;
+}
+
 has_component :: ($T : Type, entity : Entity) -> bool {
     component_arena := get_component_arena(T);
     assert(component_arena != null);
@@ -290,12 +345,27 @@ add_component :: ($T : Type, entity : Entity, unsafe := false) -> *T {
     return component;    
 }
 
-rem_component :: ($T : Type, entity : Entity, unsafe := false) {
+add_component_with_data :: (d : $T, entity : Entity, unsafe := false) -> *T {
+    if !unsafe
+    then assert(has_component(Info_Component, entity));
+    assert(!has_component(T, entity));
+    using component_arena := get_component_arena(T);
+    assert(count < capacity);
+    count += 1;
+    index := insert_id(*entities, entity);
+    component := *components[index];
+    call_cpy_cbk(cpy_cbk_fn, entity, component, *d);
+    if add_cbk_fn != null
+    then call_add_cbk(add_cbk_fn, entity, component);
+    return component;
+}
+
+rem_component :: ($T : Type, entity : Entity, unsafe := false, silent := false) {
     assert(has_component(T, entity));
     if !unsafe
     then assert(T != Info_Component);
     using component_arena := get_component_arena(T);
-    if rem_cbk_fn != null
+    if rem_cbk_fn != null && !silent
     then call_rem_cbk(rem_cbk_fn, entity, get_component(T, entity));
     count -= 1;
     deleted, last := remove_id(*entities, entity);
@@ -311,6 +381,19 @@ slz_component :: ($T : Type, entity : Entity) -> string {
     component := get_component(T, entity);
     return json_write_string(component);
 }
+
+dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
+    success, parsed_data := json_parse_string(s, T ,,temp);
+    
+    if has_component(T, entity) {
+        using arena := get_component_arena(T);
+        component := get_component(T, entity);
+        call_cpy_cbk(cpy_cbk_fn, entity, component, *parsed_data);
+        return component;
+    } 
+
+    return add_component_with_data(parsed_data, entity);  
+} 
 
 Entity_View :: struct {
     shortest_arena : *Component_Arena_Base;
