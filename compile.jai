@@ -136,6 +136,7 @@ SCOPE
                             Component_Info :: struct {
                                 type_name      : string;
                                 max            : s64;
+                                init_order     : s64;
                                 cpy_proc := "null";
                                 rem_proc := "null";
                                 add_proc := "null";
@@ -153,14 +154,36 @@ SCOPE
                                             info := Component_Info.{ type_name = it.defined_type.name };
                                             table_add(*component_info, info.type_name, info);
                                         }
+                                        if begins_with(note, "initorder(") {
+                                            expected_init_order := slice(note, 10, note.count-11);
+                                            info := table_find_pointer(*component_info, it.defined_type.name);
+                                            if !info {
+                                                log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
+                                                continue;
+                                            }
+                                            if info.type_name == "Info_Component" {
+                                                log_error("Error: Detected @InitOrder attribute in the Info_Component. This will be ignored. \n");
+                                                continue;
+                                            }
+                                            init_order, success := parse_int(*expected_init_order);
+                                            if init_order == S64_MAX {
+                                                log_error("Error parsing the @InitOrder attribute for %. Invalid value %, reserved for the Info_Component. \n", it.defined_type.name, init_order);
+                                                continue;
+                                            }
+                                            if !success {
+                                                log_error("Error parsing the @InitOrder attribute for %. Expected something like @InitOrder(0) but got this % \n", it.defined_type.name, note_obj.text);
+                                                continue;
+                                            }
+                                            info.init_order = init_order;                                         
+                                        }
                                         if begins_with(note, "max(") {
                                             expected_num := slice(note, 4, note.count-5);
+                                            info, found := table_find(*component_info, it.defined_type.name);
+                                            if !found {
+                                                log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
+                                                continue;
+                                            }
                                             if expected_num == "max_entities" {
-                                                info, found := table_find(*component_info, it.defined_type.name);
-                                                if !found {
-                                                    log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
-                                                    continue;
-                                                }
                                                 info.max = MAX_ENTITIES;
                                                 table_set(*component_info, info.type_name, info);
                                             } else {
@@ -182,7 +205,6 @@ SCOPE
                                     }
                                 }
                             } // Done collecting info.
-
                             {
                                 // This is fucking ugly but who cares.
                                 for proc_headers {
@@ -221,8 +243,24 @@ SCOPE
                                     arenas_init_builder : String_Builder;
                                     arenas_deinit_builder : String_Builder; 
                                     arenas_get_builder : String_Builder;
+                                    
+                                    component_info_array : [..] Component_Info;
 
-                                    for value, _ : component_info {
+                                    for value, key : component_info {
+                                        if key == "Info_Component"
+                                        then continue;
+                                        array_add(*component_info_array, value);
+                                    }
+                                                                        
+                                    info := table_find_pointer(*component_info, "Info_Component");
+                                    assert(info != null);
+                                    info.init_order = S64_MIN;
+                                    array_add(*component_info_array, info.*);
+                                    
+                                    // here sort the array WIP
+                                    quick_sort(component_info_array, x => x.init_order);
+
+                                    for value : component_info_array {
                                         arena_name := to_lower_copy(value.type_name);
                                         max := ifx value.max > 0 then value.max else DEFAULT_COMPONENT_ARENA_COUNT; 
                                         print_to_builder(*arenas_builder, "%1_arena: Component_Arena(%2);\n", arena_name, value.type_name);
@@ -231,7 +269,7 @@ SCOPE
                                         print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);\n", arena_name);
                                         print_to_builder(*arenas_get_builder, "case %1; return *%2_arena;\n", value.type_name, arena_name);
                                         
-                                        print("Registered component arena of type: %. Max elements: %. \n", value.type_name, max);
+                                        print("Registered component arena of type: %. Max elements: %. InitOrder: % \n", value.type_name, max, value.init_order);
                                     }
 
                                     arenas_string = builder_to_string(*arenas_builder);
@@ -266,4 +304,5 @@ SCOPE
 #import "Compiler";
 #import "String";
 #import "Sort";
+#import "Math";
 #import "Hash_Table";

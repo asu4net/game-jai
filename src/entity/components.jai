@@ -13,7 +13,7 @@ on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
 
 // ------------------------------------------------
 
-Transform2D_Component :: struct @Component @Max(100) {
+Transform2D_Component :: struct @Component @InitOrder(-900000) @Max(100) {
     pos := ZERO_2D;
     scl := ONE_2D;
     ang := (0.0).(f32);

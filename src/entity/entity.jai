@@ -181,28 +181,30 @@ get_entity_at :: (index : s64) -> Entity {
     return info_arena.entities.dense.data[index];
 }
 
-create_entity :: () -> Entity {
+create_entity :: (raw : bool = false) -> Entity {
     EntityStorageContext();
     assert(state.count < MAX_ENTITIES);
     entity := pop_front(*state.free_queue);
     state.count += 1;
-    info := add_component(Info_Component, entity, unsafe = true);
+    if !raw
+    then add_component(Info_Component, entity);
     return entity;
 }
 
 destroy_entity :: (entity : Entity) {
     EntityStorageContext();
     assert(is_not_destroyed(entity));
-    info := get_component(Info_Component, entity);
-    info.flags |= .PENDING_CLEAN;
+    if has_component(Info_Component, entity) {
+        info := get_component(Info_Component, entity);
+        info.flags |= .PENDING_CLEAN;
+    } 
     array_add(*state.to_clean, entity);
 }
 
 immediate_destroy_entity :: (entity : Entity) {
     EntityStorageContext();
     assert(is_not_cleaned(entity));
-    rem_component(Info_Component, entity, unsafe = true);
-    for state.component_arenas {
+    for < state.component_arenas {
         if it.has(entity)
         then it.rem(entity);
     }
@@ -227,6 +229,8 @@ is_not_destroyed :: (entity : Entity) -> bool {
 make_entity_ref :: (entity : Entity) -> Entity_Ref {
     EntityStorageContext();
     assert(is_not_destroyed(entity));
+    if !has_component(Info_Component, entity) 
+    then return .{};
     info := get_component(Info_Component, entity);
     if info.uuid != 0 {
         assert(table_contains(*state.uuid_table, info.uuid));
@@ -287,7 +291,7 @@ deserialize_entity :: (s : string) -> Entity {
             // Check if we have been storing component lines.
             // If it is the case we add it to the entity and reset the builder.
             if arena != null {
-                arena.dlz(entity, builder_to_string(*builder));
+                arena.dlz(entity, builder_to_string(*builder ,,temp));
                 arena = null;
                 reset(*builder);
             }
@@ -331,9 +335,7 @@ get_component :: ($T : Type, entity : Entity) -> *T {
     return *component_arena.components[index];
 }
 
-add_component :: ($T : Type, entity : Entity, unsafe := false) -> *T {
-    if !unsafe 
-    then assert(has_component(Info_Component, entity));
+add_component :: ($T : Type, entity : Entity) -> *T {
     assert(!has_component(T, entity));
     using component_arena := get_component_arena(T);
     assert(count < capacity);
@@ -345,9 +347,7 @@ add_component :: ($T : Type, entity : Entity, unsafe := false) -> *T {
     return component;    
 }
 
-add_component_with_data :: (d : $T, entity : Entity, unsafe := false) -> *T {
-    if !unsafe
-    then assert(has_component(Info_Component, entity));
+add_component_with_data :: (d : $T, entity : Entity) -> *T {
     assert(!has_component(T, entity));
     using component_arena := get_component_arena(T);
     assert(count < capacity);
@@ -360,12 +360,10 @@ add_component_with_data :: (d : $T, entity : Entity, unsafe := false) -> *T {
     return component;
 }
 
-rem_component :: ($T : Type, entity : Entity, unsafe := false, silent := false) {
+rem_component :: ($T : Type, entity : Entity) {
     assert(has_component(T, entity));
-    if !unsafe
-    then assert(T != Info_Component);
     using component_arena := get_component_arena(T);
-    if rem_cbk_fn != null && !silent
+    if rem_cbk_fn != null
     then call_rem_cbk(rem_cbk_fn, entity, get_component(T, entity));
     count -= 1;
     deleted, last := remove_id(*entities, entity);
