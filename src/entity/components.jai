@@ -1,5 +1,97 @@
 // ------------------------------------------------
 
+Node_Component :: struct @Component @InitOrder(-1000000) @Max(100) {
+    parent   : Entity_Ref;
+    children : [..] Entity_Ref;
+}
+
+add_child :: (entity : Entity, child : Entity) {
+    
+    entity_node : *Node_Component;
+    if !has_component(Node_Component,  entity)
+    then entity_node = add_component(Node_Component, entity);
+    
+    if !has_component(Node_Component,  child)
+    then add_component(Node_Component, child);
+
+    for ref : entity_node.children {
+        current_child := resolve_ref(*ref);
+        if current_child == child 
+        then return;
+    }
+
+    child_ref := make_ref(child);
+    array_add(*entity_node.children, child_ref);
+    compute_enabled_iterative(child_ref);
+}
+
+set_parent :: (entity : Entity, parent : Entity) {
+
+    entity_node : *Node_Component;
+    if !has_component(Node_Component,  entity)
+    then entity_node = add_component(Node_Component, entity);
+    
+    if !has_component(Node_Component,  parent)
+    then parent_node := add_component(Node_Component, parent);
+
+    current_parent := resolve_ref(*entity_node.parent);
+    
+    if is_not_cleaned(parent) && is_not_destroyed(parent) {
+        
+        remove_child :: (entity : Entity, child : Entity) {    
+            entity_node := get_component(Node_Component, entity);
+            index := -1;
+            found := false;
+            for current_child, index : entity_node.children { 
+                if entity == current_child.entity then { 
+                    found = true;
+                    break; 
+                }
+            }
+            if found then array_unordered_remove_by_index(*entity_node.children, index);
+            compute_enabled_iterative(make_ref(child));
+            //#TODO_asuarez Remove the Node_Component if it is not being used.
+        }
+        
+        remove_child(parent, entity);
+    }
+
+    entity_node.parent = make_ref(parent);
+    add_child(parent, entity);
+}
+
+compute_enabled_iterative :: (ref : Entity_Ref) { 
+    stack : [..] Entity_Ref;
+    array_add(*stack, ref ,,temp);
+
+    while stack.count > 0 {
+        current_ref := pop(*stack);
+        current_entity := resolve_ref(*current_ref);
+        current_entity_node := get_component(Node_Component, current_entity);
+        parent_ref := current_entity_node.parent;
+
+        parent := resolve_ref(*parent_ref);
+        parent_enabled := ifx is_not_cleaned(parent) && is_not_destroyed(parent) then is_enabled(parent) else true;
+        current_entity_info := get_info(current_entity);
+        new_enabled := (.LOCAL_ENABLED & current_entity_info.flags).(bool) && parent_enabled;
+        
+        if((.ENABLED & current_entity_info.flags).(bool) != new_enabled) {
+            for child : current_entity_node.children {
+                array_add(*stack, child);
+            } 
+        }
+
+        if new_enabled && !(.ENABLED & current_entity_info.flags) { 
+            current_entity_info.flags |= .ENABLED;
+        } 
+        else if !new_enabled && .ENABLED & current_entity_info.flags { 
+            current_entity_info.flags = current_entity_info.flags &~ .ENABLED;
+        }
+    }
+}
+
+// ------------------------------------------------
+
 Transform2D_Component :: struct @Component @InitOrder(-900000) @Max(100) {
     pos := ZERO_2D;
     scl := ONE_2D;

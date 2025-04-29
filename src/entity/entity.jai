@@ -151,6 +151,37 @@ init_entity_storage :: () {
     }
 }
 
+is_local_enabled :: (entity : Entity) -> bool {
+    assert(is_not_destroyed(entity));
+    flags := get_info(entity).flags;
+    return is_not_destroyed(entity) && (.LOCAL_ENABLED & flags).(bool);   
+}
+
+is_enabled :: (entity : Entity) -> bool {
+    assert(is_not_destroyed(entity));
+    flags := get_info(entity).flags;
+    return is_local_enabled(entity) && (.ENABLED & flags).(bool);   
+}
+
+set_enabled :: (entity : Entity, enabled := true) {
+    assert(is_not_destroyed(entity));
+    info := get_info(entity);
+    
+    if !has_component(Node_Component, entity) {
+        if enabled 
+        then info.flags |= .ENABLED | .LOCAL_ENABLED;
+        else {
+            info.flags = info.flags &~ .ENABLED;
+            info.flags = info.flags &~ .LOCAL_ENABLED;
+        }
+        return;
+    }
+    
+    is_local_enabled := (.LOCAL_ENABLED & info.flags).(bool);
+    if enabled != is_local_enabled
+    then compute_enabled_iterative(make_ref(entity));
+}
+
 deinit_entity_storage :: () {
     EntityStorageContext();
 
@@ -315,6 +346,8 @@ immediate_destroy_entity :: (entity : Entity) {
 
 serialize_entity :: (entity : Entity) -> string {
     EntityStorageContext();
+
+    assert(is_not_cleaned(entity));
     builder : String_Builder;
     
     ref := make_ref(entity);
@@ -392,12 +425,14 @@ deserialize_entity :: (s : string) -> Entity {
 }
 
 has_component :: ($T : Type, entity : Entity) -> bool {
+    assert(is_not_cleaned(entity));
     component_arena := get_component_arena(T);
     assert(component_arena != null);
     return test(*component_arena.entities, entity);
 }
 
 get_component :: ($T : Type, entity : Entity) -> *T {
+    assert(is_not_cleaned(entity));
     component_arena := get_component_arena(T);
     assert(component_arena != null);
     assert(has_component(T, entity));
@@ -406,6 +441,7 @@ get_component :: ($T : Type, entity : Entity) -> *T {
 }
 
 add_component :: ($T : Type, entity : Entity) -> *T {
+    assert(is_not_cleaned(entity));
     assert(!has_component(T, entity));
     using component_arena := get_component_arena(T);
     assert(count < capacity);
@@ -418,6 +454,7 @@ add_component :: ($T : Type, entity : Entity) -> *T {
 }
 
 add_component_with_data :: (d : $T, entity : Entity) -> *T {
+    assert(is_not_cleaned(entity));
     assert(!has_component(T, entity));
     using component_arena := get_component_arena(T);
     assert(count < capacity);
