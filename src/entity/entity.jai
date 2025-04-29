@@ -103,6 +103,11 @@ Entity_Ref :: struct {
     uuid   : u64;
 }
 
+Entity_Info :: struct {
+    flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
+    uuid  : u64;
+}
+
 Entity_Storage :: struct {
     using generated_component_arenas : Generated_Component_Arenas;
     
@@ -111,14 +116,12 @@ Entity_Storage :: struct {
     free_queue  : Queue(Entity);
     to_clean    : [..] Entity;
     count       : s64;
+    initialized : bool;
+    
+    // @Info: Info_Component dependant.
+    info_arena  : Component_Arena(Entity_Info);
     uuid_seed   : u64;
     uuid_table  : Table(u64, Entity);
-    initialized : bool;
-}
-
-Info_Component :: struct @Component @Max(MAX_ENTITIES) {
-    flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
-    uuid  : u64;
 }
 
 #add_context entity_storage : Entity_Storage;
@@ -138,6 +141,7 @@ init_entity_storage :: () {
     context.entity_storage.initialized = true;
     EntityStorageContext();
     
+    init(*state.info_arena, MAX_ENTITIES, cpy_proc = null, add_proc = null, rem_proc = null);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
     state.uuid_seed = random_get();
     init(*state.free_queue, MAX_ENTITIES);
@@ -149,11 +153,15 @@ init_entity_storage :: () {
 
 deinit_entity_storage :: () {
     EntityStorageContext();
+
     for 0..entity_count()-1 {
+        // @Info: Info_Component dependant.
         immediate_destroy_entity(get_entity_at(it));
     }
     deinit_generated_component_arenas(*state.generated_component_arenas);
+    deinit(*state.info_arena);
     deinit(*state.free_queue);
+    deinit(*state.uuid_table);
     array_reset(*state.component_arenas);
     array_reset(*state.to_clean);
     state.* = .{};
@@ -174,75 +182,88 @@ entity_count :: inline () -> s64 {
     return state.count;
 }
 
-get_entity_at :: (index : s64) -> Entity {
-    EntityStorageContext();
-    assert(index < state.count);
-    info_arena := get_component_arena(Info_Component);
-    return info_arena.entities.dense.data[index];
-}
-
-create_entity :: (raw : bool = false) -> Entity {
-    EntityStorageContext();
-    assert(state.count < MAX_ENTITIES);
-    entity := pop_front(*state.free_queue);
-    state.count += 1;
-    if !raw
-    then add_component(Info_Component, entity);
-    return entity;
-}
-
-destroy_entity :: (entity : Entity) {
-    EntityStorageContext();
-    assert(is_not_destroyed(entity));
-    if has_component(Info_Component, entity) {
-        info := get_component(Info_Component, entity);
-        info.flags |= .PENDING_CLEAN;
-    } 
-    array_add(*state.to_clean, entity);
-}
-
-immediate_destroy_entity :: (entity : Entity) {
+get_info :: (entity : Entity) -> *Entity_Info {
     EntityStorageContext();
     assert(is_not_cleaned(entity));
-    for < state.component_arenas {
-        if it.has(entity)
-        then it.rem(entity);
-    }
-    state.count -= 1;
-    push_back(*state.free_queue, entity);
+    index := search(*state.info_arena.entities, entity);
+    return *state.info_arena.components[index];
 }
 
 is_not_cleaned :: inline (entity : Entity) -> bool {
-    info_arena := get_component_arena(Info_Component);
-    assert(info_arena != null);
-    return test(*info_arena.entities, entity);
+    EntityStorageContext();
+    return test(*state.info_arena.entities, entity);
 }
 
 is_not_destroyed :: (entity : Entity) -> bool {
     if !is_not_cleaned(entity)
     then return false;
-    
-    info := get_component(Info_Component, entity);
+    info := get_info(entity);
     return !(info.flags & .PENDING_CLEAN).(bool);
 }
 
-make_entity_ref :: (entity : Entity) -> Entity_Ref {
+create_entity :: () -> Entity {
+
+    create_raw_entity :: () -> Entity {
+        EntityStorageContext();
+        assert(state.count < MAX_ENTITIES);
+        entity := pop_front(*state.free_queue);
+        state.count += 1;
+        return entity;
+    }
+
+    add_info :: (entity : Entity) -> *Entity_Info {
+        EntityStorageContext();
+        using state.info_arena;
+        assert(count < capacity && !is_not_cleaned(entity));
+        count += 1;
+        index := insert_id(*entities, entity);
+        return *components[index];
+    }
+
+    entity := create_raw_entity();
+    add_info(entity);
+    return entity;
+}
+
+destroy_entity :: (entity : Entity) {
+
+    destroy_raw_entity :: (entity : Entity) {
+        EntityStorageContext();
+        array_add(*state.to_clean, entity);
+    }
+    
+    assert(is_not_destroyed(entity));
+    info := get_info(entity);
+    info.flags |= .PENDING_CLEAN;
+    destroy_raw_entity(entity);
+}
+
+get_entity_at :: (index : s64) -> Entity {
+    EntityStorageContext();
+    assert(index < state.count);
+    return state.info_arena.entities.dense.data[index];
+}
+
+make_ref :: (entity : Entity, uuid : u64 = 0) -> Entity_Ref {
     EntityStorageContext();
     assert(is_not_destroyed(entity));
-    if !has_component(Info_Component, entity) 
-    then return .{};
-    info := get_component(Info_Component, entity);
+    info := get_info(entity);
     if info.uuid != 0 {
         assert(table_contains(*state.uuid_table, info.uuid));
         return .{ entity = entity, uuid = info.uuid };
     }
-    random_seed(state.uuid_seed);
-    info.uuid = random_get();
+    if !uuid {
+        random_seed(state.uuid_seed);
+        info.uuid = random_get();
+    } else {
+        info.uuid = uuid;
+    }
+    
     table_add(*state.uuid_table, info.uuid, entity);
     return .{ entity = entity, uuid = info.uuid };
 }
 
-resolve_entity_ref :: (ref : *Entity_Ref) -> Entity {
+resolve_ref :: (ref : *Entity_Ref) -> Entity {
     EntityStorageContext();
     assert(ref.uuid != 0);
     entity, success := table_find(*state.uuid_table, ref.uuid);
@@ -250,13 +271,57 @@ resolve_entity_ref :: (ref : *Entity_Ref) -> Entity {
     then return NULL_ENTITY;
     ref.entity = entity;
     return entity; 
-} 
+}
+
+immediate_destroy_entity :: (entity : Entity) {
+    
+    rem_all_components :: (entity : Entity) {
+        EntityStorageContext();
+        for < state.component_arenas {
+            if it.has(entity)
+            then it.rem(entity);
+        }
+    }
+
+    rem_info :: (entity : Entity) {
+        EntityStorageContext();
+        assert(is_not_cleaned(entity));
+        info := get_info(entity);
+        if table_contains(*state.uuid_table, info.uuid)
+        then table_remove(*state.uuid_table, info.uuid);
+        
+        using state.info_arena;
+        count -= 1;
+        deleted, last := remove_id(*entities, entity);
+        if deleted != last {
+            components[deleted] = components[last];
+            components[last] = .{}; 
+        } else {
+            components[deleted] = .{};
+        }
+    }
+
+    immediate_destroy_raw_entity :: (entity : Entity) {
+        // Decrement the count and back to the queue.
+        EntityStorageContext();
+        state.count -= 1;
+        push_back(*state.free_queue, entity);
+    }
+
+    rem_all_components(entity);
+    rem_info(entity);
+    immediate_destroy_raw_entity(entity);
+}
 
 serialize_entity :: (entity : Entity) -> string {
     EntityStorageContext();
-    assert(is_not_destroyed(entity));
     builder : String_Builder;
-    append(*builder, "\n@Entity\n");
+    
+    ref := make_ref(entity);
+    append(*builder, "\n@Entity(");
+    append(*builder, tprint("%", ref.uuid));
+    append(*builder, ")\n");
+
     for state.component_arenas {
         if !it.has(entity)
         then continue;
@@ -274,15 +339,20 @@ deserialize_entity :: (s : string) -> Entity {
     entity  : Entity = NULL_ENTITY;
     builder : String_Builder;
     arena   : *Component_Arena_Base;
-
+    
     while 1 {
         line, found := consume_next_line(*s);
         line = trim(line);
 
         // First create the entity.
         // #TODO_asuarez check if an entity was created and decide if it is a children entity.
-        if begins_with(line, "@Entity") {
+
+        if begins_with(line, "@Entity(") {
+            expected_uuid := slice(line, 8, line.count-9 ,,temp);
+            uuid, success := string_to_int(expected_uuid, 10, u64);
+            assert(success && uuid != 0);
             entity = create_entity();
+            make_ref(entity, uuid);
             continue;
         }
 
@@ -391,56 +461,6 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
     } 
 
     return add_component_with_data(parsed_data, entity);  
-} 
-
-Entity_View :: struct {
-    shortest_arena : *Component_Arena_Base;
-    arenas : [..] *Component_Arena_Base;
-}
-
-get_entity_view :: (types : ..Type) -> Entity_View {
-    EntityStorageContext();
-    using view : Entity_View;
-    // Optimization: We find the shortest arena of the given types.
-    for types {
-        arena := get_component_arena_base(it);
-        assert(arena != null);
-        if !shortest_arena || arena.count < shortest_arena.count
-        then shortest_arena = arena;
-        else array_add(*arenas, arena ,,temp);
-    }
-    assert(shortest_arena != null);
-    return view;
-}
-
-for_expansion :: (view: Entity_View, body: Code, flags: For_Flags) #expand {
-    index : int;
-    for i : 0..view.shortest_arena.count-1 {
-        entity := view.shortest_arena.entities.dense[i];
-        
-        // If the entity is destroyed we don't care.
-        if !is_not_destroyed(entity)
-        then continue;
-
-        // We have to test if the entity contains all the components.
-        is_not_archetype : bool;
-        for arena : view.arenas {
-            if !test(*arena.entities, entity) {
-                is_not_archetype = true;
-                break;
-            }
-        }
-        if is_not_archetype
-        then continue;
-        
-        // If it is the archetype we create the iterator variables. 
-        `it_index := index;
-        `it := entity;
-
-        // Then insert the user body and increment the index.
-        #insert body;
-        index += 1;
-    }
 }
 
 #if EDITOR {

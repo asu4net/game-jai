@@ -43,6 +43,7 @@
 
 // Entity
 #load "entity/entity.jai";
+#load "entity/view.jai";
 #load "entity/components.jai";
 
 // Graphics

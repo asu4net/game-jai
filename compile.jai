@@ -161,15 +161,7 @@ SCOPE
                                                 log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
                                                 continue;
                                             }
-                                            if info.type_name == "Info_Component" {
-                                                log_error("Error: Detected @InitOrder attribute in the Info_Component. This will be ignored. \n");
-                                                continue;
-                                            }
                                             init_order, success := parse_int(*expected_init_order);
-                                            if init_order == S64_MAX {
-                                                log_error("Error parsing the @InitOrder attribute for %. Invalid value %, reserved for the Info_Component. \n", it.defined_type.name, init_order);
-                                                continue;
-                                            }
                                             if !success {
                                                 log_error("Error parsing the @InitOrder attribute for %. Expected something like @InitOrder(0) but got this % \n", it.defined_type.name, note_obj.text);
                                                 continue;
@@ -247,16 +239,9 @@ SCOPE
                                     component_info_array : [..] Component_Info;
 
                                     for value, key : component_info {
-                                        if key == "Info_Component"
-                                        then continue;
                                         array_add(*component_info_array, value);
                                     }
                                                                         
-                                    info := table_find_pointer(*component_info, "Info_Component");
-                                    assert(info != null);
-                                    info.init_order = S64_MIN;
-                                    array_add(*component_info_array, info.*);
-                                    
                                     // here sort the array WIP
                                     quick_sort(component_info_array, x => x.init_order);
 
@@ -278,8 +263,8 @@ SCOPE
                                     arenas_get_string = builder_to_string(*arenas_get_builder);
                                 }
 
-                                generated_arenas_string := sprint(GENERATED_COMPONENT_ARENAS, arenas_string, 
-                                    arenas_init_string, arenas_deinit_string, arenas_get_string, MAX_ENTITIES);
+                                generated_arenas_string := sprint(GENERATED_COMPONENT_ARENAS, arenas_string, arenas_init_string,
+                                arenas_deinit_string, arenas_get_string, MAX_ENTITIES);
                                 add_build_string(generated_arenas_string, w);
                                 generated_code = true;
 

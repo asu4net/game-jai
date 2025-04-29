@@ -1,4 +1,14 @@
-Tag_Component :: struct @Component @Max(MAX_ENTITIES) {
+// ------------------------------------------------
+
+Transform2D_Component :: struct @Component @InitOrder(-900000) @Max(100) {
+    pos := ZERO_2D;
+    scl := ONE_2D;
+    ang := (0.0).(f32);
+}
+
+// ------------------------------------------------
+
+Tag_Component :: struct @Component @InitOrder(-450000) @Max(MAX_ENTITIES) {
     text : string;
 }
 
@@ -10,14 +20,6 @@ on_copy_tag_component :: (e : Entity, dst : *Tag_Component, src : *Tag_Component
 on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
     free(cmp.text);
 } @RemoveComponentCallback
-
-// ------------------------------------------------
-
-Transform2D_Component :: struct @Component @InitOrder(-900000) @Max(100) {
-    pos := ZERO_2D;
-    scl := ONE_2D;
-    ang := (0.0).(f32);
-}
 
 // ------------------------------------------------
 
