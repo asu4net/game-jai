@@ -176,7 +176,7 @@ set_enabled :: (entity : Entity, enabled := true) {
         }
         return;
     }
-    
+
     is_local_enabled := (.LOCAL_ENABLED & info.flags).(bool);
     if enabled != is_local_enabled
     then compute_enabled_iterative(make_ref(entity));
@@ -318,7 +318,7 @@ immediate_destroy_entity :: (entity : Entity) {
         EntityStorageContext();
         assert(is_not_cleaned(entity));
         info := get_info(entity);
-        if table_contains(*state.uuid_table, info.uuid)
+        if info.uuid != 0 && table_contains(*state.uuid_table, info.uuid)
         then table_remove(*state.uuid_table, info.uuid);
         
         using state.info_arena;
