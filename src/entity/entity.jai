@@ -143,7 +143,7 @@ init_entity_storage :: () {
     
     init(*state.info_arena, MAX_ENTITIES, cpy_proc = null, add_proc = null, rem_proc = null);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
-    state.uuid_seed = random_get();
+    state.uuid_seed = current_time_monotonic().low;
     init(*state.free_queue, MAX_ENTITIES);
     
     for 0..MAX_ENTITIES {
@@ -186,9 +186,10 @@ deinit_entity_storage :: () {
     EntityStorageContext();
 
     for 0..entity_count()-1 {
-        // @Info: Info_Component dependant.
-        immediate_destroy_entity(get_entity_at(it));
+        destroy_entity(get_entity_at(it));
     }
+
+    clean_destroyed_entities();
     deinit_generated_component_arenas(*state.generated_component_arenas);
     deinit(*state.info_arena);
     deinit(*state.free_queue);
@@ -296,7 +297,7 @@ make_ref :: (entity : Entity, uuid : u64 = 0) -> Entity_Ref {
 
 resolve_ref :: (ref : *Entity_Ref) -> Entity {
     EntityStorageContext();
-    assert(ref.uuid != 0);
+
     entity, success := table_find(*state.uuid_table, ref.uuid);
     if !success 
     then return NULL_ENTITY;

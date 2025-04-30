@@ -5,6 +5,10 @@ Node_Component :: struct @Component @InitOrder(-1000000) @Max(100) {
     children : [..] Entity_Ref;
 }
 
+on_rem_node_component :: (entity : Entity, cmp : *Node_Component) {
+    array_reset(*cmp.children);
+} @RemoveComponentCallback
+
 add_child :: (entity : Entity, child : Entity) {
     
     entity_node : *Node_Component;

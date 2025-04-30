@@ -11,7 +11,7 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
                 editor_draw_drag_u32(name, data);
             }
         case FLOAT;
-            editor_draw_drag_f32(name, data, 0.1, FLOAT32_MIN, FLOAT32_MAX);
+            editor_draw_drag_f32(name, data, 0.1, -FLOAT32_MAX, FLOAT32_MAX);
         case BOOL;
             editor_draw_bool(name, data);
         case STRING;
@@ -167,7 +167,7 @@ editor_draw_drag_s32 :: (name: string, value: *s32, speed: f32 = 1.0) -> bool {
 
 editor_draw_drag_u32 :: (name: string, value: *u32, speed: f32 = 1.0) -> bool {
     begin_property(name);
-    tmp: s32 = xx value.*;
+    tmp: s32 = xx,no_check value.*;
     changed := ImGui.DragInt("##", *tmp, speed);
     value.* = xx tmp;
     if in_property_context {

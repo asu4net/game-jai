@@ -9,10 +9,12 @@ data :: (buff : TextBuff) -> *u8 {
 }
 
 Editor :: struct {
-    show_demo           : bool;
-    prefab_name         : TextBuff;
-    prefab              : Entity = NULL_ENTITY;
-    show_create_prefab  : bool;
+    show_demo                : bool;
+    prefab_name              : TextBuff;
+    prefab_ref               : Entity_Ref;
+    show_create_prefab       : bool;
+    create_prefab_parent_ref : Entity_Ref;
+    selected_ref             : Entity_Ref;
 }
 
 #add_context editor : Editor;
@@ -26,6 +28,7 @@ draw_editor :: () {
             ImGui.EndMenu();
         }
         if ImGui.BeginMenu("Prefab")  {
+            prefab := resolve_ref(*prefab_ref);
             if ImGui.MenuItem("New") {
                 if prefab != NULL_ENTITY {
                     save_prefab_and_close();
@@ -40,13 +43,18 @@ draw_editor :: () {
                         return;
                     }
                     if ImGui.MenuItem(to_c_string(basename ,,temp)) {
-                        if context.editor.prefab != NULL_ENTITY{
-                            immediate_destroy_entity(context.editor.prefab);
-                            context.editor.prefab = NULL_ENTITY;
+                        prefab := resolve_ref(*context.editor.prefab_ref);
+                        if prefab != NULL_ENTITY{
+                            immediate_destroy_entity(prefab);
+                            prefab = NULL_ENTITY;
+                            context.editor.prefab_ref = .{};
+                            context.editor.selected_ref = .{};
                         }
                         prefab_str, success := read_entire_file(info.full_name ,,temp);
                         assert(success);
-                        context.editor.prefab = deserialize_entity(prefab_str);
+                        prefab = deserialize_entity(prefab_str);
+                        context.editor.prefab_ref = make_ref(prefab);
+                        context.editor.selected_ref = context.editor.prefab_ref;
                     }
                 });
                 ImGui.EndMenu();
@@ -60,6 +68,8 @@ draw_editor :: () {
             if prefab != NULL_ENTITY && ImGui.MenuItem("Close") {
                 immediate_destroy_entity(prefab);
                 prefab = NULL_ENTITY;
+                prefab_ref = .{};
+                selected_ref = .{};
             }
             ImGui.EndMenu();
         }
@@ -84,15 +94,26 @@ draw_editor :: () {
         
         if ImGui.Button("Create") {
             show_create_prefab = false;
+
+            prefab := resolve_ref(*prefab_ref);
+            parent := resolve_ref(*create_prefab_parent_ref);
             
             if c_style_strlen(data(prefab_name)) > 0 {
-                if prefab != NULL_ENTITY {
+
+                if !parent && prefab {
                     destroy_entity(prefab);
                     prefab = NULL_ENTITY;
+                    prefab_ref = .{};
+                    selected_ref = .{};
                 }
+
                 prefab = create_entity();
                 tag := add_component(Tag_Component, prefab);
                 tag.text = copy_string(to_string(data(prefab_name)));
+                if parent == NULL_ENTITY
+                then prefab_ref = make_ref(prefab);
+                create_prefab_parent_ref = .{};
+                add_child(parent, prefab);
                 ImGui.CloseCurrentPopup();
             }
         }
@@ -106,9 +127,83 @@ draw_editor :: () {
     }
     ImGui.PopStyleColor();
 
-    if prefab != NULL_ENTITY {
+    // Hierarchy.
+    {
+        ImGui.Begin("Hierarchy");
+        
+        hierarchy :: (ref : Entity_Ref) {
+            entity := resolve_ref(*ref);
+            if entity != NULL_ENTITY {
+                flags : ImGui.TreeNodeFlags;
+                if has_component(Node_Component, entity) {
+                    entity_node := get_component(Node_Component, entity);
+                    if entity_node.children.count == 0 {
+                        flags |= .Leaf;
+                    }
+                } else {
+                    flags |= .Leaf;
+                }
+                
+                enabled := is_enabled(entity);
+                if !enabled {
+                    ImGui.PushStyleColor(.Text, .{ .5, .5, .5, 1 });
+                }
+                tag : string;
+                if has_component(Tag_Component, entity)
+                then tag = get_component(Tag_Component, entity).text;
+                else tag = tprint("%", entity ,,temp);
+
+                opened := ImGui.TreeNodeEx(to_c_string(tag ,,temp), flags);
+                if !enabled {
+                    ImGui.PopStyleColor();
+                }
+                if opened {
+                    if ImGui.BeginDragDropSource() {
+                        ImGui.SetDragDropPayload("ENTITY_DRAG", *ref, size_of(Entity_Ref));
+                        ImGui.Text("Drag Entity %", ref.entity);
+                        ImGui.EndDragDropSource();
+                    }
+                    if ImGui.BeginDragDropTarget() {
+                        payload := ImGui.AcceptDragDropPayload("ENTITY_DRAG");
+                        if payload {
+                            dragged_entity_ref := payload.Data.(*Entity_Ref);
+                            dragged_entity := resolve_ref(dragged_entity_ref);
+                            dragged_entity_node := get_component(Node_Component, dragged_entity);
+                            if dragged_entity_ref.entity != ref.entity && dragged_entity_ref.entity != dragged_entity_node.parent.entity {
+                                set_parent(dragged_entity, entity);
+                            }
+                        }
+                        ImGui.EndDragDropTarget();
+                    }
+                    if ImGui.BeginPopupContextItem() {
+                        if ImGui.MenuItem("Add Child") {
+                            context.editor.show_create_prefab = true;
+                            context.editor.create_prefab_parent_ref = context.editor.selected_ref;
+                        }
+                        ImGui.EndPopup();
+                    }
+                    if ImGui.IsItemClicked() {
+                        context.editor.selected_ref = ref;
+                    }
+                    if has_component(Node_Component, entity) {
+                        for child : get_component(Node_Component, entity).children {
+                            hierarchy(child);
+                        }
+                    }
+                    
+                    ImGui.TreePop();
+                }
+            }
+        }
+
+        hierarchy(prefab_ref);
+        ImGui.End();
+    }
+
+    entity := resolve_ref(*selected_ref);
+    if entity != NULL_ENTITY {
         ImGui.Begin("Properties");
-        editor_draw_entity(prefab);
+        editor_draw_entity(entity);
         ImGui.End();
     }
 }
@@ -116,13 +211,17 @@ draw_editor :: () {
 save_prefab_and_close :: () {
     using context.editor;
     save_prefab();
+    prefab := resolve_ref(*prefab_ref);
     immediate_destroy_entity(prefab);
     ImGui.CloseCurrentPopup();
     prefab = NULL_ENTITY;
+    prefab_ref = .{};
+    selected_ref = .{};
 }
 
 save_prefab :: () {
     using context.editor;
+    prefab := resolve_ref(*prefab_ref);
     assert(prefab != NULL_ENTITY);
     tag := get_component(Tag_Component, prefab);
     write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), serialize_entity(prefab ,,temp));
