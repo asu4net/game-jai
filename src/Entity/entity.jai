@@ -312,10 +312,8 @@ clone_entity :: (template : *Entity, tag := "", deserialization := false) -> *En
         }
     }
 
-    if scene.entity_procs.copy {
-       scene.entity_procs.copy(entity, template); 
-    }
-
+    scene.entity_procs.copy(entity, template); 
+    
     return entity;
 }
 
@@ -347,9 +345,13 @@ remove_child :: (entity : *Entity, child : *Entity) {
 }
 
 set_parent :: (entity : *Entity, parent : *Entity) {
-    parent := resolve_ref(*entity.parent);
-    if is_not_cleaned(parent) && is_not_destroyed(parent) {
-        remove_child(parent, entity);
+    entity_parent := resolve_ref(*entity.parent);
+    if entity_parent && is_not_cleaned(entity_parent) && is_not_destroyed(entity_parent) {
+        remove_child(entity_parent, entity);
+    }
+    if !parent {
+        entity.parent = .{};
+        return;    
     }
     entity.parent = make_ref(parent);
     add_child(parent, entity);

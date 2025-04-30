@@ -9,11 +9,13 @@ data :: (buff : TextBuff) -> *u8 {
 }
 
 Editor :: struct {
-    show_demo           : bool;
-    prefab_name         : TextBuff;
-    prefab_type         : PrefabEditorType;
-    prefab              : *Entity;
-    show_create_prefab  : bool;
+    show_demo                : bool;
+    prefab_name              : TextBuff;
+    prefab_type              : PrefabEditorType;
+    prefab_ref               : Entity_Ref;
+    selected_ref             : Entity_Ref;
+    show_create_prefab       : bool;
+    create_prefab_parent_ref : Entity_Ref;
 }
 
 PrefabEditorType :: struct {
@@ -32,6 +34,8 @@ draw_editor :: () {
             ImGui.EndMenu();
         }
         if ImGui.BeginMenu("Prefab")  {
+            prefab := resolve_ref(*prefab_ref);
+
             if ImGui.MenuItem("New") {
                 if prefab {
                     save_prefab_and_close();
@@ -46,13 +50,18 @@ draw_editor :: () {
                         return;
                     }
                     if ImGui.MenuItem(to_c_string(basename ,,temp)) {
-                        if context.editor.prefab {
-                            immediate_destroy_entity(context.editor.prefab, true);
-                            context.editor.prefab = null;
+                        prefab := resolve_ref(*context.editor.prefab_ref);
+                        if prefab {
+                            immediate_destroy_entity(prefab, true);
+                            prefab = null;
+                            context.editor.prefab_ref = .{};
+                            context.editor.selected_ref = .{};
                         }
                         prefab_str, success := read_entire_file(info.full_name ,,temp);
                         assert(success);
-                        context.editor.prefab = deserialize_entity_recursive(prefab_str);
+                        prefab = deserialize_entity_recursive(prefab_str);
+                        context.editor.prefab_ref = make_ref(prefab);
+                        context.editor.selected_ref = context.editor.prefab_ref;
                     }
                 });
                 ImGui.EndMenu();
@@ -66,6 +75,8 @@ draw_editor :: () {
             if prefab && ImGui.MenuItem("Close") {
                 immediate_destroy_entity(prefab, true);
                 prefab = null;
+                prefab_ref = .{};
+                selected_ref = .{};
             }
             ImGui.EndMenu();
         }
@@ -78,7 +89,7 @@ draw_editor :: () {
     }
     
     if show_create_prefab {
-     ImGui.OpenPopup("Create Prefab");
+        ImGui.OpenPopup("Create Prefab");
     }
     
     ImGui.PushStyleColor(.PopupBg, .{0.0, 0.0, 0.0, 1});
@@ -111,13 +122,25 @@ draw_editor :: () {
         if ImGui.Button("Create") {
             show_create_prefab = false;
             scene := context.scenes[prefab_type.slot];
-            
+            prefab := resolve_ref(*prefab_ref);
+            parent := resolve_ref(*create_prefab_parent_ref);
+
             if scene && c_style_strlen(data(prefab_name)) > 0 {
-                if prefab {
+                if !parent && prefab {
                     destroy_entity(prefab);
                     prefab = null;
+                    prefab_ref = .{};
+                    selected_ref = .{};
                 }
                 prefab = scene.entity_procs.create(scene.slot, to_string(data(prefab_name)));
+                if !parent {
+                    prefab_ref = make_ref(prefab);
+                }
+                selected_ref = prefab_ref;
+                if parent {
+                    set_parent(prefab, parent);
+                }
+                create_prefab_parent_ref = .{};
                 ImGui.CloseCurrentPopup();
             }
         }
@@ -131,28 +154,94 @@ draw_editor :: () {
     }
     ImGui.PopStyleColor();
 
-    if prefab {
-        ImGui.Begin("Properties");
-        scene := get_scene(prefab);
-        scene.entity_procs.draw_editor(prefab);
+    // Hierarchy.
+    {
+        ImGui.Begin("Hierarchy");
+        
+        hierarchy :: (ref : Entity_Ref) {
+            entity := resolve_ref(*ref);
+            if entity {
+                flags : ImGui.TreeNodeFlags;
+                if entity.children.count == 0 {
+                    flags |= .Leaf;
+                }
+                enabled := is_enabled(entity);
+                if !enabled {
+                    ImGui.PushStyleColor(.Text, .{ .5, .5, .5, 1 });
+                }
+                opened := ImGui.TreeNodeEx(to_c_string(entity.tag ,,temp), flags);
+                if !enabled {
+                    ImGui.PopStyleColor();
+                }
+                if opened {
+                    if ImGui.BeginDragDropSource() {
+                        ImGui.SetDragDropPayload("ENTITY_DRAG", *ref, size_of(Entity_Ref));
+                        ImGui.Text("Drag Entity %", ref.id);
+                        ImGui.EndDragDropSource();
+                    }
+                    if ImGui.BeginDragDropTarget() {
+                        payload := ImGui.AcceptDragDropPayload("ENTITY_DRAG");
+                        if payload {
+                            dragged_entity_ref := payload.Data.(*Entity_Ref);
+                            dragged_entity := resolve_ref(dragged_entity_ref);
+                            if dragged_entity_ref.id != ref.id && dragged_entity_ref.id != dragged_entity.parent.id {
+                                set_parent(dragged_entity, entity);
+                            }
+                        }
+                        ImGui.EndDragDropTarget();
+                    }
+                    if ImGui.BeginPopupContextItem() {
+                        if ImGui.MenuItem("Add Child") {
+                            context.editor.show_create_prefab = true;
+                            context.editor.create_prefab_parent_ref = context.editor.selected_ref;
+                        }
+                        ImGui.EndPopup();
+                    }
+                    if ImGui.IsItemClicked() {
+                        context.editor.selected_ref = ref;
+                    }
+                    for child : entity.children {
+                        hierarchy(child);
+                    }
+                    ImGui.TreePop();
+                }
+            }
+        }
+
+        hierarchy(prefab_ref);
         ImGui.End();
+    }
+
+    // Properties.
+    {
+        entity := resolve_ref(*selected_ref);
+        if entity {
+            ImGui.Begin("Properties");
+            scene := get_scene(entity);
+            scene.entity_procs.draw_editor(entity);
+            ImGui.End();
+        }
     }
 }
 
 save_prefab_and_close :: () {
     using context.editor;
     save_prefab();
+    prefab := resolve_ref(*prefab_ref);
     immediate_destroy_entity(prefab, true);
     ImGui.CloseCurrentPopup();
     prefab = null;
+    prefab_ref = .{};
+    selected_ref = .{};
 }
 
 save_prefab :: () {
     using context.editor;
+    prefab := resolve_ref(*prefab_ref);
     assert(prefab != null);
     builder : String_Builder;
     serialize_entity_recursive(prefab, *builder);
-    write_entire_file(tprint("assets/%.prefab", prefab.tag ,,temp), *builder);
+    write_entire_file(tprint("assets/prefabs/%.prefab", prefab.tag ,,temp), *builder);
 }
 
 } //#if IMGUI
