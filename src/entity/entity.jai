@@ -285,7 +285,6 @@ make_ref :: (entity : Entity, uuid : u64 = 0) -> Entity_Ref {
         return .{ entity = entity, uuid = info.uuid };
     }
     if !uuid {
-        random_seed(state.uuid_seed);
         info.uuid = random_get();
     } else {
         info.uuid = uuid;

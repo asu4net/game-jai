@@ -11,9 +11,9 @@ on_rem_node_component :: (entity : Entity, cmp : *Node_Component) {
 
 add_child :: (entity : Entity, child : Entity) {
     
-    entity_node : *Node_Component;
-    if !has_component(Node_Component,  entity)
-    then entity_node = add_component(Node_Component, entity);
+    entity_node := ifx has_component(Node_Component, entity) 
+        then get_component(Node_Component, entity) 
+        else add_component(Node_Component, entity);
     
     if !has_component(Node_Component,  child)
     then add_component(Node_Component, child);
@@ -31,13 +31,10 @@ add_child :: (entity : Entity, child : Entity) {
 
 set_parent :: (entity : Entity, parent : Entity) {
 
-    entity_node : *Node_Component;
-    if !has_component(Node_Component,  entity)
-    then entity_node = add_component(Node_Component, entity);
+    entity_node := ifx has_component(Node_Component, entity) 
+        then get_component(Node_Component, entity) 
+        else add_component(Node_Component, entity);
     
-    if !has_component(Node_Component,  parent)
-    then parent_node := add_component(Node_Component, parent);
-
     current_parent := resolve_ref(*entity_node.parent);
     
     if is_not_cleaned(parent) && is_not_destroyed(parent) {
