@@ -105,7 +105,7 @@ Entity_Ref :: struct {
 
 Entity_Info :: struct {
     flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
-    uuid  : u64;
+    uuid  : u64; @JsonIgnore
 }
 
 Entity_Storage :: struct {
@@ -141,7 +141,11 @@ init_entity_storage :: () {
     context.entity_storage.initialized = true;
     EntityStorageContext();
     
-    init(*state.info_arena, MAX_ENTITIES, cpy_proc = null, add_proc = null, rem_proc = null);
+    // Manually init the info arena.
+    copy_info_proc :: (entity : Entity, d : *Entity_Info, s : *Entity_Info) {
+        d.flags = s.flags;
+    }
+    init(*state.info_arena, MAX_ENTITIES, cpy_proc = copy_info_proc, add_proc = null, rem_proc = null);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
     state.uuid_seed = current_time_monotonic().low;
     init(*state.free_queue, MAX_ENTITIES);
@@ -201,12 +205,16 @@ deinit_entity_storage :: () {
 
 get_component_arena :: ($T : Type) -> *Component_Arena(T) {
     EntityStorageContext();
-    return get_generated_component_arena(*state.generated_component_arenas, T);
+    #if T == Entity_Info
+    then return *state.info_arena;
+    else return get_generated_component_arena(*state.generated_component_arenas, T);
 }
 
 get_component_arena_base :: (t : Type) -> *Component_Arena_Base {
     EntityStorageContext();
-    return get_generated_component_arena_base(*state.generated_component_arenas, t);
+    if t == Entity_Info
+    then return *state.info_arena;
+    else return get_generated_component_arena_base(*state.generated_component_arenas, t);
 }
 
 entity_count :: inline () -> s64 {
@@ -215,10 +223,7 @@ entity_count :: inline () -> s64 {
 }
 
 get_info :: (entity : Entity) -> *Entity_Info {
-    EntityStorageContext();
-    assert(is_not_cleaned(entity));
-    index := search(*state.info_arena.entities, entity);
-    return *state.info_arena.components[index];
+    return get_component(Entity_Info, entity);
 }
 
 is_not_cleaned :: inline (entity : Entity) -> bool {
@@ -241,15 +246,6 @@ create_entity :: () -> Entity {
         entity := pop_front(*state.free_queue);
         state.count += 1;
         return entity;
-    }
-
-    add_info :: (entity : Entity) -> *Entity_Info {
-        EntityStorageContext();
-        using state.info_arena;
-        assert(count < capacity && !is_not_cleaned(entity));
-        count += 1;
-        index := insert_id(*entities, entity);
-        return *components[index];
     }
 
     entity := create_raw_entity();
@@ -314,24 +310,6 @@ immediate_destroy_entity :: (entity : Entity) {
         }
     }
 
-    rem_info :: (entity : Entity) {
-        EntityStorageContext();
-        assert(is_not_cleaned(entity));
-        info := get_info(entity);
-        if info.uuid != 0 && table_contains(*state.uuid_table, info.uuid)
-        then table_remove(*state.uuid_table, info.uuid);
-        
-        using state.info_arena;
-        count -= 1;
-        deleted, last := remove_id(*entities, entity);
-        if deleted != last {
-            components[deleted] = components[last];
-            components[last] = .{}; 
-        } else {
-            components[deleted] = .{};
-        }
-    }
-
     immediate_destroy_raw_entity :: (entity : Entity) {
         // Decrement the count and back to the queue.
         EntityStorageContext();
@@ -344,7 +322,7 @@ immediate_destroy_entity :: (entity : Entity) {
     immediate_destroy_raw_entity(entity);
 }
 
-serialize_entity :: (entity : Entity) -> string {
+slz_entity :: (entity : Entity) -> string {
     EntityStorageContext();
 
     assert(is_not_cleaned(entity));
@@ -354,6 +332,11 @@ serialize_entity :: (entity : Entity) -> string {
     append(*builder, "\n@Entity(");
     append(*builder, tprint("%", ref.uuid));
     append(*builder, ")\n");
+
+    append(*builder, "\n@Component(");
+    append(*builder, state.info_arena.type.name);
+    append(*builder, ")\n");
+    append(*builder, state.info_arena.slz(entity));
 
     for state.component_arenas {
         if !it.has(entity)
@@ -366,7 +349,7 @@ serialize_entity :: (entity : Entity) -> string {
     return builder_to_string(*builder);
 }
 
-deserialize_entity :: (s : string) -> Entity {
+dlz_entity :: (s : string) -> Entity {
     EntityStorageContext();
     
     entity  : Entity = NULL_ENTITY;
@@ -406,12 +389,17 @@ deserialize_entity :: (s : string) -> Entity {
             // If not, store next the component type.
             assert(entity != NULL_ENTITY);
             expected_component_type := slice(line, 11, line.count-12);
-            for state.component_arenas {
-                if it.type.name != expected_component_type
-                then continue;
-                arena = it;
-                break;
+            if expected_component_type == "Entity_Info" {
+                arena = state.info_arena;
+            } else {
+                for state.component_arenas {
+                    if it.type.name != expected_component_type
+                    then continue;
+                    arena = it;
+                    break;
+                }
             }
+            
             assert(arena != null);
             continue;
         }
@@ -441,6 +429,8 @@ get_component :: ($T : Type, entity : Entity) -> *T {
 }
 
 add_component :: ($T : Type, entity : Entity) -> *T {
+    #if T == Entity_Info 
+    then return null;
     assert(is_not_cleaned(entity));
     assert(!has_component(T, entity));
     using component_arena := get_component_arena(T);
@@ -454,6 +444,8 @@ add_component :: ($T : Type, entity : Entity) -> *T {
 }
 
 add_component_with_data :: (d : $T, entity : Entity) -> *T {
+    #if T == Entity_Info 
+    then return null;
     assert(is_not_cleaned(entity));
     assert(!has_component(T, entity));
     using component_arena := get_component_arena(T);
@@ -468,6 +460,8 @@ add_component_with_data :: (d : $T, entity : Entity) -> *T {
 }
 
 rem_component :: ($T : Type, entity : Entity) {
+    #if T == Entity_Info 
+    then return;
     assert(has_component(T, entity));
     using component_arena := get_component_arena(T);
     if rem_cbk_fn != null
@@ -483,8 +477,9 @@ rem_component :: ($T : Type, entity : Entity) {
 }
 
 slz_component :: ($T : Type, entity : Entity) -> string {
-    component := get_component(T, entity);
-    return json_write_string(component);
+    EntityStorageContext();
+    c := get_component(T, entity);
+    return json_write_string(c);
 }
 
 dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
@@ -497,14 +492,17 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
         return component;
     } 
 
-    return add_component_with_data(parsed_data, entity);  
+    #if T == Entity_Info
+    then return add_info(entity, parsed_data); // @Note: This should not happen....
+    else return add_component_with_data(parsed_data, entity);  
 }
 
 #if EDITOR {
     drw_component :: ($T : Type, entity : Entity) {
-        component := get_component(T, entity);
+        EntityStorageContext();
+        c := get_component(T, entity);
         info := type_info(T);
-        editor_draw_property(null, component, info);
+        editor_draw_property(null, c, info);
     }
 }
 
@@ -514,4 +512,37 @@ clean_destroyed_entities :: () {
         immediate_destroy_entity(entity);
     }
     array_reset(*state.to_clean);
+}
+
+#scope_file
+
+// Just add the info component if the entity is created.
+add_info :: (entity : Entity, info := Entity_Info.{}) -> *Entity_Info {
+    EntityStorageContext();
+    using state.info_arena;
+    assert(count < capacity && !is_not_cleaned(entity));
+    count += 1;
+    index := insert_id(*entities, entity);
+    info_ptr := *components[index]; 
+    call_cpy_cbk(cpy_cbk_fn, entity, info_ptr, *info);
+    return info_ptr;
+}
+
+// Just rem the info component if the entity is destroyed.
+rem_info :: (entity : Entity) {
+    EntityStorageContext();
+    assert(is_not_cleaned(entity));
+    info := get_info(entity);
+    if info.uuid != 0 && table_contains(*state.uuid_table, info.uuid)
+    then table_remove(*state.uuid_table, info.uuid);
+    
+    using state.info_arena;
+    count -= 1;
+    deleted, last := remove_id(*entities, entity);
+    if deleted != last {
+        components[deleted] = components[last];
+        components[last] = .{}; 
+    } else {
+        components[deleted] = .{};
+    }
 }

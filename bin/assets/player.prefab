@@ -1,6 +1,10 @@
 
 @Entity(13558330354512883500)
 
+@Component(Entity_Info)
+{
+	"flags": "LOCAL_ENABLED | ENABLED"
+}
 @Component(Transform2D_Component)
 {
 	"pos": {

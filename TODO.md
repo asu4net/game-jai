@@ -1,10 +1,12 @@
 # TODO
 
-
-- Display and save enabled / disabled state for entities. (Maybe just use bools for convenience)
-- Allow imgui drag and drop in editor to edit children stuff.
-- Allow serialize / deserialize for children.
+- Display the flags in imgui
+- Add read only attr for imgui
 - Fix u64 imgui crash (see what does nit/bb).
+- Allow serialize / deserialize for children.
+- Allow imgui drag and drop in editor to edit children stuff.
+- Add support for children destruction
+- Create entity viewer and work with the prefab
 
 - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
 - texture options for sprite_sheet (maybe could be a struct??)

@@ -52,7 +52,7 @@ draw_editor :: () {
                         }
                         prefab_str, success := read_entire_file(info.full_name ,,temp);
                         assert(success);
-                        prefab = deserialize_entity(prefab_str);
+                        prefab = dlz_entity(prefab_str);
                         context.editor.prefab_ref = make_ref(prefab);
                         context.editor.selected_ref = context.editor.prefab_ref;
                     }
@@ -224,12 +224,16 @@ save_prefab :: () {
     prefab := resolve_ref(*prefab_ref);
     assert(prefab != NULL_ENTITY);
     tag := get_component(Tag_Component, prefab);
-    write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), serialize_entity(prefab ,,temp));
+    write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), slz_entity(prefab ,,temp));
 }
 
 editor_draw_entity :: (entity : Entity) {
         EntityStorageContext();
         
+        state.info_arena.drw(entity);
+        editor_draw_separator();
+        editor_draw_spacing();
+
         for state.component_arenas {
             if !it.has(entity)
             then continue;
