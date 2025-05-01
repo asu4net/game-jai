@@ -113,7 +113,7 @@ draw_editor :: () {
                 if parent == NULL_ENTITY
                 then prefab_ref = make_ref(prefab);
                 create_prefab_parent_ref = .{};
-                add_child(parent, prefab);
+                set_parent(prefab, parent);
                 ImGui.CloseCurrentPopup();
             }
         }

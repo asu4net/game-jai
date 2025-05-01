@@ -169,7 +169,7 @@ editor_draw_drag_u32 :: (name: string, value: *u32, speed: f32 = 1.0) -> bool {
     begin_property(name);
     tmp: s32 = xx,no_check value.*;
     changed := ImGui.DragInt("##", *tmp, speed);
-    value.* = xx tmp;
+    value.* = xx,no_check tmp;
     if in_property_context {
         ImGui.PopItemWidth();
     }

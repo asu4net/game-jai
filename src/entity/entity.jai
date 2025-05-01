@@ -99,13 +99,14 @@ Entity_Flag :: enum_flags u16 {
 }
 
 Entity_Ref :: struct { 
-    entity : Entity = NULL_ENTITY; @JsonIgnore
-    uuid   : u64;
+    entity : Entity = NULL_ENTITY; @JsonIgnore @EditorReadOnly
+    uuid   : u64; @EditorIgnore
 }
 
 Entity_Info :: struct {
+    #if EDITOR id : u32; @JsonIgnore @EditorReadOnly
     flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
-    uuid  : u64; @JsonIgnore
+    uuid  : u64; @JsonIgnore @EditorIgnore
 }
 
 Entity_Storage :: struct {
@@ -524,6 +525,7 @@ add_info :: (entity : Entity, info := Entity_Info.{}) -> *Entity_Info {
     count += 1;
     index := insert_id(*entities, entity);
     info_ptr := *components[index]; 
+    info_ptr.id = entity;
     call_cpy_cbk(cpy_cbk_fn, entity, info_ptr, *info);
     return info_ptr;
 }
