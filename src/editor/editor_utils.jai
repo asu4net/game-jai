@@ -121,7 +121,19 @@ editor_draw_enum_combo :: (name : string, info : *Type_Info, data : *void) {
     info_enum := cast(*Type_Info_Enum) info;
 
     if info_enum.enum_type_flags & .FLAGS {
-        // @@ How to handle flags?
+        // @Review: For now we asume a u16 flag set.
+        my_flags := data.(*u16); 
+        begin_property(name);
+        for 0..info_enum.names.count - 1 {
+            flag_value := info_enum.values[it].(u16);
+            is_set := (my_flags.* & flag_value) != 0;
+            if ImGui.Checkbox(to_c_string(info_enum.names[it] ,,temp), *is_set) {
+                if is_set 
+                then my_flags.* |= flag_value; 
+                else my_flags.* &= ~flag_value;
+            }
+        }
+        end_property();
     } else {
         begin_property(name);
         value := get_enum_value(data, info_enum);

@@ -23,8 +23,8 @@ for_expansion :: (view: Entity_View, body: Code, flags: For_Flags) #expand {
     for i : 0..view.shortest_arena.count-1 {
         entity := view.shortest_arena.entities.dense[i];
         
-        // If the entity is destroyed we don't care.
-        if !is_not_destroyed(entity)
+        // If the entity is destroyed or disabled we don't care.
+        if !is_not_destroyed(entity) || !is_enabled(entity)
         then continue;
 
         // We have to test if the entity contains all the components.

@@ -504,6 +504,8 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
         c := get_component(T, entity);
         info := type_info(T);
         editor_draw_property(null, c, info);
+        if has_component(Node_Component, entity)
+        then compute_enabled_iterative(make_ref(entity));
     }
 }
 

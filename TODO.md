@@ -1,12 +1,12 @@
 # TODO
 
-- Display the flags in imgui
-- Allow serialize / deserialize for children.
 - Allow imgui drag and drop in editor to edit children stuff.
+- Allow serialize / deserialize for children.
 - Add support for children destruction
-- Create entity viewer and work with the prefab
-- Allow children removal
+- Display Entity refs as drag and drop like unity
+- Allow entity destruction in editor
 
+- Create entity viewer and work with the prefab
 - Add read only attr for imgui
 - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
 - texture options for sprite_sheet (maybe could be a struct??)
