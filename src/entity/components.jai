@@ -9,6 +9,20 @@ on_rem_node_component :: (entity : Entity, cmp : *Node_Component) {
     array_reset(*cmp.children);
 } @RemoveComponentCallback
 
+get_parent :: (entity : Entity) -> Entity {
+    if !has_component(Node_Component, entity)
+    then return NULL_ENTITY;
+    node := get_component(Node_Component, entity);
+    return resolve_ref(*node.parent);
+}
+
+get_children :: (entity : Entity) -> [] Entity_Ref {
+    if !has_component(Node_Component, entity)
+    then return .{};
+    node := get_component(Node_Component, entity);
+    return node.children;
+}
+
 set_parent :: (entity : Entity, parent : Entity) {
 
     entity_node := ifx has_component(Node_Component, entity) 
@@ -61,7 +75,7 @@ set_parent :: (entity : Entity, parent : Entity) {
         }
 
         add_child(parent, entity);
-        
+
     } else {
         entity_node.parent = .{};
     }
@@ -106,6 +120,42 @@ Transform2D_Component :: struct @Component @InitOrder(-900000) @Max(100) {
     ang := (0.0).(f32);
 }
 
+get_matrix :: (entity : Entity) -> m4 {
+    
+    transform := get_component(Transform2D_Component, entity);
+    child_matrix := make_transform(transform.pos, transform.ang, transform.scl);
+    
+    if !is_not_destroyed(entity)
+    then return child_matrix;
+
+    parent := get_parent(entity);
+
+    child_pos := transform.pos;
+    child_ang := transform.ang;
+    child_scl := transform.scl;
+
+    current_entity := entity;
+
+    while is_not_destroyed(get_parent(current_entity)) {
+        parent = get_parent(current_entity);
+        
+        if !has_component(Transform2D_Component, parent)
+        then continue;
+
+        parent_transform := get_component(Transform2D_Component, parent);
+        child_pos += parent_transform.pos;
+        
+        child_pos = rotate_around(parent_transform.pos, parent_transform.ang, child_pos);
+
+        child_ang += parent_transform.ang;
+        child_scl *= parent_transform.scl;
+
+        current_entity = parent;
+    }
+
+    return make_transform(child_pos, child_ang, child_scl);
+}
+
 // ------------------------------------------------
 
 Tag_Component :: struct @Component @InitOrder(-450000) @Max(MAX_ENTITIES) {
@@ -145,7 +195,11 @@ on_remove_sprite_component :: (e : Entity, cmp : *Sprite_Component) {
     free(cmp.item);
 } @RemoveComponentCallback
 
-draw_sprite :: (using transform : Transform2D_Component, using sprite : *Sprite_Component, sheet : *Spritesheet, id : u32 = 0) {
+draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
+
+    using transform := get_component(Transform2D_Component, entity);
+    using sprite    := get_component(Sprite_Component,      entity);
+    
     if !visible then return;
 
     tex := ifx item.count > 0 then *sheet.tex else null;
@@ -162,7 +216,7 @@ draw_sprite :: (using transform : Transform2D_Component, using sprite : *Sprite_
         if found rect = r;
     }
     
-    draw_quad(pos, ang, scl, tex, tiling, size, blend, rect, tint, id, flags);        
+    draw_quad(get_matrix(entity), tex, tiling, size, blend, rect, tint, entity, flags);        
 }
 
 // ------------------------------------------------

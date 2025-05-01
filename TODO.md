@@ -3,9 +3,10 @@
 - Allow imgui drag and drop in editor to edit children stuff.
 - Allow serialize / deserialize for children.
 - Add support for children destruction
-- Display Entity refs as drag and drop like unity
 - Allow entity destruction in editor
 
+- Implement transform stuff for children entities
+- Display Entity refs as drag and drop like unity
 - Create entity viewer and work with the prefab
 - Add read only attr for imgui
 - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).

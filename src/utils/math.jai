@@ -49,6 +49,26 @@ rotate :: (mat: m4, rotation : v3) -> m4 {
     return rotate_z(rotate_y(rotate_x(mat, rotation.x), rotation.y), rotation.z);
 }
 
+rotate_around :: (pivot : v2, angle : f32, point : v2) -> v2 {
+    
+    s := sin(angle * RAD_PER_DEG);
+    c := cos(angle * RAD_PER_DEG);
+
+    // translate point back to origin:
+    new_point := point;
+    new_point.x -= pivot.x;
+    new_point.y -= pivot.y;
+    
+    // rotate point
+    x_new := new_point.x * c - new_point.y * s;
+    y_new := new_point.x * s + new_point.y * c;
+
+    // translate point back:
+    new_point.x = x_new + pivot.x;
+    new_point.y = y_new + pivot.y;
+    return new_point;
+}
+
 make_transform :: (pos : v3, rot := ZERO_3D, sc := ONE_3D) -> m4 {
     scale_matrix       := scale(IDENTITY, sc);
     rotation_matrix    := rotate(IDENTITY, RAD_PER_DEG * rot);
