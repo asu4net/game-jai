@@ -37,29 +37,35 @@ set_parent :: (entity : Entity, parent : Entity) {
         remove_child(parent, entity);
     }
 
-    entity_node.parent = make_ref(parent);
+    if is_not_destroyed(parent) {
 
-    add_child :: (entity : Entity, child : Entity) {
-    
-        entity_node := ifx has_component(Node_Component, entity) 
-            then get_component(Node_Component, entity) 
-            else add_component(Node_Component, entity);
+        entity_node.parent = make_ref(parent);
+        add_child :: (entity : Entity, child : Entity) {
+        
+            entity_node := ifx has_component(Node_Component, entity) 
+                then get_component(Node_Component, entity) 
+                else add_component(Node_Component, entity);
 
-        if !has_component(Node_Component,  child)
-        then add_component(Node_Component, child);
+            if !has_component(Node_Component,  child)
+            then add_component(Node_Component, child);
 
-        for ref : entity_node.children {
-            current_child := resolve_ref(*ref);
-            if current_child == child 
-            then return;
+            for ref : entity_node.children {
+                current_child := resolve_ref(*ref);
+                if current_child == child 
+                then return;
+            }
+
+            child_ref := make_ref(child);
+            array_add(*entity_node.children, child_ref);
+            compute_enabled_iterative(child_ref);
         }
 
-        child_ref := make_ref(child);
-        array_add(*entity_node.children, child_ref);
-        compute_enabled_iterative(child_ref);
+        add_child(parent, entity);
+        
+    } else {
+        entity_node.parent = .{};
     }
-
-    add_child(parent, entity);
+   
 }
 
 compute_enabled_iterative :: (ref : Entity_Ref) { 
