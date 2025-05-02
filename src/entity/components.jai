@@ -31,15 +31,16 @@ set_parent :: (entity : Entity, parent : Entity) {
     
     current_parent := resolve_ref(*entity_node.parent);
     
-    if is_not_cleaned(current_parent) && is_not_destroyed(current_parent) {
+    if is_not_destroyed(current_parent) {
         
         remove_child :: (entity : Entity, child : Entity) {    
             entity_node := get_component(Node_Component, entity);
             index := -1;
             found := false;
-            for current_child, index : entity_node.children { 
-                if entity == current_child.entity then { 
+            for entity_node.children { 
+                if child == it.entity then { 
                     found = true;
+                    index = it_index;
                     break; 
                 }
             }
@@ -48,7 +49,7 @@ set_parent :: (entity : Entity, parent : Entity) {
             //#TODO_asuarez Remove the Node_Component if it is not being used.
         }
         
-        remove_child(parent, entity);
+        remove_child(current_parent, entity);
     }
 
     if is_not_destroyed(parent) {

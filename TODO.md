@@ -5,7 +5,6 @@
 - Add support for children destruction
 - Allow entity destruction in editor
 
-- Implement transform stuff for children entities
 - Display Entity refs as drag and drop like unity
 - Create entity viewer and work with the prefab
 - Add read only attr for imgui
