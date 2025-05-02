@@ -5,6 +5,19 @@
 {
 	"flags": "LOCAL_ENABLED | ENABLED"
 }
+
+@Component(Node_Component)
+{
+	"parent": {
+		"uuid": 0
+	},
+	"children": [
+		{
+			"uuid": 1137526400306752306
+		}
+	]
+}
+
 @Component(Transform2D_Component)
 {
 	"pos": {
@@ -17,10 +30,12 @@
 	},
 	"ang": 0
 }
+
 @Component(Tag_Component)
 {
 	"text": "player"
 }
+
 @Component(Sprite_Component)
 {
 	"visible": true,
@@ -43,4 +58,25 @@
 	"flip_x": false,
 	"flip_y": false,
 	"autosize": true
+}
+
+@Entity(1137526400306752306)
+
+@Component(Entity_Info)
+{
+	"flags": "LOCAL_ENABLED | ENABLED"
+}
+
+@Component(Node_Component)
+{
+	"parent": {
+		"uuid": 13558330354512883500
+	},
+	"children": [
+	]
+}
+
+@Component(Tag_Component)
+{
+	"text": "aaa"
 }

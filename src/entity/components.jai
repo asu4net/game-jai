@@ -203,6 +203,9 @@ draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
     
     if !visible then return;
 
+    if has_component(Blink_Component, entity)
+    then update_blink(get_component(Blink_Component, entity), *tint);
+    
     tex := ifx item.count > 0 then *sheet.tex else null;
     flags := ifx item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
     

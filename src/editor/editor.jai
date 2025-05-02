@@ -45,7 +45,7 @@ draw_editor :: () {
                     if ImGui.MenuItem(to_c_string(basename ,,temp)) {
                         prefab := resolve_ref(*context.editor.prefab_ref);
                         if prefab != NULL_ENTITY{
-                            immediate_destroy_entity(prefab);
+                            destroy_entity(prefab);
                             prefab = NULL_ENTITY;
                             context.editor.prefab_ref = .{};
                             context.editor.selected_ref = .{};
@@ -66,7 +66,7 @@ draw_editor :: () {
                 save_prefab_and_close();
             }
             if prefab != NULL_ENTITY && ImGui.MenuItem("Close") {
-                immediate_destroy_entity(prefab);
+                destroy_entity(prefab);
                 prefab = NULL_ENTITY;
                 prefab_ref = .{};
                 selected_ref = .{};
@@ -110,7 +110,7 @@ draw_editor :: () {
                 prefab = create_entity();
                 tag := add_component(Tag_Component, prefab);
                 tag.text = copy_string(to_string(data(prefab_name)));
-                if parent == NULL_ENTITY
+                if  parent == NULL_ENTITY
                 then prefab_ref = make_ref(prefab);
                 create_prefab_parent_ref = .{};
                 set_parent(prefab, parent);
@@ -212,7 +212,7 @@ save_prefab_and_close :: () {
     using context.editor;
     save_prefab();
     prefab := resolve_ref(*prefab_ref);
-    immediate_destroy_entity(prefab);
+    destroy_entity(prefab);
     ImGui.CloseCurrentPopup();
     prefab = NULL_ENTITY;
     prefab_ref = .{};
@@ -224,7 +224,9 @@ save_prefab :: () {
     prefab := resolve_ref(*prefab_ref);
     assert(prefab != NULL_ENTITY);
     tag := get_component(Tag_Component, prefab);
-    write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), slz_entity(prefab ,,temp));
+    builder : String_Builder;
+    slz_entity(*builder, prefab ,,temp);
+    write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), builder_to_string(*builder, prefab ,,temp));
 }
 
 editor_draw_entity :: (entity : Entity) {

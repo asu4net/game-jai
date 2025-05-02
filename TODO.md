@@ -1,8 +1,5 @@
 # TODO
 
-- Allow imgui drag and drop in editor to edit children stuff.
-- Allow serialize / deserialize for children.
-- Add support for children destruction
 - Allow entity destruction in editor
 
 - Display Entity refs as drag and drop like unity

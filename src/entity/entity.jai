@@ -191,7 +191,9 @@ deinit_entity_storage :: () {
     EntityStorageContext();
 
     for 0..entity_count()-1 {
-        destroy_entity(get_entity_at(it));
+        e := get_entity_at(it);
+        if is_not_destroyed(e)
+        then  destroy_entity(e);
     }
 
     clean_destroyed_entities();
@@ -262,9 +264,13 @@ destroy_entity :: (entity : Entity) {
     }
     
     assert(is_not_destroyed(entity));
+    children := get_children(entity);
     info := get_info(entity);
     info.flags |= .PENDING_CLEAN;
     destroy_raw_entity(entity);
+    for children {
+        destroy_entity(resolve_ref(*it));
+    }
 }
 
 get_entity_at :: (index : s64) -> Entity {
@@ -323,39 +329,55 @@ immediate_destroy_entity :: (entity : Entity) {
     immediate_destroy_raw_entity(entity);
 }
 
-slz_entity :: (entity : Entity) -> string {
+slz_single_entity :: (entity : Entity) -> string {
+    
     EntityStorageContext();
-
     assert(is_not_cleaned(entity));
+    
+    entity_section :: (builder : *String_Builder, entity : Entity) {
+        ref := make_ref(entity);
+        print_to_builder(builder, "\n@Entity(%)\n", ref.uuid);
+    }
+
+    component_section :: (builder : *String_Builder, entity : Entity, arena : *Component_Arena_Base) {
+        print_to_builder(builder, "\n@Component(%)\n", arena.type.name);
+        print_to_builder(builder, "%\n", arena.slz(entity));
+    }
+
     builder : String_Builder;
     
-    ref := make_ref(entity);
-    append(*builder, "\n@Entity(");
-    append(*builder, tprint("%", ref.uuid));
-    append(*builder, ")\n");
-
-    append(*builder, "\n@Component(");
-    append(*builder, state.info_arena.type.name);
-    append(*builder, ")\n");
-    append(*builder, state.info_arena.slz(entity));
+    entity_section(*builder, entity);
+    component_section(*builder, entity, *state.info_arena);
 
     for state.component_arenas {
         if !it.has(entity)
         then continue;
-        append(*builder, "\n@Component(");
-        append(*builder, it.type.name);
-        append(*builder, ")\n");
-        append(*builder, it.slz(entity));
+        component_section(*builder, entity, it);
     }
+
     return builder_to_string(*builder);
+}
+
+slz_entity :: (builder : *String_Builder, entity : Entity) {
+    append(builder, slz_single_entity(entity));
+    children := get_children(entity);
+    if !children.count
+    then return;
+    for children {
+        child := resolve_ref(*it);
+        if is_not_destroyed(child)
+        then slz_entity(builder, child);
+    }
+    return;
 }
 
 dlz_entity :: (s : string) -> Entity {
     EntityStorageContext();
     
-    entity  : Entity = NULL_ENTITY;
-    builder : String_Builder;
-    arena   : *Component_Arena_Base;
+    first_entity : Entity = NULL_ENTITY;
+    entity       : Entity = NULL_ENTITY;
+    builder      : String_Builder;
+    arena        : *Component_Arena_Base;
     
     while 1 {
         line, found := consume_next_line(*s);
@@ -365,10 +387,19 @@ dlz_entity :: (s : string) -> Entity {
         // #TODO_asuarez check if an entity was created and decide if it is a children entity.
 
         if begins_with(line, "@Entity(") {
+
+            if arena != null {
+                arena.dlz(entity, builder_to_string(*builder ,,temp));
+                arena = null;
+                reset(*builder);
+            }            
+            
             expected_uuid := slice(line, 8, line.count-9 ,,temp);
             uuid, success := string_to_int(expected_uuid, 10, u64);
             assert(success && uuid != 0);
             entity = create_entity();
+            if first_entity == NULL_ENTITY
+            then first_entity = entity;
             make_ref(entity, uuid);
             continue;
         }
@@ -377,6 +408,7 @@ dlz_entity :: (s : string) -> Entity {
 
             // Check if we have been storing component lines.
             // If it is the case we add it to the entity and reset the builder.
+            
             if arena != null {
                 arena.dlz(entity, builder_to_string(*builder ,,temp));
                 arena = null;
@@ -385,7 +417,7 @@ dlz_entity :: (s : string) -> Entity {
 
             // If it is the end of the line we're done.
             if !found
-            then return entity;
+            then return first_entity;
 
             // If not, store next the component type.
             assert(entity != NULL_ENTITY);
