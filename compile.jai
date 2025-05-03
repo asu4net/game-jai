@@ -136,7 +136,7 @@ SCOPE
                             Component_Info :: struct {
                                 type_name      : string;
                                 max            : s64;
-                                init_order     : s64;
+                                init_order     : s64 = 30100;
                                 cpy_proc := "null";
                                 rem_proc := "null";
                                 add_proc := "null";
