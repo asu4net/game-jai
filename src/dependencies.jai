@@ -42,9 +42,8 @@
 }
 
 // Entity
-#load "entity/entity.jai";
-#load "entity/view.jai";
-#load "entity/components.jai";
+#load "entity/entity_storage.jai";
+#load "entity/game_components.jai";
 
 // Graphics
 #load "graphics/window.jai";

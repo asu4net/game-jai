@@ -1,6 +1,38 @@
+// @Info:
+// @InitOrder Range here: 0 - 10000
+
+// @Note:
+
+// If you want initialize a component before those, you can use negative
+// numbers, since the native components start at @InitOrder(0).  
+
+// Even if, for some reason, you don't want to use this components, the 
+// entity storage calls procedures from this file, so if you remove it 
+// it won't compile. This does not mean the entities add these components
+// by default, as occurs with the Entity_Info. So if you want to save some
+// memory, just set the @Max note to whatever you want. (I think 0 is not
+// an option at this point, I will eventually fix that).
+
+// Alex - 03/05/2025
+
 // ------------------------------------------------
 
-Node_Component :: struct @Component @InitOrder(-1000000) @Max(100) {
+Tag_Component :: struct @Component @InitOrder(0) @Max(MAX_ENTITIES) {
+    text : string;
+}
+
+on_copy_tag_component :: (e : Entity, dst : *Tag_Component, src : *Tag_Component) {
+    dst.* = src.*;
+    dst.text = copy_string(src.text);
+} @CopyComponentCallback
+
+on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
+    free(cmp.text);
+} @RemoveComponentCallback
+
+// ------------------------------------------------
+
+Node_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
     parent   : Entity_Ref;
     children : [..] Entity_Ref;
 }
@@ -115,7 +147,7 @@ compute_enabled_iterative :: (ref : Entity_Ref) {
 
 // ------------------------------------------------
 
-Transform2D_Component :: struct @Component @InitOrder(-900000) @Max(100) {
+Transform2D_Component :: struct @Component @InitOrder(200) @Max(MAX_ENTITIES) {
     pos := ZERO_2D;
     scl := ONE_2D;
     ang := (0.0).(f32);
@@ -155,112 +187,4 @@ get_matrix :: (entity : Entity) -> m4 {
     }
 
     return make_transform(child_pos, child_ang, child_scl);
-}
-
-// ------------------------------------------------
-
-Tag_Component :: struct @Component @InitOrder(-450000) @Max(MAX_ENTITIES) {
-    text : string;
-}
-
-on_copy_tag_component :: (e : Entity, dst : *Tag_Component, src : *Tag_Component) {
-    dst.* = src.*;
-    dst.text = copy_string(src.text);
-} @CopyComponentCallback
-
-on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
-    free(cmp.text);
-} @RemoveComponentCallback
-
-// ------------------------------------------------
-
-Sprite_Component :: struct @Component @Max(100) {
-    visible  := true;
-    item     := "";
-    tint     := WHITE;       @Color
-    size     := ONE_2D;
-    tiling   := ONE_2D;
-    blend    := Blend.ALPHA;
-    flip_x   := false;
-    flip_y   := false;
-    autosize := true;
-    rect     := Rect.{};     @JsonIgnore @EditorReadOnly 
-}
-
-on_copy_sprite_component :: (e : Entity, dst : *Sprite_Component, src : *Sprite_Component) {
-    dst.* = src.*;
-    dst.item = copy_string(src.item);
-} @CopyComponentCallback
-
-on_remove_sprite_component :: (e : Entity, cmp : *Sprite_Component) {
-    free(cmp.item);
-} @RemoveComponentCallback
-
-draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
-
-    using transform := get_component(Transform2D_Component, entity);
-    using sprite    := get_component(Sprite_Component,      entity);
-    
-    if !visible then return;
-
-    if has_component(Blink_Component, entity)
-    then update_blink(get_component(Blink_Component, entity), *tint);
-    
-    tex := ifx item.count > 0 then *sheet.tex else null;
-    flags := ifx item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
-    
-    if autosize then flags |= .AUTOSIZE;
-    if flip_x   then flags |= .FLIP_X;
-    if flip_y   then flags |= .FLIP_Y;
-
-    // try find the item
-    if tex && (rect.width == 0 || rect.height == 0) {
-        assert(tex.id != 0);
-        r, found := table_find(*sheet.rects, item);
-        if found rect = r;
-    }
-    
-    draw_quad(get_matrix(entity), tex, tiling, size, blend, rect, tint, entity, flags);        
-}
-
-// ------------------------------------------------
-
-Text_Component :: struct @Component @Max(100) {
-    visible := true;
-    text    := "placeholder!";
-    blend   := Blend.ALPHA;
-    tint    := WHITE;          @Color
-}
-
-draw_text :: (using transform : Transform2D_Component, using t : Text_Component, font : *Font, id : u32 = 0) {    
-    if !visible then return;
-    draw_gui_text(pos, ang, scl, text, font, blend, tint, id); 
-}
-
-// ------------------------------------------------
-
-Blink_Component :: struct @Component @Max(100) {
-    enabled    := false;
-    start_tint := WHITE;        @Color
-    end_tint   := RED;          @Color
-    duration   := (0.5).(f32);
-    progress   := (0.0).(f32);
-}
-
-update_blink :: (using blink : *Blink_Component, tint : *v4) {
-    if enabled && tint {
-
-        progress += delta_seconds();
-        progress = clamp(progress, 0.0, duration);
-        normalized_progress := progress / duration;
-        tint.* = linear_interp(normalized_progress, start_tint, end_tint); 
-            
-        if normalized_progress == 1 {
-                
-            new_target := start_tint;
-            start_tint = end_tint;
-            end_tint   = new_target;
-            progress   = 0;
-        }
-    } 
 }
