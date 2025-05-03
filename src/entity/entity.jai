@@ -193,7 +193,7 @@ deinit_entity_storage :: () {
     for 0..entity_count()-1 {
         e := get_entity_at(it);
         if is_not_destroyed(e)
-        then  destroy_entity(e);
+        then destroy_entity(e);
     }
 
     clean_destroyed_entities();
@@ -263,14 +263,27 @@ destroy_entity :: (entity : Entity) {
         array_add(*state.to_clean, entity);
     }
     
-    assert(is_not_destroyed(entity));
-    children := get_children(entity);
-    info := get_info(entity);
-    info.flags |= .PENDING_CLEAN;
-    destroy_raw_entity(entity);
-    for children {
-        destroy_entity(resolve_ref(*it));
+    try_mark_for_clean :: (entity : Entity) -> success : bool {
+        if is_not_cleaned(entity) {
+            info := get_info(entity);
+            info.flags |= .PENDING_CLEAN;
+            return true;
+        }
+        return false;
     }
+
+    mark_for_clean_recursive :: (entity : Entity) {
+        success := try_mark_for_clean(entity);
+        if !success
+        then return;
+        children := get_children(entity);
+        for children {
+            mark_for_clean_recursive(resolve_ref(*it));
+        }
+    }
+
+    destroy_raw_entity(entity);
+    mark_for_clean_recursive(entity);
 }
 
 get_entity_at :: (index : s64) -> Entity {
@@ -324,9 +337,15 @@ immediate_destroy_entity :: (entity : Entity) {
         push_back(*state.free_queue, entity);
     }
 
+    children := array_copy(get_children(entity) ,,temp);
+    
     rem_all_components(entity);
     rem_info(entity);
     immediate_destroy_raw_entity(entity);
+
+    for children {
+        immediate_destroy_entity(resolve_ref(*it));
+    }
 }
 
 slz_single_entity :: (entity : Entity) -> string {
