@@ -14,8 +14,15 @@
 	"children": [
 		{
 			"uuid": 1137526400306752306
+		},{
+			"uuid": 8573290160196164914
 		}
 	]
+}
+
+@Component(Tag_Component)
+{
+	"text": "player"
 }
 
 @Component(Transform2D_Component)
@@ -29,11 +36,6 @@
 		"y": 1
 	},
 	"ang": 0
-}
-
-@Component(Tag_Component)
-{
-	"text": "player"
 }
 
 @Component(Sprite_Component)
@@ -73,10 +75,32 @@
 		"uuid": 13558330354512883500
 	},
 	"children": [
+		
 	]
 }
 
 @Component(Tag_Component)
 {
 	"text": "aaa"
+}
+
+@Entity(8573290160196164914)
+
+@Component(Entity_Info)
+{
+	"flags": "LOCAL_ENABLED | ENABLED"
+}
+
+@Component(Node_Component)
+{
+	"parent": {
+		"uuid": 13558330354512883500
+	},
+	"children": [
+	]
+}
+
+@Component(Tag_Component)
+{
+	"text": "bbb"
 }

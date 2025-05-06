@@ -150,6 +150,7 @@ init_entity_storage :: () {
     init(*state.info_arena, MAX_ENTITIES, cpy_proc = copy_info_proc, add_proc = null, rem_proc = null);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
     state.uuid_seed = current_time_monotonic().low;
+    random_seed(state.uuid_seed);
     init(*state.free_queue, MAX_ENTITIES);
     
     for 0..MAX_ENTITIES {
