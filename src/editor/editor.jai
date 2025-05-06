@@ -232,16 +232,23 @@ save_prefab :: () {
 editor_draw_entity :: (entity : Entity) {
         EntityStorageContext();
         
-        state.info_arena.drw(entity);
-        editor_draw_separator();
-        editor_draw_spacing();
+        ignore_info := editor_should_ignore_struct(state.info_arena.type);
+        
+        if !ignore_info {
+            state.info_arena.drw(entity);
+            editor_draw_separator();
+            editor_draw_spacing();
+        } 
 
         for state.component_arenas {
             if !it.has(entity)
             then continue;
-            it.drw(entity);
-            editor_draw_separator();
-            editor_draw_spacing();
+            ignore_all := editor_should_ignore_struct(it.type);
+            if !ignore_all {
+                it.drw(entity);
+                editor_draw_separator();
+                editor_draw_spacing();
+            }
         }
 
         if editor_draw_centered_button("Add Component") {

@@ -121,7 +121,6 @@ Entity_Storage :: struct {
     count       : s64;
     initialized : bool;
     
-    // @Info: Info_Component dependant.
     info_arena  : Component_Arena(Entity_Info);
     uuid_seed   : u64;
     uuid_table  : Table(u64, Entity);

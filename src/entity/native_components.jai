@@ -17,22 +17,7 @@
 
 // ------------------------------------------------
 
-Tag_Component :: struct @Component @InitOrder(0) @Max(MAX_ENTITIES) {
-    text : string;
-}
-
-on_copy_tag_component :: (e : Entity, dst : *Tag_Component, src : *Tag_Component) {
-    dst.* = src.*;
-    dst.text = copy_string(src.text);
-} @CopyComponentCallback
-
-on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
-    free(cmp.text);
-} @RemoveComponentCallback
-
-// ------------------------------------------------
-
-Node_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
+Node_Component :: struct @Component @EditorIgnore @InitOrder(0) @Max(MAX_ENTITIES) {
     parent   : Entity_Ref;
     children : [..] Entity_Ref;
 }
@@ -144,6 +129,21 @@ compute_enabled_iterative :: (ref : Entity_Ref) {
         }
     }
 }
+
+// ------------------------------------------------
+
+Tag_Component :: struct @Component @EditorIgnore @InitOrder(100) @Max(MAX_ENTITIES) {
+    text : string;
+}
+
+on_copy_tag_component :: (e : Entity, dst : *Tag_Component, src : *Tag_Component) {
+    dst.* = src.*;
+    dst.text = copy_string(src.text);
+} @CopyComponentCallback
+
+on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
+    free(cmp.text);
+} @RemoveComponentCallback
 
 // ------------------------------------------------
 

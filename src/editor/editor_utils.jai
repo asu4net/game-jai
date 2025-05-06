@@ -19,40 +19,44 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
         case STRUCT;
             info_struct := cast(*Type_Info_Struct) info;
             tree_opened := false;
-            if name_c
-            then tree_opened = ImGui.TreeNode(name_c, "%: %", name, info_struct.name);
-            else tree_opened = ImGui.TreeNode(to_c_string(info_struct.name ,,temp));
-            if tree_opened {
-                for member: info_struct.members {
-                    ignore : bool;
-                    is_color : bool;
-                    for note: member.notes {
-	                	if note == "EditorIgnore" {
-                            ignore = true;
-                        }
-                        if note == "Color" {
-                            is_color = true;
-                        }
-	                }
-                    if !ignore {
-                        member_data := data + member.offset_in_bytes;
-                        if member.type == type_info(v2) {
-                            editor_draw_drag_vector2(member.name, member_data, ZERO_2D, 0.1);
-                        } else if member.type == type_info(v3) {
-                            editor_draw_drag_vector3(member.name, member_data, ZERO_3D, 0.1);
-                        } else if member.type == type_info(v4) {
-                            if !is_color {
-                                editor_draw_drag_vector4(member.name, member_data, ZERO_4D, 0.1);
-                            } else {
-                                editor_draw_color_palette(member.name, member_data);
+            ignore_all := editor_should_ignore_struct(info);
+            if !ignore_all {
+                if name_c
+                then tree_opened = ImGui.TreeNode(name_c, "%: %", name, info_struct.name);
+                else tree_opened = ImGui.TreeNode(to_c_string(info_struct.name ,,temp));
+                if tree_opened {
+                    for member: info_struct.members {
+                        ignore : bool;
+                        is_color : bool;
+                        for note: member.notes {
+                            if note == "EditorIgnore" {
+                                ignore = true;
                             }
-                        } else {
-                            editor_draw_property(temp_c_string(member.name), member_data, member.type);
+                            if note == "Color" {
+                                is_color = true;
+                            }
+                        }
+                        if !ignore {
+                            member_data := data + member.offset_in_bytes;
+                            if member.type == type_info(v2) {
+                                editor_draw_drag_vector2(member.name, member_data, ZERO_2D, 0.1);
+                            } else if member.type == type_info(v3) {
+                                editor_draw_drag_vector3(member.name, member_data, ZERO_3D, 0.1);
+                            } else if member.type == type_info(v4) {
+                                if !is_color {
+                                    editor_draw_drag_vector4(member.name, member_data, ZERO_4D, 0.1);
+                                } else {
+                                    editor_draw_color_palette(member.name, member_data);
+                                }
+                            } else {
+                                editor_draw_property(temp_c_string(member.name), member_data, member.type);
+                            }
                         }
                     }
+                    ImGui.TreePop();
                 }
-                ImGui.TreePop();
             }
+            
         case ARRAY;
             info_array := cast(*Type_Info_Array) info;
             array_count, array_data := get_array_count_and_data(data, info_array);
@@ -272,6 +276,16 @@ editor_draw_centered_button :: (name: string, alignment : f32 = 0.5) -> bool {
     if off > 0
     then ImGui.SetCursorPosX(ImGui.GetCursorPosX() + off);
     return ImGui.Button(to_c_string(name ,,temp));
+}
+
+editor_should_ignore_struct :: (t : *Type_Info) -> bool {
+    assert(t.type == .STRUCT);
+    info_struct := t.(*Type_Info_Struct);
+    for info_struct.notes {
+        if it == "EditorIgnore"
+        then return true;
+    }
+    return false;
 }
 
 #scope_file
