@@ -1,14 +1,17 @@
 #if IMGUI {
 
 ImGuiManager :: struct {
-    ctx : *ImGui.ImGuiContext;
+    ctx       : *ImGui.ImGuiContext;
+    draw_proc : IMGUI_DRAW_PROC;
 }
 
 #add_context imgui : ImGuiManager;
 
-init_imgui :: () {
+init_imgui :: (imgui_draw_proc : IMGUI_DRAW_PROC = null) {
     
     using context.imgui;
+    draw_proc = imgui_draw_proc;
+
     assert(ctx == null);
     ctx = ImGui.CreateContext();
     
@@ -46,7 +49,7 @@ init_imgui :: () {
 
 IMGUI_DRAW_PROC :: #type ();
 
-draw_imgui :: (draw_proc : IMGUI_DRAW_PROC = null) {
+draw_imgui :: () {
     assert(context.window.handle != null);
     
     ImGui_ImplSdl_NewFrame(context.window.handle);
@@ -92,7 +95,8 @@ draw_imgui :: (draw_proc : IMGUI_DRAW_PROC = null) {
         case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
     }
     
-    if draw_proc draw_proc();
+    if context.imgui.draw_proc
+    then context.imgui.draw_proc();
 
     ImGui.End(); // Dockspace Window
     ImGui.Render();

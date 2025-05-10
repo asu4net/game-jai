@@ -44,6 +44,7 @@
 // Entity
 #load "entity/entity_storage.jai";
 #load "entity/game_components.jai";
+#load "entity/game_systems.jai";
 
 // Graphics
 #load "graphics/window.jai";

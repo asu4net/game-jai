@@ -1,15 +1,18 @@
 Window :: struct {
-    done    : bool;
-    handle  : *SDL_Window;
-    width   : s32;
-    height  : s32;    
-    gl_ctx  : SDL_GLContext;
+    done       : bool;
+    handle     : *SDL_Window;
+    width      : s32;
+    height     : s32;    
+    gl_ctx     : SDL_GLContext;
+    key_states : [] bool;
 }
 
 #add_context window: Window;
 
 init_window :: (name :string = "the window", w: s32 = 1280, h: s32 = 720) {
     using context.window;
+    key_states = NewArray(322, bool);
+    
     assert(handle == null);
     
     width  = w;
@@ -49,6 +52,7 @@ swap_buffers :: () {
 
 deinit_window :: () {
     using context.window;
+    array_reset(*key_states);
     assert(handle != null);
     SDL_DestroyWindow(handle);
     SDL_Quit();
@@ -62,17 +66,17 @@ process_window_events :: () {
 
     using context.window;
     event : SDL_Event;
-    
+
     while SDL_PollEvent(*event) {
         
         #if IMGUI then process_imgui_sdl_events(*event);
         
         if event.type == {
-            
             case SDL_KEYUP;
             {
-                if event.key.keysym.sym == SDLK_ESCAPE then {
-                    done = true;
+                #if EDITOR {
+                    if event.key.keysym.sym == SDLK_ESCAPE 
+                    then done = true;
                 }
             }
             
@@ -88,4 +92,6 @@ process_window_events :: () {
             }
         }
     }
+
+
 }

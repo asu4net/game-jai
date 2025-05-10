@@ -2,49 +2,105 @@
 
 GAME_NAME :: "Game";
 
-sheet : Spritesheet;
-
 main :: () {
     
     using context.window;
+    
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
     init_window(GAME_NAME);
     defer deinit_window();
-
+    
     init_draw2d();
     defer deinit_draw2d();
     
     #if IMGUI {
-        draw_imgui_proc : IMGUI_DRAW_PROC;
-        init_imgui();
+        #if EDITOR 
+        then init_imgui(imgui_draw_proc = draw_editor); 
+        else init_imgui();
         defer deinit_imgui();
-    }
-    
-    #if EDITOR {
-        draw_imgui_proc = draw_editor;
     }
 
     init_entity_storage();
     defer deinit_entity_storage();
-    
-    init(*sheet);
-    defer deinit(*sheet);
 
-    while !done {
+    init_entities2d();
+    defer deinit_entities2d();
+
+    while !done {   
+
+        clear_screen();
         time_step();
         process_window_events();
-        clear_screen();
-        draw2d_begin(.{width, height});
-        view := get_entity_view(Transform2D_Component, Sprite_Component);
-        for entity : view {
-            draw_sprite_entity(entity, *sheet);
+        
+        #if EDITOR update_frame_by_frame_mode();
+        
+        if can_update() {
+            // Logic.
         }
-        draw2d_end();
-        #if EDITOR draw_imgui(draw_imgui_proc);
+        
+        // Draw.
+        draw_entities2d(width, height);
+        #if IMGUI draw_imgui();
         swap_buffers();
+
         clean_destroyed_entities();
         reset_temporary_storage();
     }
 }
+
+#scope_file
+
+can_update :: inline () -> bool {
+    #if EDITOR 
+    then return frame_by_frame_mode.next_frame;
+    else return true;
+}
+
+#if EDITOR {
+
+FrameByFrameMode :: struct {
+    frame_by_frame         : bool;
+    frame_by_frame_pressed : bool;
+    next_frame             : bool;
+    next_frame_pressed     : bool;
+}
+
+frame_by_frame_mode : FrameByFrameMode;
+
+update_frame_by_frame_mode :: () {
+
+    using frame_by_frame_mode;
+    //input.is_key_pressed(input.KEY_LEFT_CONTROL) && input.is_key_pressed(input.KEY_P)
+    if false {
+
+    if !frame_by_frame_pressed {
+            frame_by_frame_pressed = true;
+            frame_by_frame =! frame_by_frame;
+        }
+
+    } else {
+        frame_by_frame_pressed = false;
+    }
+
+    if !frame_by_frame {
+        next_frame = true;
+        return;
+    }
+
+    next_frame = false;
+        
+    // input.is_key_pressed(input.KEY_LEFT_CONTROL) && input.is_key_pressed(input.KEY_RIGHT)
+
+    if false {
+        if !next_frame_pressed {
+            next_frame_pressed = true;
+            next_frame = true;
+        }
+    } else {
+        next_frame_pressed = false;
+    }
+}
+
+} // #if EDITOR

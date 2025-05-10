@@ -130,9 +130,15 @@ compute_enabled_iterative :: (ref : Entity_Ref) {
     }
 }
 
+Prefab_Component :: struct @Component @EditorIgnore @InitOrder(100) @Max(MAX_ENTITIES) {
+    #if EDITOR {
+        
+    }
+}
+
 // ------------------------------------------------
 
-Tag_Component :: struct @Component @EditorIgnore @InitOrder(100) @Max(MAX_ENTITIES) {
+Tag_Component :: struct @Component @EditorIgnore @InitOrder(200) @Max(MAX_ENTITIES) {
     text : string;
 }
 
@@ -147,7 +153,7 @@ on_remove_tag_component :: (e : Entity, cmp : *Tag_Component) {
 
 // ------------------------------------------------
 
-Transform2D_Component :: struct @Component @InitOrder(200) @Max(MAX_ENTITIES) {
+Transform2D_Component :: struct @Component @InitOrder(300) @Max(MAX_ENTITIES) {
     pos := ZERO_2D;
     scl := ONE_2D;
     ang := (0.0).(f32);
