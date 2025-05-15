@@ -129,15 +129,15 @@ Mouse_Button :: enum {
         if button == {
             case .LEFT;
             {
-                return xx (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
+                return xx (Win32.GetAsyncKeyState(VK_LBUTTON) & 0x8000);
             }
             case .RIGHT;
             {
-                return xx (GetAsyncKeyState(VK_RBUTTON) & 0x8000);
+                return xx (Win32.GetAsyncKeyState(VK_RBUTTON) & 0x8000);
             }
             case .MIDDLE;
             {
-                return xx (GetAsyncKeyState(VK_MBUTTON) & 0x8000);
+                return xx (Win32.GetAsyncKeyState(VK_MBUTTON) & 0x8000);
             }
             case;
             return false;

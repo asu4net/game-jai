@@ -6,20 +6,6 @@
 	"flags": "LOCAL_ENABLED | ENABLED"
 }
 
-@Component(Node_Component)
-{
-	"parent": {
-		"uuid": 0
-	},
-	"children": [
-		{
-			"uuid": 0
-		},{
-			"uuid": 0
-		}
-	]
-}
-
 @Component(Tag_Component)
 {
 	"text": "player"

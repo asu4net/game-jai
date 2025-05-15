@@ -1,27 +1,5 @@
-ImDrawIdx :: ImGui.ImDrawIdx;
-
-UI_State :: struct {
-    ctx: *ImGui.ImGuiContext;
-
-    Time: float64 = 0.0;
-    MousePressed: [3]bool = .[false, false, false];
-    MouseWheel: float = 0.0;
-    FontTexture: GLuint = 0;
-    ShaderHandle: GLuint = 0;
-    VertHandle: GLuint = 0;
-    FragHandle: GLuint = 0;
-    AttribLocationTex: GLint = 0;
-    AttribLocationProjMtx: GLint = 0;
-    AttribLocationPosition: GLuint = 0;
-    AttribLocationUV: GLuint = 0;
-    AttribLocationColor: GLuint = 0;
-    VboHandle: GLuint = 0;
-    VaoHandle: GLuint = 0;
-    ElementsHandle: GLuint = 0;
-};
-
-ImGui_Impl_CreateContext :: (using ui_state: *UI_State) {
-    ctx = ImGui.CreateContext();
+ImGui_Impl_CreateContext :: () {
+    ui_state.ctx = ImGui.CreateContext();
 
     io := ImGui.GetIO();
     io.ConfigFlags_ |= .DockingEnable;
@@ -30,8 +8,11 @@ ImGui_Impl_CreateContext :: (using ui_state: *UI_State) {
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
 // If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
-ImGui_Impl_RenderDrawData :: (using ui_state: *UI_State, draw_data: *ImGui.ImDrawData) {
+ImGui_Impl_RenderDrawData :: () {
     // @@ Watch out, we don't have a context here!
+    using ui_state;
+
+    draw_data := ImGui.GetDrawData();
 
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
     io := ImGui.GetIO();
@@ -95,7 +76,7 @@ ImGui_Impl_RenderDrawData :: (using ui_state: *UI_State, draw_data: *ImGui.ImDra
             glBufferData(GL_ARRAY_BUFFER, cmd_list.VtxBuffer.Size * size_of(ImGui.ImDrawVert), cmd_list.VtxBuffer.Data, GL_STREAM_DRAW);
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementsHandle);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, cmd_list.IdxBuffer.Size * size_of(ImDrawIdx), cmd_list.IdxBuffer.Data, GL_STREAM_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, cmd_list.IdxBuffer.Size * size_of(ImGui.ImDrawIdx), cmd_list.IdxBuffer.Data, GL_STREAM_DRAW);
 
             for cmd_i: 0..cmd_list.CmdBuffer.Size-1 {
                 pcmd := *cmd_list.CmdBuffer.Data[cmd_i];
@@ -146,7 +127,8 @@ ImGui_Impl_SetClipboardText :: (data: *void, text: *u8) #c_call {
     }
 }
 
-ImGui_SetMouseState :: (using ui_state: *UI_State, left: bool, middle: bool, right: bool, wheel: float) {
+ImGui_SetMouseState :: (left: bool, middle: bool, right: bool, wheel: float) {
+    using ui_state;
     MousePressed[0] = left;
     MousePressed[1] = middle;
     MousePressed[2] = right;
@@ -154,6 +136,7 @@ ImGui_SetMouseState :: (using ui_state: *UI_State, left: bool, middle: bool, rig
 }
 
 ImGui_Impl_KeyCodeToImGuiKey :: (keycode : Input.Key_Code) -> ImGui.Key {
+    using ui_state;
     using Input.Key_Code;
     if keycode == {
         case TAB;           return .Tab;
@@ -269,8 +252,9 @@ ImGui_Impl_KeyCodeToImGuiKey :: (keycode : Input.Key_Code) -> ImGui.Key {
 // - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
 // - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
 // Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-ImGui_Impl_ProcessEvent :: (using ui_state: *UI_State, event: Input.Event) -> bool {
+ImGui_Impl_ProcessEvent :: (event: Input.Event) -> bool {
     using Input;
+    using ui_state;
     io := ImGui.GetIO();
     if event.type == {
         // TODO: get mouse move events into jai's input handling code
@@ -283,7 +267,6 @@ ImGui_Impl_ProcessEvent :: (using ui_state: *UI_State, event: Input.Event) -> bo
         case. KEYBOARD;
             if event.key_code == {
                 case .MOUSE_BUTTON_LEFT;   
-                    print("Mouse Left Button state: % \n", event.key_pressed != 0);
                     MousePressed[0] = event.key_pressed != 0;
                 case .MOUSE_BUTTON_MIDDLE; 
                     MousePressed[1] = event.key_pressed != 0;
@@ -308,7 +291,8 @@ ImGui_Impl_ProcessEvent :: (using ui_state: *UI_State, event: Input.Event) -> bo
     return false;
 }
 
-ImGui_Impl_CreateFontsTexture :: (using ui_state: *UI_State) -> bool {
+ImGui_Impl_CreateFontsTexture :: () -> bool {
+    using ui_state;
     io := ImGui.GetIO();
     assert(io != null);
     assert(io.Fonts != null);
@@ -347,8 +331,9 @@ ImGui_Impl_CreateFontsTexture :: (using ui_state: *UI_State) -> bool {
     return true;
 }
 
-ImGui_Impl_CreateDeviceObjects :: (using ui_state: *UI_State) -> bool {
+ImGui_Impl_CreateDeviceObjects :: () -> bool {
     // Backup GL state
+    using ui_state;
     last_texture, last_array_buffer, last_vertex_array: GLuint;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, xx *last_texture);
     glGetIntegerv(GL_ARRAY_BUFFER_BINDING, xx *last_array_buffer);
@@ -421,7 +406,7 @@ ImGui_Impl_CreateDeviceObjects :: (using ui_state: *UI_State) -> bool {
     glVertexAttribPointer(AttribLocationUV, 2, GL_FLOAT, GL_FALSE, size_of(ImGui.ImDrawVert), xx 8);
     glVertexAttribPointer(AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, size_of(ImGui.ImDrawVert), xx 16);
 
-    ImGui_Impl_CreateFontsTexture(ui_state);
+    ImGui_Impl_CreateFontsTexture();
 
     // Restore modified GL state
     glBindTexture(GL_TEXTURE_2D, last_texture);
@@ -432,7 +417,8 @@ ImGui_Impl_CreateDeviceObjects :: (using ui_state: *UI_State) -> bool {
 }
 
 
-ImGui_Impl_InvalidateDeviceObjects :: (using ui_state: *UI_State) {
+ImGui_Impl_InvalidateDeviceObjects :: () {
+    using ui_state;
     if FontTexture {
         glDeleteTextures(1, *FontTexture);
         ImGui.GetIO().Fonts.TexID = 0;
@@ -440,7 +426,8 @@ ImGui_Impl_InvalidateDeviceObjects :: (using ui_state: *UI_State) {
     }
 }
 
-ImGui_Impl_Init :: (using ui_state: *UI_State, native_window_handle: *void) -> bool {
+ImGui_Impl_Init :: (native_window_handle: *void) -> bool {
+    using ui_state;
     assert(ctx != null, "must call create context");
     ImGui.SetCurrentContext(ctx);
 
@@ -455,19 +442,20 @@ ImGui_Impl_Init :: (using ui_state: *UI_State, native_window_handle: *void) -> b
 
     // TODO: Cursors
 
-    ImGui_Impl_CreateDeviceObjects(ui_state);
+    ImGui_Impl_CreateDeviceObjects();
 
     return true;
 }
 
-ImGui_Impl_Shutdown :: (ui_state: *UI_State) {
+ImGui_Impl_Shutdown :: () {
+    using ui_state;
     ImGui.SetCurrentContext(ui_state.ctx);
-    ImGui_Impl_InvalidateDeviceObjects(ui_state);
+    ImGui_Impl_InvalidateDeviceObjects();
     ImGui.DestroyContext();
     ui_state.ctx = null;
 }
 
-ImGui_Impl_NewFrame :: (ui_state: *UI_State, display_width: s32, display_height: s32) {
+ImGui_Impl_NewFrame :: (display_width: s32, display_height: s32) {
     using ui_state;
 
     io := ImGui.GetIO();
@@ -508,3 +496,26 @@ ImGui_Impl_NewFrame :: (ui_state: *UI_State, display_width: s32, display_height:
     // Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
     ImGui.NewFrame();
 }
+
+#scope_file
+
+UI_State :: struct {
+    ctx: *ImGui.ImGuiContext;
+    Time: float64 = 0.0;
+    MousePressed: [3]bool = .[false, false, false];
+    MouseWheel: float = 0.0;
+    FontTexture: GLuint = 0;
+    ShaderHandle: GLuint = 0;
+    VertHandle: GLuint = 0;
+    FragHandle: GLuint = 0;
+    AttribLocationTex: GLint = 0;
+    AttribLocationProjMtx: GLint = 0;
+    AttribLocationPosition: GLuint = 0;
+    AttribLocationUV: GLuint = 0;
+    AttribLocationColor: GLuint = 0;
+    VboHandle: GLuint = 0;
+    VaoHandle: GLuint = 0;
+    ElementsHandle: GLuint = 0;
+};
+
+ui_state : UI_State;

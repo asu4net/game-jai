@@ -2,7 +2,6 @@
 
 ImGuiManager :: struct {
     draw_proc : IMGUI_DRAW_PROC;
-    ui_state  : UI_State;
 }
 
 #add_context imgui : ImGuiManager;
@@ -12,7 +11,7 @@ init_imgui :: (imgui_draw_proc : IMGUI_DRAW_PROC = null) {
     using context.imgui;
     draw_proc = imgui_draw_proc;
 
-    ImGui_Impl_CreateContext(*ui_state);
+    ImGui_Impl_CreateContext();
     
     io := ImGui.GetIO();
 
@@ -45,19 +44,19 @@ init_imgui :: (imgui_draw_proc : IMGUI_DRAW_PROC = null) {
     Colors[xx ImGui.Col.Button]             = .{ 0.356, 0.356, 0.416, 1.000 };
     //Colors[xx ImGui.Col.ModalWindowDimBg]   = .{ 0.000, 0.000, 0.000, 0.000 };
 
-    ImGui_Impl_Init(*ui_state, context.window.handle);
+    ImGui_Impl_Init(context.window.handle);
 }
 
 IMGUI_DRAW_PROC :: #type ();
 
 process_imgui_events :: inline (event : Input.Event) {
-    ImGui_Impl_ProcessEvent(*context.imgui.ui_state, event);
+    ImGui_Impl_ProcessEvent(event);
 }   
 
 draw_imgui :: () {
     assert(context.window.handle != null);
     using context.imgui;
-    ImGui_Impl_NewFrame(*ui_state, context.window.width, context.window.height);
+    ImGui_Impl_NewFrame(context.window.width, context.window.height);
     
     // Dockspace
     {
@@ -94,11 +93,11 @@ draw_imgui :: () {
     
     ImGui.End(); // Dockspace Window
     ImGui.Render();
-    ImGui_Impl_RenderDrawData(*context.imgui.ui_state, ImGui.GetDrawData());
+    ImGui_Impl_RenderDrawData();
 }
 
 deinit_imgui :: () {
-    ImGui_Impl_Shutdown(*context.imgui.ui_state);
+    ImGui_Impl_Shutdown();
 }
 
 } // #if IMGUI
