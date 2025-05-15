@@ -267,11 +267,11 @@ ImGui_Impl_ProcessEvent :: (event: Input.Event) -> bool {
         case. KEYBOARD;
             if event.key_code == {
                 case .MOUSE_BUTTON_LEFT;   
-                    MousePressed[0] = event.key_pressed != 0;
-                case .MOUSE_BUTTON_MIDDLE; 
-                    MousePressed[1] = event.key_pressed != 0;
+                    //MousePressed[0] = event.key_pressed != 0;
                 case .MOUSE_BUTTON_RIGHT;  
-                    MousePressed[2] = event.key_pressed != 0;
+                    //MousePressed[1] = event.key_pressed != 0;
+                case .MOUSE_BUTTON_MIDDLE; 
+                    //MousePressed[2] = event.key_pressed != 0;
                 case;
                     io.AddKeyEvent(io, .ImGuiMod_Ctrl,  (event.key_code == .CTRL));
                     io.AddKeyEvent(io, .ImGuiMod_Shift, (event.key_code == .SHIFT));
@@ -474,15 +474,10 @@ ImGui_Impl_NewFrame :: (display_width: s32, display_height: s32) {
     mx, my := get_client_mouse_pos();
     io.MousePos = .{xx mx, xx my};
 
-    /*
-    io.MouseDown[0] = MousePressed[0];      // If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-    io.MouseDown[1] = MousePressed[1];
-    io.MouseDown[2] = MousePressed[2];
-    */
-    
     io.MouseDown[0] = get_mouse_button(.LEFT);
-    io.MouseDown[1] = get_mouse_button(.MIDDLE);
-    io.MouseDown[2] = get_mouse_button(.RIGHT);
+    io.MouseDown[1] = get_mouse_button(.RIGHT);
+    io.MouseDown[2] = get_mouse_button(.MIDDLE);
+    //if (ImGui.IsMouseDown())
     
 
     io.MouseWheel = MouseWheel;
