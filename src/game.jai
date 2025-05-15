@@ -27,7 +27,7 @@ main :: () {
 
     init_entities2d();
     defer deinit_entities2d();
-
+    
     while !done {   
 
         clear_screen();

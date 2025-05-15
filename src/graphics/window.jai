@@ -1,9 +1,8 @@
 Window :: struct {
     done       : bool;
-    handle     : *SDL_Window;
+    handle     : *Window_Type;
     width      : s32;
     height     : s32;    
-    gl_ctx     : SDL_GLContext;
     key_states : [] bool;
 }
 
@@ -18,80 +17,139 @@ init_window :: (name :string = "the window", w: s32 = 1280, h: s32 = 720) {
     width  = w;
     height = h;
 
-    SDL_Init(SDL_INIT_VIDEO);
-    
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, xx SDL_GL_CONTEXT_PROFILE_CORE);
-    WINDOW_POS :: SDL_WINDOWPOS_UNDEFINED;
-    handle = SDL_CreateWindow(name.data, WINDOW_POS, WINDOW_POS, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
+    handle = create_window(w, h, name); 
     
     if !handle {
-        log_error("SDL Failed to create the window.");
+        log_error("Failed to create the window.");
         return;
     }
 
-    gl_ctx = SDL_GL_CreateContext(handle);
-
-    if !gl_ctx {
-        log_error("SDL Failed to create the OpenGL context.");
-        return;
-    }
-
-    SDL_GL_MakeCurrent(handle, gl_ctx);
-
-    gl_load(*gl, SDL_GL_GetProcAddress);
+    gl_create_context(handle, 4, 4, compatibility = false, debug = DEBUG);
+    gl_load(*gl);
     log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
     
+    #if DEBUG {
+        gl_enable_debug_output( break_on_error = true );
+        DumpGLErrors("context");
+    }
+
     set_clear_color(DARK_GRAY);
 }
 
 swap_buffers :: () {
     using context.window;
-    SDL_GL_SwapWindow(handle);
+
+    #if OS == .WINDOWS {
+        #import "Windows";
+        dc := GetDC(handle);
+        SwapBuffers(dc);
+    } else #if OS == .LINUX {
+        info := find_window_info(handle);
+        if (!info) || !info.specific.glx_window {
+            log_error("Simp: Attempt to swap_buffers on a previously unseen window!\n");
+            return;
+        }
+
+        glXSwapBuffers(x_global_display, info.specific.glx_window);
+    } else #if OS == .MACOS {
+        // On macOS, OpenGL buffer swapping is done on the context, not on the view.
+        // So we can only swap for the active window. (And you need to swap before switching to another view).
+        NSOpenGLContext.flushBuffer(the_gl_context);
+    } else #if OS == .ANDROID {
+        // I think it's gonna make more sense for display and surface to be on the specific window info, then
+        // we will have to get the window here like Linux does.
+        eglSwapBuffers(the_egl_display, the_egl_surface);
+    } else {
+        assert(false);
+    }
 } 
 
 deinit_window :: () {
     using context.window;
     array_reset(*key_states);
     assert(handle != null);
-    SDL_DestroyWindow(handle);
-    SDL_Quit();
-}
-
-get_time :: () -> f64 {
-    return SDL_GetTicks().(f64) / 1000.0;
 }
 
 process_window_events :: () {
 
     using context.window;
-    event : SDL_Event;
-
-    while SDL_PollEvent(*event) {
-        
-        #if IMGUI then process_imgui_sdl_events(*event);
-        
-        if event.type == {
-            case SDL_KEYUP;
-            {
-                #if EDITOR {
-                    if event.key.keysym.sym == SDLK_ESCAPE 
-                    then done = true;
-                }
-            }
-            
-            case SDL_WINDOWEVENT;
-            {
-                if event.window.event == SDL_WINDOWEVENT_CLOSE then {
-                    done = true;
-                }
-                else if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED then {
-                    width  = event.window.data1;
-                    height = event.window.data2;
-                }
-            }
-        }
+    Input.update_window_events();
+    
+    resizes := Input.get_window_resizes();
+    if resizes.count {
+        last := resizes[resizes.count - 1];
+        width  = last.width;
+        height = last.height;
     }
 
+    for Input.events_this_frame {
+        
+        if it.type == .QUIT then done = true;
 
+        if it.type == .KEYBOARD {
+            if it.key_pressed == 0 continue;
+
+            if it.key_code == .ESCAPE {
+                done = true;
+            }
+        }
+
+        #if IMGUI process_imgui_events(it);
+    }
+}
+
+get_time :: () -> float64 {
+    one_time_init(*is_get_seconds_initialized, init_get_seconds());
+    delta := current_time_monotonic() - get_seconds_base_time;
+    return to_float64_seconds(delta);
+}
+
+// Some input stuff, this should be in his own module.
+
+Mouse_Button :: enum {
+    LEFT;
+    RIGHT;
+    MIDDLE;
+}
+
+// Windows specific procedures
+
+#if OS == .WINDOWS {
+    
+    get_client_mouse_pos :: () -> (x: s32, y: s32) {
+        using context.window;
+        point: Win32.POINT;
+        Win32.GetCursorPos(*point);
+        Win32.ScreenToClient(handle, *point);
+        return point.x, point.y;
+    }
+
+    get_mouse_button :: (button : Mouse_Button) -> bool {
+        if button == {
+            case .LEFT;
+            {
+                return xx (GetAsyncKeyState(VK_LBUTTON) & 0x8000);
+            }
+            case .RIGHT;
+            {
+                return xx (GetAsyncKeyState(VK_RBUTTON) & 0x8000);
+            }
+            case .MIDDLE;
+            {
+                return xx (GetAsyncKeyState(VK_MBUTTON) & 0x8000);
+            }
+            case;
+            return false;
+        }
+    }
+}
+
+#scope_file
+
+is_get_seconds_initialized: s32;
+get_seconds_base_time: Apollo_Time;
+
+init_get_seconds :: () {
+    get_seconds_base_time = current_time_monotonic();
 }

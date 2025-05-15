@@ -1,8 +1,8 @@
 #if IMGUI {
 
 ImGuiManager :: struct {
-    ctx       : *ImGui.ImGuiContext;
     draw_proc : IMGUI_DRAW_PROC;
+    ui_state  : UI_State;
 }
 
 #add_context imgui : ImGuiManager;
@@ -12,8 +12,7 @@ init_imgui :: (imgui_draw_proc : IMGUI_DRAW_PROC = null) {
     using context.imgui;
     draw_proc = imgui_draw_proc;
 
-    assert(ctx == null);
-    ctx = ImGui.CreateContext();
+    ImGui_Impl_CreateContext(*ui_state);
     
     io := ImGui.GetIO();
 
@@ -45,15 +44,20 @@ init_imgui :: (imgui_draw_proc : IMGUI_DRAW_PROC = null) {
     Colors[xx ImGui.Col.FrameBg]            = .{ 0.100, 0.100, 0.100, 1.000 };
     Colors[xx ImGui.Col.Button]             = .{ 0.356, 0.356, 0.416, 1.000 };
     //Colors[xx ImGui.Col.ModalWindowDimBg]   = .{ 0.000, 0.000, 0.000, 0.000 };
+
+    ImGui_Impl_Init(*ui_state, context.window.handle);
 }
 
 IMGUI_DRAW_PROC :: #type ();
 
+process_imgui_events :: inline (event : Input.Event) {
+    ImGui_Impl_ProcessEvent(*context.imgui.ui_state, event);
+}   
+
 draw_imgui :: () {
     assert(context.window.handle != null);
-    
-    ImGui_ImplSdl_NewFrame(context.window.handle);
-    ImGui.NewFrame();
+    using context.imgui;
+    ImGui_Impl_NewFrame(*ui_state, context.window.width, context.window.height);
     
     // Dockspace
     {
@@ -83,34 +87,18 @@ draw_imgui :: () {
         assert(xx ImGui.GetIO().ConfigFlags_ & .DockingEnable);
 
         ImGui.DockSpace(ImGui.GetID("Dockspace"), size = ZERO_2D);
-    }
-
-    if ImGui.GetMouseCursor() == {
-        case .Arrow;         SDL_SetCursor(cursor_arrow);
-        case .TextInput;     SDL_SetCursor(cursor_text_input);
-        case .Hand;          SDL_SetCursor(cursor_move);
-        case .ResizeNS;      SDL_SetCursor(cursor_resize_ns);
-        case .ResizeEW;      SDL_SetCursor(cursor_resize_ew);
-        case .ResizeNESW;    SDL_SetCursor(cursor_resize_nesw);
-        case .ResizeNWSE;    SDL_SetCursor(cursor_resize_nwse);
-    }
+    }    
     
     if context.imgui.draw_proc
     then context.imgui.draw_proc();
-
+    
     ImGui.End(); // Dockspace Window
     ImGui.Render();
-    ImGui_ImplSdl_RenderDrawLists(ImGui.GetDrawData());
-}
-
-process_imgui_sdl_events :: (event: *SDL_Event) {
-    ImGui_ImplSdl_ProcessEvent(event);
+    ImGui_Impl_RenderDrawData(*context.imgui.ui_state, ImGui.GetDrawData());
 }
 
 deinit_imgui :: () {
-    assert(context.imgui.ctx != null);
-    ImGui_ImplSdl_Shutdown();
-    ImGui.DestroyContext(context.imgui.ctx);
+    ImGui_Impl_Shutdown(*context.imgui.ui_state);
 }
 
 } // #if IMGUI

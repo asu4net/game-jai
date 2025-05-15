@@ -1,3 +1,5 @@
+#if IMGUI {
+
 editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
     name := to_string(name_c);
 
@@ -317,4 +319,6 @@ end_property :: () {
     ImGui.Columns(1);
     ImGui.PopID();
     in_property_context = false;
+}
+
 }

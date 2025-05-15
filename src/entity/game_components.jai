@@ -1,6 +1,5 @@
 // @Info:
 // @InitOrder Range here: 10100 - 30000
-
 Sprite_Component :: struct @Component @InitOrder(10100) @Max(MAX_ENTITIES) {
     visible  := true;
     item     := "";

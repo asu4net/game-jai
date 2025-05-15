@@ -1,4 +1,4 @@
-#if EDITOR {
+#if EDITOR && IMGUI {
 
 TEXT_BUFF_SIZE :: 100;
 
@@ -267,4 +267,4 @@ editor_draw_entity :: (entity : Entity) {
         }
     }
 
-} //#if IMGUI
+} //#if EDITOR && IMGUI

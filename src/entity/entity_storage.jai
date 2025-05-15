@@ -630,7 +630,7 @@ add_info :: (entity : Entity, info := Entity_Info.{}) -> *Entity_Info {
     count += 1;
     index := insert_id(*entities, entity);
     info_ptr := *components[index]; 
-    info_ptr.id = entity;
+    #if EDITOR info_ptr.id = entity;
     call_cpy_cbk(cpy_cbk_fn, entity, info_ptr, *info);
     return info_ptr;
 }
