@@ -3,14 +3,12 @@ Window :: struct {
     handle     : *Window_Type;
     width      : s32;
     height     : s32;    
-    key_states : [] bool;
 }
 
 #add_context window: Window;
 
 init_window :: (name :string = "the window", w: s32 = 1280, h: s32 = 720) {
     using context.window;
-    key_states = NewArray(322, bool);
     
     assert(handle == null);
     
@@ -67,7 +65,6 @@ swap_buffers :: () {
 
 deinit_window :: () {
     using context.window;
-    array_reset(*key_states);
     assert(handle != null);
 }
 
@@ -88,8 +85,7 @@ process_window_events :: () {
         if it.type == .QUIT then done = true;
 
         if it.type == .KEYBOARD {
-            if it.key_pressed == 0 continue;
-
+            
             if it.key_code == .ESCAPE {
                 done = true;
             }
@@ -111,6 +107,14 @@ Mouse_Button :: enum {
     LEFT;
     RIGHT;
     MIDDLE;
+}
+
+get_key_state :: (input : Input.Key_Code) -> Input.Key_Current_State {
+    return Input.input_button_states[input];
+}
+
+is_key_down :: (input : Input.Key_Code) -> bool {
+    return get_key_state(input) == .DOWN;
 }
 
 // Windows specific procedures

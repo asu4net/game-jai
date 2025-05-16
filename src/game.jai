@@ -28,6 +28,8 @@ main :: () {
     init_entities2d();
     defer deinit_entities2d();
     
+    prefab := dlz_entity(read_entire_file("assets/player.prefab" ,,temp));
+
     while !done {   
 
         clear_screen();
@@ -37,7 +39,7 @@ main :: () {
         #if EDITOR update_frame_by_frame_mode();
         
         if can_update() {
-            // Logic.
+            get_component(Transform2D_Component, prefab).pos += RIGHT_2D * delta_seconds();
         }
         
         // Draw.
@@ -72,8 +74,8 @@ frame_by_frame_mode : FrameByFrameMode;
 update_frame_by_frame_mode :: () {
 
     using frame_by_frame_mode;
-    //input.is_key_pressed(input.KEY_LEFT_CONTROL) && input.is_key_pressed(input.KEY_P)
-    if false {
+    
+    if is_key_down(.CTRL) && is_key_down(#char "P" ) {
 
     if !frame_by_frame_pressed {
             frame_by_frame_pressed = true;
@@ -90,10 +92,8 @@ update_frame_by_frame_mode :: () {
     }
 
     next_frame = false;
-        
-    // input.is_key_pressed(input.KEY_LEFT_CONTROL) && input.is_key_pressed(input.KEY_RIGHT)
-
-    if false {
+    
+    if is_key_down(.CTRL) && is_key_down(.ARROW_RIGHT) {
         if !next_frame_pressed {
             next_frame_pressed = true;
             next_frame = true;
