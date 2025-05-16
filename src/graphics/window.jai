@@ -2,7 +2,10 @@ Window :: struct {
     done       : bool;
     handle     : *Window_Type;
     width      : s32;
-    height     : s32;    
+    height     : s32;
+
+    mouse_x    : int;
+    mouse_y    : int;
 }
 
 #add_context window: Window;
@@ -93,6 +96,8 @@ process_window_events :: () {
 
         #if IMGUI process_imgui_events(it);
     }
+
+    mouse_x, mouse_y = get_client_mouse_pos();
 }
 
 get_time :: () -> float64 {
@@ -127,25 +132,6 @@ is_key_down :: (input : Input.Key_Code) -> bool {
         Win32.GetCursorPos(*point);
         Win32.ScreenToClient(handle, *point);
         return point.x, point.y;
-    }
-
-    get_mouse_button :: (button : Mouse_Button) -> bool {
-        if button == {
-            case .LEFT;
-            {
-                return xx (Win32.GetAsyncKeyState(VK_LBUTTON) & 0x8000);
-            }
-            case .RIGHT;
-            {
-                return xx (Win32.GetAsyncKeyState(VK_RBUTTON) & 0x8000);
-            }
-            case .MIDDLE;
-            {
-                return xx (Win32.GetAsyncKeyState(VK_MBUTTON) & 0x8000);
-            }
-            case;
-            return false;
-        }
     }
 }
 

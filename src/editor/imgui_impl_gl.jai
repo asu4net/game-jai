@@ -469,16 +469,14 @@ ImGui_Impl_NewFrame :: (display_width: s32, display_height: s32) {
     if Time > 0.0 io.DeltaTime = xx (current_time - Time);
     else io.DeltaTime = (1.0/60.0);
     Time = current_time;
-
+    
     // Setup inputs
     mx, my := get_client_mouse_pos();
-    io.MousePos = .{xx mx, xx my};
+    io.MousePos = .{xx context.window.mouse_x, xx context.window.mouse_y};
 
-    io.MouseDown[0] = get_mouse_button(.LEFT);
-    io.MouseDown[1] = get_mouse_button(.RIGHT);
-    io.MouseDown[2] = get_mouse_button(.MIDDLE);
-    //if (ImGui.IsMouseDown())
-    
+    io.MouseDown[0] = is_key_down(.MOUSE_BUTTON_LEFT);
+    io.MouseDown[1] = is_key_down(.MOUSE_BUTTON_RIGHT);
+    io.MouseDown[2] = is_key_down(.MOUSE_BUTTON_MIDDLE);
 
     io.MouseWheel = MouseWheel;
     MousePressed[0], MousePressed[1], MousePressed[2] = false, false, false;
