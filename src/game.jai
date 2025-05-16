@@ -1,5 +1,3 @@
-#load "dependencies.jai";
-
 GAME_NAME :: "Game";
 
 main :: () {
@@ -59,10 +57,27 @@ main :: () {
 
 #scope_file
 
+#import "Basic"()(MEMORY_DEBUGGER=true);
+#import "System";
+
 Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
 Time     :: #import "Time";
 Window   :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE = EDITOR);
+Input    :: #import "Input";
 
+#if IMGUI then {
+    ImGui :: #import "ImGui";
+}
+
+// Editor
+#if EDITOR then {
+    #load "editor/editor.jai";
+}
+
+// Entity
+#load "entity/entity_storage.jai";
+#load "entity/game_components.jai";
+#load "entity/game_systems.jai";
 
 #if EDITOR {
 

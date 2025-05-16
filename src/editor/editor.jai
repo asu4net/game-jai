@@ -269,6 +269,7 @@ editor_draw_entity :: (entity : Entity) {
 
 #scope_file
 
+ImGui :: #import "ImGui";
 #import "File_Utilities";
 #load "imgui_utils.jai";
 

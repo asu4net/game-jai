@@ -324,4 +324,8 @@ end_property :: () {
     in_property_context = false;
 }
 
+#scope_file
+
+ImGui :: #import "ImGui";
+
 }
