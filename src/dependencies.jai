@@ -33,8 +33,6 @@ Unicode   :: #import "Unicode";
 }
 
 // Utils
-#load "utils/constants.jai";
-#load "utils/math.jai";
 #load "utils/queue.jai";
 #load "utils/sparse_set.jai";
 #load "utils/time.jai";
@@ -45,9 +43,7 @@ Unicode   :: #import "Unicode";
 }
 
 #if IMGUI then {
-    #load "editor/imgui_impl_gl.jai";
     #load "editor/imgui_utils.jai";
-    #load "editor/imgui.jai";
 }
 
 // Entity

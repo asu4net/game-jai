@@ -1,21 +1,21 @@
-ImGui_Impl_CreateContext :: () {
-    ui_state.ctx = ImGui.CreateContext();
+Impl_CreateContext :: () {
+    ui_state.ctx = CreateContext();
 
-    io := ImGui.GetIO();
+    io := GetIO();
     io.ConfigFlags_ |= .DockingEnable;
 }
 
 // This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 // Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
 // If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
-ImGui_Impl_RenderDrawData :: () {
+Impl_RenderDrawData :: () {
     // @@ Watch out, we don't have a context here!
     using ui_state;
 
-    draw_data := ImGui.GetDrawData();
+    draw_data := GetDrawData();
 
     // Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
-    io := ImGui.GetIO();
+    io := GetIO();
     fb_width := (io.DisplaySize.x * io.DisplayFramebufferScale.x);
     fb_height := (io.DisplaySize.y * io.DisplayFramebufferScale.y);
     if fb_width == 0 || fb_height == 0 return;
@@ -70,13 +70,13 @@ ImGui_Impl_RenderDrawData :: () {
         // Render command lists
         for n: 0..draw_data.CmdListsCount-1 {
             cmd_list := draw_data.CmdLists.Data[n];
-            idx_buffer_offset : *ImGui.ImDrawIdx;
+            idx_buffer_offset : *ImDrawIdx;
 
             glBindBuffer(GL_ARRAY_BUFFER, VboHandle);
-            glBufferData(GL_ARRAY_BUFFER, cmd_list.VtxBuffer.Size * size_of(ImGui.ImDrawVert), cmd_list.VtxBuffer.Data, GL_STREAM_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, cmd_list.VtxBuffer.Size * size_of(ImDrawVert), cmd_list.VtxBuffer.Data, GL_STREAM_DRAW);
 
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementsHandle);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, cmd_list.IdxBuffer.Size * size_of(ImGui.ImDrawIdx), cmd_list.IdxBuffer.Data, GL_STREAM_DRAW);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, cmd_list.IdxBuffer.Size * size_of(ImDrawIdx), cmd_list.IdxBuffer.Data, GL_STREAM_DRAW);
 
             for cmd_i: 0..cmd_list.CmdBuffer.Size-1 {
                 pcmd := *cmd_list.CmdBuffer.Data[cmd_i];
@@ -113,29 +113,243 @@ ImGui_Impl_RenderDrawData :: () {
     }
 }
 
-ImGui_Impl_GetClipboardText :: (data: *void) -> *u8 #c_call {
-    new_context: #Context; // TODO: hide the context in the userdata pointer passed to us
-    push_context new_context {
-        return to_c_string(Clipboard.os_clipboard_get_text());
-    }
-}
-
-ImGui_Impl_SetClipboardText :: (data: *void, text: *u8) #c_call {
-    new_context: #Context;
-    push_context new_context {
-        Clipboard.os_clipboard_set_text(to_string(text));
-    }
-}
-
-ImGui_SetMouseState :: (left: bool, middle: bool, right: bool, wheel: float) {
+// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
+// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
+// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
+// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+Impl_ProcessEvent :: (event: Input.Event) -> bool {
+    using Input;
     using ui_state;
-    MousePressed[0] = left;
-    MousePressed[1] = middle;
-    MousePressed[2] = right;
-    MouseWheel = wheel;
+    io := GetIO();
+    if event.type == {
+        // TODO: get mouse move events into jai's input handling code
+        //case .MOUSE_MOVE;
+            //return true;
+        case .MOUSE_WHEEL;
+            if event.wheel_delta > 0 MouseWheel = 1;
+            if event.wheel_delta < 0 MouseWheel = -1;
+            return true;
+        case. KEYBOARD;
+            if event.key_code == {
+                case .MOUSE_BUTTON_LEFT;   
+                    //MousePressed[0] = event.key_pressed != 0;
+                case .MOUSE_BUTTON_RIGHT;  
+                    //MousePressed[1] = event.key_pressed != 0;
+                case .MOUSE_BUTTON_MIDDLE; 
+                    //MousePressed[2] = event.key_pressed != 0;
+                case;
+                    io.AddKeyEvent(io, .ImGuiMod_Ctrl,  (event.key_code == .CTRL));
+                    io.AddKeyEvent(io, .ImGuiMod_Shift, (event.key_code == .SHIFT));
+                    io.AddKeyEvent(io, .ImGuiMod_Alt,   (event.key_code == .ALT));
+                    io.AddKeyEvent(io, .ImGuiMod_Super, (event.key_code == .CMD));
+
+                    key := Impl_KeyCodeToImGuiKey(event.key_code);
+                    io.AddKeyEvent(io, key, event.key_pressed != 0);
+            }
+            return true;
+        case .TEXT_INPUT;
+            buf := talloc(size_of(s32) + 1); // unicode rune + 0
+            memcpy(buf, *event.utf32, size_of(s32));
+            io.AddInputCharactersUTF8(io, buf);
+            return true;
+    }
+    return false;
 }
 
-ImGui_Impl_KeyCodeToImGuiKey :: (keycode : Input.Key_Code) -> ImGui.Key {
+Impl_Init :: () -> bool {
+    using ui_state;
+    assert(ctx != null, "must call create context");
+    SetCurrentContext(ctx);
+
+    print("imgui version %\n", to_string(GetVersion()));
+
+    using Input.Key_Code;
+    io := GetIO();
+
+    io.SetClipboardTextFn = Impl_SetClipboardText;
+    io.GetClipboardTextFn = Impl_GetClipboardText;
+    io.ClipboardUserData = null;
+
+    // TODO: Cursors
+
+    Impl_CreateDeviceObjects();
+
+    return true;
+}
+
+Impl_Shutdown :: () {
+    using ui_state;
+    SetCurrentContext(ui_state.ctx);
+    Impl_InvalidateDeviceObjects();
+    DestroyContext();
+    ui_state.ctx = null;
+}
+
+Impl_NewFrame :: (display_width: s32, display_height: s32, current_time : f64) {
+    using ui_state;
+
+    io := GetIO();
+
+    // Setup display size (every frame to accommodate for window resizing)
+    io.DisplaySize = .{xx display_width, xx display_height};
+    io.DisplayFramebufferScale = .{1, 1};
+
+    // Setup time step
+    if Time > 0.0 io.DeltaTime = xx (current_time - Time);
+    else io.DeltaTime = (1.0/60.0);
+    Time = current_time;
+    
+    // #TODO_asuarez: Do this platform agnostic.
+
+    // Setup inputs
+        #if OS == .WINDOWS {
+        Win32 :: #import "Windows";
+        get_client_mouse_pos :: () -> (x: s32, y: s32) {
+            using context.window;
+            point: Win32.POINT;
+            Win32.GetCursorPos(*point);
+            Win32.ScreenToClient(handle, *point);
+            return point.x, point.y;
+        }
+    }
+
+    mx, my := get_client_mouse_pos();
+    io.MousePos = .{xx mx, xx my };
+
+    io.MouseDown[0] = Input.input_button_states[xx Input.Key_Code.MOUSE_BUTTON_LEFT]   == .DOWN;
+    io.MouseDown[1] = Input.input_button_states[xx Input.Key_Code.MOUSE_BUTTON_RIGHT]  == .DOWN;
+    io.MouseDown[2] = Input.input_button_states[xx Input.Key_Code.MOUSE_BUTTON_MIDDLE] == .DOWN;
+
+    io.MouseWheel = MouseWheel;
+    MousePressed[0], MousePressed[1], MousePressed[2] = false, false, false;
+
+    MouseWheel = 0.0;
+
+    // Hide OS mouse cursor if ImGui is drawing it
+    // TODO: cursors
+
+    // Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
+    NewFrame();
+}
+
+#scope_file
+
+UI_State :: struct {
+    ctx: *ImGuiContext;
+    Time: float64 = 0.0;
+    MousePressed: [3]bool = .[false, false, false];
+    MouseWheel: float = 0.0;
+    FontTexture: GLuint = 0;
+    ShaderHandle: GLuint = 0;
+    VertHandle: GLuint = 0;
+    FragHandle: GLuint = 0;
+    AttribLocationTex: GLint = 0;
+    AttribLocationProjMtx: GLint = 0;
+    AttribLocationPosition: GLuint = 0;
+    AttribLocationUV: GLuint = 0;
+    AttribLocationColor: GLuint = 0;
+    VboHandle: GLuint = 0;
+    VaoHandle: GLuint = 0;
+    ElementsHandle: GLuint = 0;
+};
+
+ui_state : UI_State;
+
+Impl_InvalidateDeviceObjects :: () {
+    using ui_state;
+    if FontTexture {
+        glDeleteTextures(1, *FontTexture);
+        GetIO().Fonts.TexID = 0;
+        FontTexture = 0;
+    }
+}
+
+Impl_CreateDeviceObjects :: () -> bool {
+    // Backup GL state
+    using ui_state;
+    last_texture, last_array_buffer, last_vertex_array: GLuint;
+    glGetIntegerv(GL_TEXTURE_BINDING_2D, xx *last_texture);
+    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, xx *last_array_buffer);
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, xx *last_vertex_array);
+
+    vertex_shader := #string END
+        #version 330
+        uniform mat4 ProjMtx;
+        in vec2 Position;
+        in vec2 UV;
+        in vec4 Color;
+        out vec2 Frag_UV;
+        out vec4 Frag_Color;
+        void main() {
+           Frag_UV = UV;
+           // By default, the binaries shipped with jai-imgui are built with IMGUI_USE_BGRA_PACKED_COLOR.
+           // This is more efficient in D3D11, but in opengl there's no way to specify the input buffers
+           // format to be BGRA, so we just do the swizzle here if our module parameter, also named
+           // IMGUI_USE_BGRA_PACKED_COLOR, is true.
+           Frag_Color = Color.rgba;
+           gl_Position = ProjMtx * vec4(Position.xy,0,1);
+        }
+    END;
+
+    fragment_shader := #string END
+        #version 330
+        uniform sampler2D Texture;
+        in vec2 Frag_UV;
+        in vec4 Frag_Color;
+        out vec4 Out_Color;
+        void main() {
+           Out_Color = Frag_Color * texture( Texture, Frag_UV.st).r;
+        }
+    END
+
+    ShaderHandle = glCreateProgram();
+    VertHandle = glCreateShader(GL_VERTEX_SHADER);
+    FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
+    _glShaderSource(VertHandle, vertex_shader);
+    _glShaderSource(FragHandle, fragment_shader);
+    glCompileShader(VertHandle);
+    glCompileShader(FragHandle);
+    glAttachShader(ShaderHandle, VertHandle);
+    glAttachShader(ShaderHandle, FragHandle);
+    glLinkProgram(ShaderHandle);
+
+    AttribLocationTex = glGetUniformLocation(ShaderHandle, "Texture");
+    AttribLocationProjMtx = glGetUniformLocation(ShaderHandle, "ProjMtx");
+    AttribLocationPosition = xx glGetAttribLocation(ShaderHandle, "Position");
+    AttribLocationUV = xx glGetAttribLocation(ShaderHandle, "UV");
+    AttribLocationColor = xx glGetAttribLocation(ShaderHandle, "Color");
+
+    glGenBuffers(1, *VboHandle);
+    glGenBuffers(1, *ElementsHandle);
+
+    glGenVertexArrays(1, *VaoHandle);
+    glBindVertexArray(VaoHandle);
+    glBindBuffer(GL_ARRAY_BUFFER, VboHandle);
+    glEnableVertexAttribArray(AttribLocationPosition);
+    glEnableVertexAttribArray(xx AttribLocationUV);
+    glEnableVertexAttribArray(xx AttribLocationColor);
+
+    // @@ Is there a function to easily get the offset of a member?
+    //ImDrawVert :: struct {
+    //   pos: ImVec2;       // 0
+    //   uv: ImVec2;        // 8
+    //   col: s32;          // 16
+    //}
+    glVertexAttribPointer(AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, size_of(ImDrawVert), xx 0);
+    glVertexAttribPointer(AttribLocationUV, 2, GL_FLOAT, GL_FALSE, size_of(ImDrawVert), xx 8);
+    glVertexAttribPointer(AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, size_of(ImDrawVert), xx 16);
+
+    Impl_CreateFontsTexture();
+
+    // Restore modified GL state
+    glBindTexture(GL_TEXTURE_2D, last_texture);
+    glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
+    glBindVertexArray(last_vertex_array);
+
+    return true;
+}
+
+Impl_KeyCodeToImGuiKey :: (keycode : Input.Key_Code) -> Key {
     using ui_state;
     using Input.Key_Code;
     if keycode == {
@@ -248,52 +462,23 @@ ImGui_Impl_KeyCodeToImGuiKey :: (keycode : Input.Key_Code) -> ImGui.Key {
     return .None;
 }
 
-// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
-// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application.
-// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application.
-// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
-ImGui_Impl_ProcessEvent :: (event: Input.Event) -> bool {
-    using Input;
-    using ui_state;
-    io := ImGui.GetIO();
-    if event.type == {
-        // TODO: get mouse move events into jai's input handling code
-        //case .MOUSE_MOVE;
-            //return true;
-        case .MOUSE_WHEEL;
-            if event.wheel_delta > 0 MouseWheel = 1;
-            if event.wheel_delta < 0 MouseWheel = -1;
-            return true;
-        case. KEYBOARD;
-            if event.key_code == {
-                case .MOUSE_BUTTON_LEFT;   
-                    //MousePressed[0] = event.key_pressed != 0;
-                case .MOUSE_BUTTON_RIGHT;  
-                    //MousePressed[1] = event.key_pressed != 0;
-                case .MOUSE_BUTTON_MIDDLE; 
-                    //MousePressed[2] = event.key_pressed != 0;
-                case;
-                    io.AddKeyEvent(io, .ImGuiMod_Ctrl,  (event.key_code == .CTRL));
-                    io.AddKeyEvent(io, .ImGuiMod_Shift, (event.key_code == .SHIFT));
-                    io.AddKeyEvent(io, .ImGuiMod_Alt,   (event.key_code == .ALT));
-                    io.AddKeyEvent(io, .ImGuiMod_Super, (event.key_code == .CMD));
-
-                    key := ImGui_Impl_KeyCodeToImGuiKey(event.key_code);
-                    io.AddKeyEvent(io, key, event.key_pressed != 0);
-            }
-            return true;
-        case .TEXT_INPUT;
-            buf := talloc(size_of(s32) + 1); // unicode rune + 0
-            memcpy(buf, *event.utf32, size_of(s32));
-            io.AddInputCharactersUTF8(io, buf);
-            return true;
+Impl_GetClipboardText :: (data: *void) -> *u8 #c_call {
+    new_context: #Context; // TODO: hide the context in the userdata pointer passed to us
+    push_context new_context {
+        return to_c_string(Clipboard.os_clipboard_get_text());
     }
-    return false;
 }
 
-ImGui_Impl_CreateFontsTexture :: () -> bool {
+Impl_SetClipboardText :: (data: *void, text: *u8) #c_call {
+    new_context: #Context;
+    push_context new_context {
+        Clipboard.os_clipboard_set_text(to_string(text));
+    }
+}
+
+Impl_CreateFontsTexture :: () -> bool {
     using ui_state;
-    io := ImGui.GetIO();
+    io := GetIO();
     assert(io != null);
     assert(io.Fonts != null);
 
@@ -331,184 +516,6 @@ ImGui_Impl_CreateFontsTexture :: () -> bool {
     return true;
 }
 
-ImGui_Impl_CreateDeviceObjects :: () -> bool {
-    // Backup GL state
-    using ui_state;
-    last_texture, last_array_buffer, last_vertex_array: GLuint;
-    glGetIntegerv(GL_TEXTURE_BINDING_2D, xx *last_texture);
-    glGetIntegerv(GL_ARRAY_BUFFER_BINDING, xx *last_array_buffer);
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, xx *last_vertex_array);
-
-    vertex_shader := #string END
-        #version 330
-        uniform mat4 ProjMtx;
-        in vec2 Position;
-        in vec2 UV;
-        in vec4 Color;
-        out vec2 Frag_UV;
-        out vec4 Frag_Color;
-        void main() {
-           Frag_UV = UV;
-           // By default, the binaries shipped with jai-imgui are built with IMGUI_USE_BGRA_PACKED_COLOR.
-           // This is more efficient in D3D11, but in opengl there's no way to specify the input buffers
-           // format to be BGRA, so we just do the swizzle here if our module parameter, also named
-           // IMGUI_USE_BGRA_PACKED_COLOR, is true.
-           Frag_Color = Color.rgba;
-           gl_Position = ProjMtx * vec4(Position.xy,0,1);
-        }
-    END;
-
-    fragment_shader := #string END
-        #version 330
-        uniform sampler2D Texture;
-        in vec2 Frag_UV;
-        in vec4 Frag_Color;
-        out vec4 Out_Color;
-        void main() {
-           Out_Color = Frag_Color * texture( Texture, Frag_UV.st).r;
-        }
-    END
-
-    ShaderHandle = glCreateProgram();
-    VertHandle = glCreateShader(GL_VERTEX_SHADER);
-    FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-    _glShaderSource(VertHandle, vertex_shader);
-    _glShaderSource(FragHandle, fragment_shader);
-    glCompileShader(VertHandle);
-    glCompileShader(FragHandle);
-    glAttachShader(ShaderHandle, VertHandle);
-    glAttachShader(ShaderHandle, FragHandle);
-    glLinkProgram(ShaderHandle);
-
-    AttribLocationTex = glGetUniformLocation(ShaderHandle, "Texture");
-    AttribLocationProjMtx = glGetUniformLocation(ShaderHandle, "ProjMtx");
-    AttribLocationPosition = xx glGetAttribLocation(ShaderHandle, "Position");
-    AttribLocationUV = xx glGetAttribLocation(ShaderHandle, "UV");
-    AttribLocationColor = xx glGetAttribLocation(ShaderHandle, "Color");
-
-    glGenBuffers(1, *VboHandle);
-    glGenBuffers(1, *ElementsHandle);
-
-    glGenVertexArrays(1, *VaoHandle);
-    glBindVertexArray(VaoHandle);
-    glBindBuffer(GL_ARRAY_BUFFER, VboHandle);
-    glEnableVertexAttribArray(AttribLocationPosition);
-    glEnableVertexAttribArray(xx AttribLocationUV);
-    glEnableVertexAttribArray(xx AttribLocationColor);
-
-    // @@ Is there a function to easily get the offset of a member?
-    //ImGui.ImDrawVert :: struct {
-    //   pos: ImVec2;       // 0
-    //   uv: ImVec2;        // 8
-    //   col: s32;          // 16
-    //}
-    glVertexAttribPointer(AttribLocationPosition, 2, GL_FLOAT, GL_FALSE, size_of(ImGui.ImDrawVert), xx 0);
-    glVertexAttribPointer(AttribLocationUV, 2, GL_FLOAT, GL_FALSE, size_of(ImGui.ImDrawVert), xx 8);
-    glVertexAttribPointer(AttribLocationColor, 4, GL_UNSIGNED_BYTE, GL_TRUE, size_of(ImGui.ImDrawVert), xx 16);
-
-    ImGui_Impl_CreateFontsTexture();
-
-    // Restore modified GL state
-    glBindTexture(GL_TEXTURE_2D, last_texture);
-    glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-    glBindVertexArray(last_vertex_array);
-
-    return true;
-}
-
-
-ImGui_Impl_InvalidateDeviceObjects :: () {
-    using ui_state;
-    if FontTexture {
-        glDeleteTextures(1, *FontTexture);
-        ImGui.GetIO().Fonts.TexID = 0;
-        FontTexture = 0;
-    }
-}
-
-ImGui_Impl_Init :: (native_window_handle: *void) -> bool {
-    using ui_state;
-    assert(ctx != null, "must call create context");
-    ImGui.SetCurrentContext(ctx);
-
-    print("imgui version %\n", to_string(ImGui.GetVersion()));
-
-    using Input.Key_Code;
-    io := ImGui.GetIO();
-
-    io.SetClipboardTextFn = ImGui_Impl_SetClipboardText;
-    io.GetClipboardTextFn = ImGui_Impl_GetClipboardText;
-    io.ClipboardUserData = null;
-
-    // TODO: Cursors
-
-    ImGui_Impl_CreateDeviceObjects();
-
-    return true;
-}
-
-ImGui_Impl_Shutdown :: () {
-    using ui_state;
-    ImGui.SetCurrentContext(ui_state.ctx);
-    ImGui_Impl_InvalidateDeviceObjects();
-    ImGui.DestroyContext();
-    ui_state.ctx = null;
-}
-
-ImGui_Impl_NewFrame :: (display_width: s32, display_height: s32) {
-    using ui_state;
-
-    io := ImGui.GetIO();
-
-    // Setup display size (every frame to accommodate for window resizing)
-    io.DisplaySize = .{xx display_width, xx display_height};
-    io.DisplayFramebufferScale = .{1, 1};
-
-    // Setup time step
-    current_time := get_time();
-    if Time > 0.0 io.DeltaTime = xx (current_time - Time);
-    else io.DeltaTime = (1.0/60.0);
-    Time = current_time;
-    
-    // Setup inputs
-    mx, my := get_client_mouse_pos();
-    io.MousePos = .{xx context.window.mouse_x, xx context.window.mouse_y};
-
-    io.MouseDown[0] = is_key_down(.MOUSE_BUTTON_LEFT);
-    io.MouseDown[1] = is_key_down(.MOUSE_BUTTON_RIGHT);
-    io.MouseDown[2] = is_key_down(.MOUSE_BUTTON_MIDDLE);
-
-    io.MouseWheel = MouseWheel;
-    MousePressed[0], MousePressed[1], MousePressed[2] = false, false, false;
-
-    MouseWheel = 0.0;
-
-    // Hide OS mouse cursor if ImGui is drawing it
-    // TODO: cursors
-
-    // Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
-    ImGui.NewFrame();
-}
-
 #scope_file
 
-UI_State :: struct {
-    ctx: *ImGui.ImGuiContext;
-    Time: float64 = 0.0;
-    MousePressed: [3]bool = .[false, false, false];
-    MouseWheel: float = 0.0;
-    FontTexture: GLuint = 0;
-    ShaderHandle: GLuint = 0;
-    VertHandle: GLuint = 0;
-    FragHandle: GLuint = 0;
-    AttribLocationTex: GLint = 0;
-    AttribLocationProjMtx: GLint = 0;
-    AttribLocationPosition: GLuint = 0;
-    AttribLocationUV: GLuint = 0;
-    AttribLocationColor: GLuint = 0;
-    VboHandle: GLuint = 0;
-    VaoHandle: GLuint = 0;
-    ElementsHandle: GLuint = 0;
-};
-
-ui_state : UI_State;
+#import "GL" (DUMP_GL_ERRORS = true);

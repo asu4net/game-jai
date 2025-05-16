@@ -17,9 +17,9 @@ main :: () {
     
     #if IMGUI {
         #if EDITOR 
-        then init_imgui(imgui_draw_proc = draw_editor); 
-        else init_imgui();
-        defer deinit_imgui();
+        then ImGui.Init(imgui_draw_proc = draw_editor); 
+        else ImGui.Init();
+        defer ImGui.Deinit();
     }
 
     init_entity_storage();
@@ -41,7 +41,7 @@ main :: () {
         
         // Draw.
         draw_entities2d(width, height);
-        #if IMGUI draw_imgui();
+        #if IMGUI ImGui.Draw(get_time());
         swap_buffers();
 
         clean_destroyed_entities();

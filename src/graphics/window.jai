@@ -3,9 +3,6 @@ Window :: struct {
     handle     : *Window_Type;
     width      : s32;
     height     : s32;
-
-    mouse_x    : int;
-    mouse_y    : int;
 }
 
 #add_context window: Window;
@@ -94,10 +91,8 @@ process_window_events :: () {
             }
         }
 
-        #if IMGUI process_imgui_events(it);
+        #if IMGUI ImGui.ProcessInputEvents(it);
     }
-
-    mouse_x, mouse_y = get_client_mouse_pos();
 }
 
 get_time :: () -> float64 {
@@ -120,19 +115,6 @@ get_key_state :: (input : Input.Key_Code) -> Input.Key_Current_State {
 
 is_key_down :: (input : Input.Key_Code) -> bool {
     return get_key_state(input) == .DOWN;
-}
-
-// Windows specific procedures
-
-#if OS == .WINDOWS {
-    
-    get_client_mouse_pos :: () -> (x: s32, y: s32) {
-        using context.window;
-        point: Win32.POINT;
-        Win32.GetCursorPos(*point);
-        Win32.ScreenToClient(handle, *point);
-        return point.x, point.y;
-    }
 }
 
 #scope_file
