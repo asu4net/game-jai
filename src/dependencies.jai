@@ -10,9 +10,9 @@
 #import "Text_File_Handler";
 #import "Reflection";
 #import "Random";
-#import "Window_Creation";
 #import "Gamepad";
 
+Window    :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE = EDITOR);
 Input     :: #import "Input";
 Clipboard :: #import "Clipboard";
 Unicode   :: #import "Unicode";
@@ -22,7 +22,7 @@ Unicode   :: #import "Unicode";
 }
 
 // Vendor Modules
-#import "GL" (DUMP_GL_ERRORS = true);
+#import "GL" (DUMP_GL_ERRORS = DEBUG);
 #import "stb_image";
 #import "stb_truetype";
 #import "stb_image_write";
@@ -52,7 +52,6 @@ Unicode   :: #import "Unicode";
 #load "entity/game_systems.jai";
 
 // Graphics
-#load "graphics/window.jai";
 #load "graphics/constants.jai";
 #load "graphics/draw2d.jai";
 #load "graphics/api.jai";

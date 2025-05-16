@@ -39,3 +39,18 @@ time_step :: () {
 delta_seconds :: () -> f32 {
     return context.time.delta_seconds;
 }
+
+get_time :: () -> float64 {
+    one_time_init(*is_get_seconds_initialized, init_get_seconds());
+    delta := current_time_monotonic() - get_seconds_base_time;
+    return to_float64_seconds(delta);
+}
+
+#scope_file
+
+is_get_seconds_initialized: s32;
+get_seconds_base_time: Apollo_Time;
+
+init_get_seconds :: () {
+    get_seconds_base_time = current_time_monotonic();
+}

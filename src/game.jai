@@ -9,8 +9,10 @@ main :: () {
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
-    init_window(GAME_NAME);
-    defer deinit_window();
+    #if IMGUI 
+    then Window.init(GAME_NAME, process_events_proc = ImGui.ProcessInputEvents);
+    else Window.init(GAME_NAME);
+    defer Window.deinit();
     
     init_draw2d();
     defer deinit_draw2d();
@@ -28,11 +30,12 @@ main :: () {
     init_entities2d();
     defer deinit_entities2d();
     
-    while !done {   
+    set_clear_color(DARK_GREY);
+
+    while Window.keep_opened() {   
 
         clear_screen();
         time_step();
-        process_window_events();
         
         #if EDITOR update_frame_by_frame_mode();
         
@@ -42,7 +45,6 @@ main :: () {
         // Draw.
         draw_entities2d(width, height);
         #if IMGUI ImGui.Draw(get_time());
-        swap_buffers();
 
         clean_destroyed_entities();
         reset_temporary_storage();
@@ -72,7 +74,7 @@ update_frame_by_frame_mode :: () {
 
     using frame_by_frame_mode;
 
-    if is_key_down(.CTRL) && is_key_down(#char "P" ) {
+    if Input.is_key_down(.CTRL) && Input.is_key_down(#char "P" ) {
 
     if !frame_by_frame_pressed {
             frame_by_frame_pressed = true;
@@ -90,7 +92,7 @@ update_frame_by_frame_mode :: () {
 
     next_frame = false;
     
-    if is_key_down(.CTRL) && is_key_down(.ARROW_RIGHT) {
+    if Input.is_key_down(.CTRL) && Input.is_key_down(.ARROW_RIGHT) {
         if !next_frame_pressed {
             next_frame_pressed = true;
             next_frame = true;
