@@ -6,11 +6,11 @@ Sprite_Component :: struct @Component @InitOrder(10100) @Max(MAX_ENTITIES) {
     tint     := WHITE;       @Color
     size     := ONE_2D;
     tiling   := ONE_2D;
-    blend    := Blend.ALPHA;
+    blend    := Graphics.Blend.ALPHA;
     flip_x   := false;
     flip_y   := false;
     autosize := true;
-    rect     := Rect.{};     @JsonIgnore @EditorReadOnly 
+    rect     := Graphics.Rect.{};     @JsonIgnore @EditorReadOnly 
 }
 
 on_copy_sprite_component :: (e : Entity, dst : *Sprite_Component, src : *Sprite_Component) {
@@ -22,7 +22,7 @@ on_remove_sprite_component :: (e : Entity, cmp : *Sprite_Component) {
     free(cmp.item);
 } @RemoveComponentCallback
 
-draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
+draw_sprite_entity :: (entity : Entity, sheet : *Graphics.Spritesheet) {
 
     using transform := get_component(Transform2D_Component, entity);
     using sprite    := get_component(Sprite_Component,      entity);
@@ -33,7 +33,7 @@ draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
     then update_blink(get_component(Blink_Component, entity), *tint);
     
     tex := ifx item.count > 0 then *sheet.tex else null;
-    flags := ifx item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
+    flags := ifx item.count > 0 then Graphics.DEFAULT_QUAD_FLAGS | .USE_SUBTEX else Graphics.DEFAULT_QUAD_FLAGS;
     
     if autosize then flags |= .AUTOSIZE;
     if flip_x   then flags |= .FLIP_X;
@@ -46,7 +46,7 @@ draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
         if found rect = r;
     }
     
-    draw_quad(get_matrix(entity), tex, tiling, size, blend, rect, tint, entity, flags);        
+    Graphics.draw_quad(get_matrix(entity), tex, tiling, size, blend, rect, tint, entity, flags);        
 }
 
 // ------------------------------------------------
@@ -54,13 +54,13 @@ draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
 Text_Component :: struct @Component @InitOrder(10200) @Max(MAX_ENTITIES) {
     visible := true;
     text    := "placeholder!";
-    blend   := Blend.ALPHA;
+    blend   := Graphics.Blend.ALPHA;
     tint    := WHITE;          @Color
 }
 
-draw_text :: (using transform : Transform2D_Component, using t : Text_Component, font : *Font, id : u32 = 0) {    
+draw_text :: (using transform : Transform2D_Component, using t : Text_Component, font : *Graphics.Font, id : u32 = 0) {    
     if !visible then return;
-    draw_gui_text(pos, ang, scl, text, font, blend, tint, id); 
+    Graphics.draw_gui_text(pos, ang, scl, text, font, blend, tint, id); 
 }
 
 // ------------------------------------------------
@@ -90,3 +90,7 @@ update_blink :: (using blink : *Blink_Component, tint : *v4) {
         }
     } 
 }
+
+#scope_file
+
+Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);

@@ -22,10 +22,6 @@ Unicode   :: #import "Unicode";
 }
 
 // Vendor Modules
-#import "GL" (DUMP_GL_ERRORS = DEBUG);
-#import "stb_image";
-#import "stb_truetype";
-#import "stb_image_write";
 #import "Jaison";
 
 #if IMGUI then {
@@ -50,14 +46,3 @@ Unicode   :: #import "Unicode";
 #load "entity/entity_storage.jai";
 #load "entity/game_components.jai";
 #load "entity/game_systems.jai";
-
-// Graphics
-#load "graphics/constants.jai";
-#load "graphics/draw2d.jai";
-#load "graphics/api.jai";
-#load "graphics/buffer_object.jai";
-#load "graphics/shader.jai";
-#load "graphics/texture.jai";
-#load "graphics/font.jai";
-#load "graphics/render_camera.jai";
-#load "graphics/spritesheet.jai";

@@ -14,8 +14,8 @@ main :: () {
     else Window.init(GAME_NAME);
     defer Window.deinit();
     
-    init_draw2d();
-    defer deinit_draw2d();
+    Graphics.init_draw2d();
+    defer Graphics.deinit_draw2d();
     
     #if IMGUI {
         #if EDITOR 
@@ -30,16 +30,19 @@ main :: () {
     init_entities2d();
     defer deinit_entities2d();
     
-    set_clear_color(DARK_GREY);
-
+    Graphics.set_clear_color(DARK_GREY);
+    
     while Window.keep_opened() {   
 
-        clear_screen();
+        Graphics.clear_screen();
         time_step();
         
-        #if EDITOR update_frame_by_frame_mode();
-        
-        if can_update() {
+        #if EDITOR {
+            update_frame_by_frame_mode();
+            //if frame_by_frame_mode.next_frame
+            //then update logic 
+        } else {
+            // update logic
         }
         
         // Draw.
@@ -53,11 +56,7 @@ main :: () {
 
 #scope_file
 
-can_update :: inline () -> bool {
-    #if EDITOR 
-    then return frame_by_frame_mode.next_frame;
-    else return true;
-}
+Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
 
 #if EDITOR {
 
