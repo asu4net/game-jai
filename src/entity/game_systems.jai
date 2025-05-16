@@ -19,6 +19,11 @@ draw_entities2d :: () {
 
 #scope_file
 
+#import "File";
+#import "Math";
+
 Graphics :: #import "Graphics" (DUMP_ERRORS = true);
+Window   :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE = EDITOR);
+
 
 sheet : Graphics.Spritesheet;

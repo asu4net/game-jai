@@ -292,6 +292,9 @@ editor_should_ignore_struct :: (t : *Type_Info) -> bool {
 
 #scope_file
 
+#import "Reflection";
+#import "String";
+
 COLUMN_WIDTH :: 120;
 
 ITEM_SPACING :: v2.{0, 6 };

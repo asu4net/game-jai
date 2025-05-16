@@ -267,4 +267,9 @@ editor_draw_entity :: (entity : Entity) {
         }
     }
 
+#scope_file
+
+#import "File_Utilities";
+#load "imgui_utils.jai";
+
 } //#if EDITOR && IMGUI

@@ -38,7 +38,7 @@ main :: () {
     while Window.keep_opened() {   
 
         Graphics.clear_screen();
-        time_step();
+        Time.time_step();
         
         #if EDITOR {
             update_frame_by_frame_mode();
@@ -50,7 +50,7 @@ main :: () {
         
         // Draw.
         draw_entities2d();
-        #if IMGUI ImGui.Draw(get_time());
+        #if IMGUI ImGui.Draw(Time.get_time());
 
         clean_destroyed_entities();
         reset_temporary_storage();
@@ -60,6 +60,9 @@ main :: () {
 #scope_file
 
 Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
+Time     :: #import "Time";
+Window   :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE = EDITOR);
+
 
 #if EDITOR {
 

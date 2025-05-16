@@ -184,3 +184,7 @@ grow :: (q: *Queue($T), min_capacity: u32 = 0) {
         q.offset += new_capacity - n;
     }
 }
+
+#scope_file
+
+#import "Basic";

@@ -653,3 +653,12 @@ rem_info :: (entity : Entity) {
         components[deleted] = .{};
     }
 }
+
+#scope_file
+
+#import "Sparse_Set";
+#import "Queue";
+#import "Random";
+#import "Text_File_Handler";
+#import "Hash_Table";
+#import "Jaison";

@@ -82,3 +82,9 @@ remove_id :: (using s : *Sparse_Set, element : u32) -> u32, u32 {
 
     return deleted, last;
 }
+
+#scope_module
+
+
+#import "Basic";
+#import "Math";

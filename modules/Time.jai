@@ -46,7 +46,10 @@ get_time :: () -> float64 {
     return to_float64_seconds(delta);
 }
 
-#scope_file
+#scope_module
+
+#import "Math";
+#import "Basic";
 
 is_get_seconds_initialized: s32;
 get_seconds_base_time: Apollo_Time;
