@@ -1,12 +1,14 @@
 //#TODO_asuarez Improve the impl procs here.
 
+DRAW_PROC :: #type ();
+
 ImGuiManager :: struct {
-    draw_proc : IMGUI_DRAW_PROC;
+    draw_proc : DRAW_PROC;
 }
 
 #add_context imgui : ImGuiManager;
 
-Init :: (imgui_draw_proc : IMGUI_DRAW_PROC = null) {
+Init :: (imgui_draw_proc : DRAW_PROC = null) {
     
     using context.imgui;
     draw_proc = imgui_draw_proc;
@@ -46,8 +48,6 @@ Init :: (imgui_draw_proc : IMGUI_DRAW_PROC = null) {
     
     Impl_Init();
 }
-
-IMGUI_DRAW_PROC :: #type ();
 
 ProcessInputEvents :: inline (event : Input.Event) {
     Impl_ProcessEvent(event);

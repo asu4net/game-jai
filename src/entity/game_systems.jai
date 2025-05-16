@@ -8,8 +8,8 @@ deinit_entities2d :: () {
     then Graphics.deinit(*sheet);
 }
 
-draw_entities2d :: (window_width : s32, window_height : s32) {
-    Graphics.draw2d_begin(.{window_width, window_height});
+draw_entities2d :: () {
+    Graphics.draw2d_begin(.{context.window.width, context.window.height});
     view := get_entity_view(Transform2D_Component, Sprite_Component);
     for entity : view {
         draw_sprite_entity(entity, *sheet);

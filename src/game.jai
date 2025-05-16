@@ -3,26 +3,29 @@
 GAME_NAME :: "Game";
 
 main :: () {
-    
-    using context.window;
-    
+
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
+    process_window_events : Window.PROCESS_EVENTS_PROC;
+
     #if IMGUI 
-    then Window.init(GAME_NAME, process_events_proc = ImGui.ProcessInputEvents);
-    else Window.init(GAME_NAME);
+    then process_window_events = ImGui.ProcessInputEvents;
+
+    Window.init(GAME_NAME, process_events_proc = process_window_events);
     defer Window.deinit();
     
     Graphics.init_draw2d();
     defer Graphics.deinit_draw2d();
     
-    #if IMGUI {
-        #if EDITOR 
-        then ImGui.Init(imgui_draw_proc = draw_editor); 
-        else ImGui.Init();
-        defer ImGui.Deinit();
-    }
+    draw_imgui : ImGui.DRAW_PROC;
+
+    #if IMGUI && EDITOR 
+    then draw_imgui = draw_editor;
+
+    #if IMGUI
+    then ImGui.Init(imgui_draw_proc = draw_editor);
+    defer ImGui.Deinit();
 
     init_entity_storage();
     defer deinit_entity_storage();
@@ -46,7 +49,7 @@ main :: () {
         }
         
         // Draw.
-        draw_entities2d(width, height);
+        draw_entities2d();
         #if IMGUI ImGui.Draw(get_time());
 
         clean_destroyed_entities();
