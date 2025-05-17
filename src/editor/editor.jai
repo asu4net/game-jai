@@ -235,7 +235,7 @@ editor_draw_entity :: (entity : Entity) {
         ignore_info := editor_should_ignore_struct(state.info_arena.type);
         
         if !ignore_info {
-            state.info_arena.drw(entity);
+            if EDITOR state.info_arena.drw(entity);
             editor_draw_separator();
             editor_draw_spacing();
         } 
@@ -271,6 +271,7 @@ editor_draw_entity :: (entity : Entity) {
 
 ImGui :: #import "ImGui";
 #import "File_Utilities";
-#load "imgui_utils.jai";
+#load "editor_props.jai";
+#import "Math";
 
 } //#if EDITOR && IMGUI

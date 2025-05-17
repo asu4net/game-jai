@@ -44,6 +44,14 @@ get_generated_component_arena_base :: (using a : *Generated_Component_Arenas, t 
     }
 }
 
+#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) Generated_Component_Arenas;
+#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) init_generated_component_arenas;
+#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) deinit_generated_component_arenas;
+#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) get_generated_component_arena;
+#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) get_generated_component_arena_base;
+#if EDITOR
+then #poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) editor_draw_property;
+
 MAX_ENTITIES :: %5;
 
 SCOPE

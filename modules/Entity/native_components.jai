@@ -131,7 +131,7 @@ compute_enabled_iterative :: (ref : Entity_Ref) {
 }
 
 Prefab_Component :: struct @Component @EditorIgnore @InitOrder(100) @Max(MAX_ENTITIES) {
-    #if EDITOR {
+    #if EDIT_MODE {
         
     }
 }

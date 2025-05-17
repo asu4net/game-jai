@@ -1,5 +1,3 @@
-#load "native_components.jai";
-
 Component_Arena_Base :: struct {
     data      : *void;    
     count     : s64;
@@ -15,7 +13,7 @@ Component_Arena_Base :: struct {
     slz : (entity : Entity)             -> string;
     dlz : (entity : Entity, s : string) -> *void;
 
-    #if EDITOR then drw : (entity : Entity);
+    #if EDIT_MODE then drw : (entity : Entity);
 
     // Callbacks generic callers.
     call_add_cbk : (fn : *void, entity : Entity, component : *void);
@@ -54,7 +52,7 @@ init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Are
     slz = (entity : Entity)             -> string       { return slz_component(T, entity);    }
     dlz = (entity : Entity, s : string) -> *void        { return dlz_component(T, entity, s); } 
 
-    #if EDITOR then drw = (entity : Entity) { drw_component(T, entity); }
+    #if EDIT_MODE then drw = (entity : Entity) { drw_component(T, entity); }
 
     add_cbk_fn = xx add_proc;
     rem_cbk_fn = xx rem_proc;
@@ -106,7 +104,7 @@ Entity_Ref :: struct {
 }
 
 Entity_Info :: struct {
-    #if EDITOR id : u32; @JsonIgnore @EditorReadOnly
+    #if EDIT_MODE id : u32; @JsonIgnore @EditorReadOnly
     flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
     uuid  : u64; @JsonIgnore @EditorIgnore
 }
@@ -551,7 +549,7 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
     else return add_component_with_data(parsed_data, entity);  
 }
 
-#if EDITOR {
+#if EDIT_MODE {
     drw_component :: ($T : Type, entity : Entity) {
         EntityStorageContext();
         c := get_component(T, entity);
@@ -630,7 +628,7 @@ add_info :: (entity : Entity, info := Entity_Info.{}) -> *Entity_Info {
     count += 1;
     index := insert_id(*entities, entity);
     info_ptr := *components[index]; 
-    #if EDITOR info_ptr.id = entity;
+    #if EDIT_MODE info_ptr.id = entity;
     call_cpy_cbk(cpy_cbk_fn, entity, info_ptr, *info);
     return info_ptr;
 }
@@ -653,12 +651,3 @@ rem_info :: (entity : Entity) {
         components[deleted] = .{};
     }
 }
-
-#scope_file
-
-#import "Sparse_Set";
-#import "Queue";
-#import "Random";
-#import "Text_File_Handler";
-#import "Hash_Table";
-#import "Jaison";

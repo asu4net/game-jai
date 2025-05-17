@@ -95,3 +95,4 @@ update_blink :: (using blink : *Blink_Component, tint : *v4) {
 
 Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
 Time :: #import "Time";
+#import "Hash_Table";

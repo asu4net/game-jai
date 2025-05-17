@@ -75,9 +75,9 @@ Input    :: #import "Input";
 }
 
 // Entity
-#load "entity/entity_storage.jai";
-#load "entity/game_components.jai";
-#load "entity/game_systems.jai";
+#load "game_systems.jai";
+#load "game_components.jai";
+#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
 
 #if EDITOR {
 
