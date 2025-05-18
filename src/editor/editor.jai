@@ -108,8 +108,7 @@ draw_editor :: () {
                 }
 
                 prefab = create_entity();
-                tag := add_component(Tag_Component, prefab);
-                tag.text = copy_string(to_string(data(prefab_name)));
+                set_name(prefab, to_string(data(prefab_name)));
                 if  parent == NULL_ENTITY
                 then prefab_ref = make_ref(prefab);
                 create_prefab_parent_ref = .{};
@@ -135,12 +134,7 @@ draw_editor :: () {
             entity := resolve_ref(*ref);
             if entity != NULL_ENTITY {
                 flags : ImGui.TreeNodeFlags;
-                if has_component(Node_Component, entity) {
-                    entity_node := get_component(Node_Component, entity);
-                    if entity_node.children.count == 0 {
-                        flags |= .Leaf;
-                    }
-                } else {
+                if get_children(entity).count == 0 {
                     flags |= .Leaf;
                 }
                 
@@ -148,12 +142,11 @@ draw_editor :: () {
                 if !enabled {
                     ImGui.PushStyleColor(.Text, .{ .5, .5, .5, 1 });
                 }
-                tag : string;
-                if has_component(Tag_Component, entity)
-                then tag = get_component(Tag_Component, entity).text;
-                else tag = tprint("%", entity ,,temp);
+                name := get_name(entity);
+                if  !name.count
+                then name = tprint("%", entity ,,temp);
 
-                opened := ImGui.TreeNodeEx(to_c_string(tag ,,temp), flags);
+                opened := ImGui.TreeNodeEx(to_c_string(name ,,temp), flags);
                 if !enabled {
                     ImGui.PopStyleColor();
                 }
@@ -168,8 +161,7 @@ draw_editor :: () {
                         if payload {
                             dragged_entity_ref := payload.Data.(*Entity_Ref);
                             dragged_entity := resolve_ref(dragged_entity_ref);
-                            dragged_entity_node := get_component(Node_Component, dragged_entity);
-                            if dragged_entity_ref.entity != ref.entity && dragged_entity_ref.entity != dragged_entity_node.parent.entity {
+                            if dragged_entity_ref.entity != ref.entity && dragged_entity_ref.entity != get_parent(entity) {
                                 set_parent(dragged_entity, entity);
                             }
                         }
@@ -185,12 +177,9 @@ draw_editor :: () {
                     if ImGui.IsItemClicked() {
                         context.editor.selected_ref = ref;
                     }
-                    if has_component(Node_Component, entity) {
-                        for child : get_component(Node_Component, entity).children {
-                            hierarchy(child);
-                        }
+                    for child : get_children(entity) {
+                        hierarchy(child);
                     }
-                    
                     ImGui.TreePop();
                 }
             }
@@ -223,10 +212,9 @@ save_prefab :: () {
     using context.editor;
     prefab := resolve_ref(*prefab_ref);
     assert(prefab != NULL_ENTITY);
-    tag := get_component(Tag_Component, prefab);
     builder : String_Builder;
     slz_entity(*builder, prefab ,,temp);
-    write_entire_file(tprint("assets/%.prefab", tag.text ,,temp), builder_to_string(*builder, prefab ,,temp));
+    write_entire_file(tprint("assets/%.prefab", get_name(prefab) ,,temp), builder_to_string(*builder, prefab ,,temp));
 }
 
 editor_draw_entity :: (entity : Entity) {

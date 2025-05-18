@@ -3,12 +3,8 @@
 
 @Component(Entity_Info)
 {
-	"flags": "LOCAL_ENABLED | ENABLED"
-}
-
-@Component(Tag_Component)
-{
-	"text": "player"
+	"name": "player",
+	"flags": "LOCAL_ENABLED | ENABLED",
 }
 
 @Component(Transform2D_Component)

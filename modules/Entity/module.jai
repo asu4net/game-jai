@@ -1,7 +1,6 @@
 #module_parameters(EDIT_MODE := false, MAX_ENTITIES : s32 = 300);
 
 #load "entity_storage.jai";
-#load "native_components.jai";
 
 #scope_module
 

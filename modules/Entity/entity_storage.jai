@@ -105,8 +105,11 @@ Entity_Ref :: struct {
 
 Entity_Info :: struct {
     #if EDIT_MODE id : u32; @JsonIgnore @EditorReadOnly
+    name : string;
     flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
-    uuid  : u64; @JsonIgnore @EditorIgnore
+    uuid : u64; @JsonIgnore @EditorIgnore
+    parent : Entity_Ref;
+    children : [..] Entity_Ref;
 }
 
 Entity_Storage :: struct {
@@ -142,10 +145,7 @@ init_entity_storage :: () {
     EntityStorageContext();
     
     // Manually init the info arena.
-    copy_info_proc :: (entity : Entity, d : *Entity_Info, s : *Entity_Info) {
-        d.flags = s.flags;
-    }
-    init(*state.info_arena, MAX_ENTITIES, cpy_proc = copy_info_proc, add_proc = null, rem_proc = null);
+    init(*state.info_arena, MAX_ENTITIES, cpy_proc = cpy_info, add_proc = null, rem_proc = null);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
     state.uuid_seed = current_time_monotonic().low;
     random_seed(state.uuid_seed);
@@ -185,6 +185,76 @@ set_enabled :: (entity : Entity, enabled := true) {
     is_local_enabled := (.LOCAL_ENABLED & info.flags).(bool);
     if enabled != is_local_enabled
     then compute_enabled_iterative(make_ref(entity));
+}
+
+get_name :: (entity : Entity) -> string {
+    return get_info(entity).name;
+}
+
+set_name :: (entity : Entity, name : string) {
+    get_info(entity).name = name;
+}
+
+get_parent :: (entity : Entity) -> Entity {
+    info := get_info(entity);
+    return resolve_ref(*info.parent);
+}
+
+get_children :: (entity : Entity) -> [] Entity_Ref {
+    info := get_info(entity);
+    return info.children;
+}
+
+set_parent :: (entity : Entity, parent : Entity) {
+
+    info := get_info(entity);
+    current_parent := resolve_ref(*info.parent);
+    
+    if is_not_destroyed(current_parent) {
+        
+        remove_child :: (entity : Entity, child : Entity) {    
+            info := get_info(entity);
+            index := -1;
+            found := false;
+            for info.children { 
+                if child == it.entity then { 
+                    found = true;
+                    index = it_index;
+                    break; 
+                }
+            }
+            if found then array_unordered_remove_by_index(*info.children, index);
+            compute_enabled_iterative(make_ref(child));
+            //#TODO_asuarez Remove the Node_Component if it is not being used.
+        }
+        
+        remove_child(current_parent, entity);
+    }
+
+    if is_not_destroyed(parent) {
+
+        info.parent = make_ref(parent);
+        add_child :: (entity : Entity, child : Entity) {
+
+            info := get_info(entity);
+
+            for ref : info.children {
+                current_child := resolve_ref(*ref);
+                if current_child == child 
+                then return;
+            }
+
+            child_ref := make_ref(child);
+            array_add(*info.children, child_ref);
+            compute_enabled_iterative(child_ref);
+        }
+
+        add_child(parent, entity);
+
+    } else {
+        info.parent = .{};
+    }
+   
 }
 
 deinit_entity_storage :: () {
@@ -555,8 +625,7 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
         c := get_component(T, entity);
         info := type_info(T);
         editor_draw_property(null, c, info);
-        if has_component(Node_Component, entity)
-        then compute_enabled_iterative(make_ref(entity));
+        compute_enabled_iterative(make_ref(entity));
     }
 }
 
@@ -638,9 +707,10 @@ rem_info :: (entity : Entity) {
     EntityStorageContext();
     assert(is_not_cleaned(entity));
     info := get_info(entity);
+
     if info.uuid != 0 && table_contains(*state.uuid_table, info.uuid)
     then table_remove(*state.uuid_table, info.uuid);
-    
+
     using state.info_arena;
     count -= 1;
     deleted, last := remove_id(*entities, entity);
@@ -649,5 +719,47 @@ rem_info :: (entity : Entity) {
         components[last] = .{}; 
     } else {
         components[deleted] = .{};
+    }
+
+    array_reset(*info.children);
+    free(info.name);
+}
+
+//#TODO_asuarez this is going to be a problem when we add the clone feature...
+// - This procedure es being used to deserialize the entity and it is not meant for clone purposes.
+// - We should create a dlz_callback and use that for dlz and keep this to for clone.
+cpy_info :: (entity : Entity, d : *Entity_Info, s : *Entity_Info) {
+    d.flags = s.flags;
+    d.name = copy_string(s.name);
+    d.parent = s.parent;
+    array_copy(*d.children, s.children);
+}
+
+compute_enabled_iterative :: (ref : Entity_Ref) { 
+    stack : [..] Entity_Ref;
+    array_add(*stack, ref ,,temp);
+
+    while stack.count > 0 {
+        current_ref := pop(*stack);
+        current_entity := resolve_ref(*current_ref);
+        current_entity_info := get_info(current_entity);
+        parent_ref := current_entity_info.parent;
+
+        parent := resolve_ref(*parent_ref);
+        parent_enabled := ifx is_not_cleaned(parent) && is_not_destroyed(parent) then is_enabled(parent) else true;
+        new_enabled := (.LOCAL_ENABLED & current_entity_info.flags).(bool) && parent_enabled;
+        
+        if((.ENABLED & current_entity_info.flags).(bool) != new_enabled) {
+            for child : current_entity_info.children {
+                array_add(*stack, child);
+            } 
+        }
+
+        if new_enabled && !(.ENABLED & current_entity_info.flags) { 
+            current_entity_info.flags |= .ENABLED;
+        } 
+        else if !new_enabled && .ENABLED & current_entity_info.flags { 
+            current_entity_info.flags = current_entity_info.flags &~ .ENABLED;
+        }
     }
 }
