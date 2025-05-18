@@ -259,10 +259,13 @@ SCOPE
                                         print_to_builder(*arenas_builder, "%1_arena: Component_Arena(%2);\n", arena_name, value.type_name);
                                         print_to_builder(*arenas_init_builder, "init(*%1_arena, %2, cpy_proc = %3, add_proc = %4, rem_proc = %5);\n", arena_name, max, value.cpy_proc, value.add_proc, value.rem_proc);
                                         print_to_builder(*arenas_init_builder, "array_add(all, *%1_arena);\n", arena_name);
-                                        print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);\n", arena_name);
                                         print_to_builder(*arenas_get_builder, "case %1; return *%2_arena;\n", value.type_name, arena_name);
-                                        
                                         print("Registered component arena of type: %. Max elements: %. InitOrder: % \n", value.type_name, max, value.init_order);
+                                    }
+
+                                    for < value : component_info_array {
+                                        arena_name := to_lower_copy(value.type_name);
+                                        print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);\n", arena_name);
                                     }
 
                                     arenas_string = builder_to_string(*arenas_builder);
