@@ -10,6 +10,7 @@ data :: (buff : TextBuff) -> *u8 {
 
 Editor :: struct {
     show_demo                : bool;
+    show_hierarchy           : bool;
     prefab_name              : TextBuff;
     prefab_ref               : Entity_Ref;
     show_create_prefab       : bool;
@@ -25,6 +26,10 @@ draw_editor :: () {
     if ImGui.BeginMenuBar()  {
         if ImGui.BeginMenu("ImGui") {
             ImGui.Checkbox("Show demo", *show_demo);
+            ImGui.EndMenu();
+        }
+        if ImGui.BeginMenu("Entity") {
+            ImGui.Checkbox("Show hierarchy", *show_hierarchy);
             ImGui.EndMenu();
         }
         if ImGui.BeginMenu("Prefab")  {
@@ -55,6 +60,7 @@ draw_editor :: () {
                         prefab = dlz_entity(prefab_str);
                         context.editor.prefab_ref = make_ref(prefab);
                         context.editor.selected_ref = context.editor.prefab_ref;
+                        context.editor.show_hierarchy = true;
                     }
                 });
                 ImGui.EndMenu();
@@ -80,6 +86,9 @@ draw_editor :: () {
         ImGui.SetNextWindowPos(.{650, 20}, ImGui.Cond.FirstUseEver, .{0,0});
         ImGui.ShowDemoWindow(*show_demo);
     }
+
+    if show_hierarchy
+    then draw_all_entities_hierarchy(*show_hierarchy);
     
     if show_create_prefab {
         ImGui.OpenPopup("Create Prefab");
@@ -126,75 +135,12 @@ draw_editor :: () {
     }
     ImGui.PopStyleColor();
 
-    // Hierarchy.
-    {
-        ImGui.Begin("Hierarchy");
-        
-        hierarchy :: (ref : Entity_Ref) {
-            entity := resolve_ref(*ref);
-            if entity != NULL_ENTITY {
-                flags : ImGui.TreeNodeFlags;
-                if get_children(entity).count == 0 {
-                    flags |= .Leaf;
-                }
-                
-                enabled := is_enabled(entity);
-                if !enabled {
-                    ImGui.PushStyleColor(.Text, .{ .5, .5, .5, 1 });
-                }
-                name := get_name(entity);
-                if  !name.count
-                then name = tprint("%", entity ,,temp);
-
-                opened := ImGui.TreeNodeEx(to_c_string(name ,,temp), flags);
-                if !enabled {
-                    ImGui.PopStyleColor();
-                }
-                if opened {
-                    if ImGui.BeginDragDropSource() {
-                        ImGui.SetDragDropPayload("ENTITY_DRAG", *ref, size_of(Entity_Ref));
-                        ImGui.Text("Drag Entity %", ref.entity);
-                        ImGui.EndDragDropSource();
-                    }
-                    if ImGui.BeginDragDropTarget() {
-                        payload := ImGui.AcceptDragDropPayload("ENTITY_DRAG");
-                        if payload {
-                            dragged_entity_ref := payload.Data.(*Entity_Ref);
-                            dragged_entity := resolve_ref(dragged_entity_ref);
-                            if dragged_entity_ref.entity != ref.entity && dragged_entity_ref.entity != get_parent(entity) {
-                                set_parent(dragged_entity, entity);
-                            }
-                        }
-                        ImGui.EndDragDropTarget();
-                    }
-                    if ImGui.BeginPopupContextItem() {
-                        if ImGui.MenuItem("Add Child") {
-                            context.editor.show_create_prefab = true;
-                            context.editor.create_prefab_parent_ref = context.editor.selected_ref;
-                        }
-                        ImGui.EndPopup();
-                    }
-                    if ImGui.IsItemClicked() {
-                        context.editor.selected_ref = ref;
-                    }
-                    for child : get_children(entity) {
-                        hierarchy(child);
-                    }
-                    ImGui.TreePop();
-                }
-            }
-        }
-
-        hierarchy(prefab_ref);
-        ImGui.End();
-    }
-
     entity := resolve_ref(*selected_ref);
+    ImGui.Begin("Properties");
     if entity != NULL_ENTITY {
-        ImGui.Begin("Properties");
         editor_draw_entity(entity);
-        ImGui.End();
     }
+    ImGui.End();
 }
 
 save_prefab_and_close :: () {
@@ -259,7 +205,8 @@ editor_draw_entity :: (entity : Entity) {
 
 ImGui :: #import "ImGui";
 #import "File_Utilities";
-#load "editor_props.jai";
 #import "Math";
+#load "editor_props.jai";
+#load "hierarchy.jai";
 
 } //#if EDITOR && IMGUI
