@@ -11,6 +11,8 @@ data :: (buff : TextBuff) -> *u8 {
 Editor :: struct {
     show_demo                : bool;
     show_hierarchy           : bool;
+    show_properties          : bool;
+
     prefab_name              : TextBuff;
     prefab_ref               : Entity_Ref;
     show_create_prefab       : bool;
@@ -29,7 +31,8 @@ draw_editor :: () {
             ImGui.EndMenu();
         }
         if ImGui.BeginMenu("Entity") {
-            ImGui.Checkbox("Show hierarchy", *show_hierarchy);
+            ImGui.Checkbox("Show hierarchy",  *show_hierarchy);
+            ImGui.Checkbox("Show properties", *show_properties);
             ImGui.EndMenu();
         }
         if ImGui.BeginMenu("Prefab")  {
@@ -61,6 +64,7 @@ draw_editor :: () {
                         context.editor.prefab_ref = make_ref(prefab);
                         context.editor.selected_ref = context.editor.prefab_ref;
                         context.editor.show_hierarchy = true;
+                        context.editor.show_properties = true;
                     }
                 });
                 ImGui.EndMenu();
@@ -90,6 +94,9 @@ draw_editor :: () {
     if show_hierarchy
     then draw_all_entities_hierarchy(*show_hierarchy);
     
+    if show_properties
+    then draw_properties(*show_properties);
+
     if show_create_prefab {
         ImGui.OpenPopup("Create Prefab");
     }
@@ -134,13 +141,6 @@ draw_editor :: () {
         ImGui.EndPopup();
     }
     ImGui.PopStyleColor();
-
-    entity := resolve_ref(*selected_ref);
-    ImGui.Begin("Properties");
-    if entity != NULL_ENTITY {
-        editor_draw_entity(entity);
-    }
-    ImGui.End();
 }
 
 save_prefab_and_close :: () {
@@ -163,50 +163,15 @@ save_prefab :: () {
     write_entire_file(tprint("assets/%.prefab", get_name(prefab) ,,temp), builder_to_string(*builder, prefab ,,temp));
 }
 
-editor_draw_entity :: (entity : Entity) {
-        EntityStorageContext();
-        
-        ignore_info := editor_should_ignore_struct(state.info_arena.type);
-        
-        if !ignore_info {
-            if EDITOR state.info_arena.drw(entity);
-            editor_draw_separator();
-            editor_draw_spacing();
-        } 
-
-        for state.component_arenas {
-            if !it.has(entity)
-            then continue;
-            ignore_all := editor_should_ignore_struct(it.type);
-            if !ignore_all {
-                it.drw(entity);
-                editor_draw_separator();
-                editor_draw_spacing();
-            }
-        }
-
-        if editor_draw_centered_button("Add Component") {
-            ImGui.OpenPopup("Add Component");
-        }
-
-        if ImGui.BeginPopup("Add Component") {
-            for state.component_arenas {
-                if it.has(entity)
-                then continue;
-                if ImGui.MenuItem(to_c_string(it.type.name ,,temp)) {
-                    it.add(entity);
-                }
-            }
-            ImGui.EndPopup();
-        }
-    }
-
 #scope_file
 
 ImGui :: #import "ImGui";
 #import "File_Utilities";
 #import "Math";
 #load "editor_props.jai";
-#load "hierarchy.jai";
+
+// Panels
+#load "panels/hierarchy.jai";
+#load "panels/properties.jai";
 
 } //#if EDITOR && IMGUI
