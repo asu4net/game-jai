@@ -5,6 +5,16 @@
 {
 	"name": "player",
 	"flags": "LOCAL_ENABLED | ENABLED",
+	"parent": {
+		"uuid": 0
+	},
+	"children": [
+		{
+			"uuid": 3178532888591834674
+		},{
+			"uuid": 13896276170227592242
+		}
+	]
 }
 
 @Component(Transform2D_Component)
@@ -28,6 +38,125 @@
 		"x": 1,
 		"y": 1,
 		"z": 1,
+		"w": 1
+	},
+	"size": {
+		"x": 1,
+		"y": 1
+	},
+	"tiling": {
+		"x": 1,
+		"y": 1
+	},
+	"blend": "ALPHA",
+	"flip_x": false,
+	"flip_y": false,
+	"autosize": true
+}
+
+@Entity(3178532888591834674)
+
+@Component(Entity_Info)
+{
+	"name": "aaa",
+	"flags": "LOCAL_ENABLED | ENABLED",
+	"parent": {
+		"uuid": 13558330354512883500
+	},
+	"children": [
+	]
+}
+
+@Component(Transform2D_Component)
+{
+	"pos": {
+		"x": -1,
+		"y": 0
+	},
+	"scl": {
+		"x": 0.5,
+		"y": 0.5
+	},
+	"ang": 0
+}
+
+@Component(Sprite_Component)
+{
+	"visible": true,
+	"item": "",
+	"tint": {
+		"x": 1,
+		"y": 0.391858,
+		"z": 0.391858,
+		"w": 1
+	},
+	"size": {
+		"x": 1,
+		"y": 1
+	},
+	"tiling": {
+		"x": 1,
+		"y": 1
+	},
+	"blend": "ALPHA",
+	"flip_x": false,
+	"flip_y": false,
+	"autosize": true
+}
+
+@Component(Blink_Component)
+{
+	"enabled": false,
+	"start_tint": {
+		"x": 1,
+		"y": 0,
+		"z": 0,
+		"w": 1
+	},
+	"end_tint": {
+		"x": 1,
+		"y": 1,
+		"z": 1,
+		"w": 1
+	},
+	"duration": 0.5,
+	"progress": 0.195929
+}
+
+@Entity(13896276170227592242)
+
+@Component(Entity_Info)
+{
+	"name": "ccc",
+	"flags": "LOCAL_ENABLED | ENABLED",
+	"parent": {
+		"uuid": 13558330354512883500
+	},
+	"children": [
+	]
+}
+
+@Component(Transform2D_Component)
+{
+	"pos": {
+		"x": -0.7,
+		"y": 0
+	},
+	"scl": {
+		"x": -0.1,
+		"y": 1
+	},
+	"ang": 0
+}
+
+@Component(Sprite_Component)
+{
+	"visible": true,
+	"item": "",
+	"tint": {
+		"x": 0.349057,
+		"y": 0.729537,
+		"z": 0.316739,
 		"w": 1
 	},
 	"size": {

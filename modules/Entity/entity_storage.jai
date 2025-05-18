@@ -192,7 +192,7 @@ get_name :: (entity : Entity) -> string {
 }
 
 set_name :: (entity : Entity, name : string) {
-    get_info(entity).name = name;
+    get_info(entity).name = copy_string(name);
 }
 
 get_parent :: (entity : Entity) -> Entity {
@@ -711,6 +711,10 @@ rem_info :: (entity : Entity) {
     if info.uuid != 0 && table_contains(*state.uuid_table, info.uuid)
     then table_remove(*state.uuid_table, info.uuid);
 
+    array_reset(*info.children);
+    if info.name.count
+    then free(info.name);
+
     using state.info_arena;
     count -= 1;
     deleted, last := remove_id(*entities, entity);
@@ -720,19 +724,17 @@ rem_info :: (entity : Entity) {
     } else {
         components[deleted] = .{};
     }
-
-    array_reset(*info.children);
-    free(info.name);
 }
 
 //#TODO_asuarez this is going to be a problem when we add the clone feature...
 // - This procedure es being used to deserialize the entity and it is not meant for clone purposes.
 // - We should create a dlz_callback and use that for dlz and keep this to for clone.
 cpy_info :: (entity : Entity, d : *Entity_Info, s : *Entity_Info) {
-    d.flags = s.flags;
-    d.name = copy_string(s.name);
+    d.flags  = s.flags;
+    d.name   = copy_string(s.name);
     d.parent = s.parent;
-    array_copy(*d.children, s.children);
+    if s.children.count
+    then array_copy(*d.children, s.children);
 }
 
 compute_enabled_iterative :: (ref : Entity_Ref) { 
