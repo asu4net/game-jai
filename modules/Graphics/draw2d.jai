@@ -285,6 +285,69 @@ draw_quad :: (
     state.quad_count += 1;
 }
 
+draw_quad :: (
+    mat    : m4       = IDENTITY,
+    tex    : *Texture = null,
+    tiling : v2       = ONE_2D,
+    size   : v2       = ONE_2D,
+    blend  : Blend    = .ALPHA,
+    rect   : Rect     = .{},
+    tint   : v4       = WHITE,
+    id     : u32      = 0,
+    flags  : QuadFlag = DEFAULT_QUAD_FLAGS
+)
+{
+    Draw2DPrimitiveHeader(.QUAD, .ORTHO_WORLD, blend);
+
+    vertex_positions := DEFAULT_VERTEX_POSITIONS_2D;
+    vertex_uvs       := DEFAULT_VERTEX_UVS_2D;
+
+    vertex_colors    : V4Verts2D = ---;
+    for *vertex_colors it.* = tint;
+    
+    if tex != null {
+        
+        pixel_width  := tex.width;
+        pixel_height := tex.height;
+
+        if .USE_SUBTEX & flags {
+            
+            pixel_width  = xx rect.width;
+            pixel_height = xx rect.height;
+            sub_tex_uv(*vertex_uvs, tex, rect);
+        }
+
+        for *vertex_uvs multiply(it.*, tiling);
+        flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
+
+        if .AUTOSIZE & flags {
+            
+            pixel_size := v2.{xx pixel_width, xx pixel_height};
+            final_size := multiply(pixel_size, size);
+
+            pos := normalize(final_size) / 2.0;
+
+            vertex_positions[0] = .{ -pos.x, -pos.y, 0.0, 1.0 };
+            vertex_positions[1] = .{  pos.x, -pos.y, 0.0, 1.0 };
+            vertex_positions[2] = .{  pos.x,  pos.y, 0.0, 1.0 };
+            vertex_positions[3] = .{ -pos.x,  pos.y, 0.0, 1.0 };
+        }
+    }
+    
+    for *vertex_positions it.* = mat * it.*;
+    
+    slot := assign_tex_slot(tex);
+
+    for i : 0..VERTICES_PER_2D_PRIMITIVE - 1 {
+        state.quad_batch[i + state.quad_count * VERTICES_PER_2D_PRIMITIVE] = .{
+            vertex_positions[i], vertex_colors[i], vertex_uvs[i], slot, xx id
+        };
+    }    
+    
+    state.quad_index_count += INDICES_PER_2D_PRIMITIVE;
+    state.quad_count += 1;
+}
+
 draw_text :: (
     pos    : v2     = ZERO_2D,
     ang    : f32    = 0,

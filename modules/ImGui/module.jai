@@ -1,3 +1,6 @@
+#load "impl/imgui_gl.jai";
+#load "imgui.jai";
+
 // Bindings for Dear ImGui.
 
 ImVec2      :: Vector2;
@@ -31,6 +34,9 @@ ImDrawCallback :: #type (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call;
 
 #import "Basic";
 #import "Math";
+#import "File_Utilities";
+Input     :: #import "Input";
+Clipboard :: #import "Clipboard";
 
 #if OS == .WINDOWS {
     #load "windows.jai";

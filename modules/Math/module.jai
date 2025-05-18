@@ -2,6 +2,7 @@
 #load "plane.jai";
 #load "matrix.jai";
 #load "print.jai";
+#load "utils.jai";
 
 // Scalar constants.
 

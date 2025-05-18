@@ -1,4 +1,6 @@
 Sparse_Set :: struct {
+    NULL :: U32_MAX; 
+    
     sparse   : [..] u32;
     dense    : [..] u32;
     count    : u32;
@@ -11,9 +13,12 @@ initialized :: (using s : *Sparse_Set) -> bool {
 
 init :: (using s : *Sparse_Set, start_capacity : u32 = 30) {
     assert(!initialized(s));
-    capacity = start_capacity + 1; //zero represents the invalid value
+    assert(start_capacity < Sparse_Set.NULL);
+    capacity = start_capacity;
     array_resize(*sparse, capacity);
     array_resize(*dense, capacity);
+    for * sparse it.* = Sparse_Set.NULL;
+    for * dense  it.* = Sparse_Set.NULL;
 }
 
 deinit :: (using s : *Sparse_Set) {
@@ -25,11 +30,11 @@ deinit :: (using s : *Sparse_Set) {
 
 test :: (using s : *Sparse_Set, element : u32) -> bool {
     assert(initialized(s));
-    return element != 0 && element < capacity && sparse[element] <= count && sparse[element] != 0;
+    return element < capacity && sparse[element] < count;
 }
 
 search :: (using s : *Sparse_Set, element : u32) -> u32 {
-    assert(initialized(s) && element != 0);
+    assert(initialized(s));
     assert(test(s, element));
     dense_index := sparse[element];
     return dense_index;
@@ -45,13 +50,14 @@ insert_id :: (using s : *Sparse_Set, element : u32) -> u32 {
     assert(initialized(s));
     // If it is full just grow the sparse and dense arrays and increase the capacity
     if is_full(s) {
-        array_add(*sparse, 0);
-        array_add(*dense, 0);
+        array_add(*sparse, Sparse_Set.NULL);
+        array_add(*dense,  Sparse_Set.NULL);
         capacity = xx sparse.allocated;
+        assert(capacity < Sparse_Set.NULL);
     }
     assert(element < capacity && !test(s, element));
     assert(!is_full(s));
-    next_slot := count + 1;
+    next_slot := count;
     sparse[element] = next_slot;
     dense[next_slot] = element;
     count+=1;
@@ -63,9 +69,9 @@ remove_id :: (using s : *Sparse_Set, element : u32) -> u32, u32 {
     assert(element < capacity && test(s, element));
     
     deleted := sparse[element];
-    last    := count;
-
-    sparse[element] = 0;
+    last    := count - 1;
+    
+    sparse[element] = Sparse_Set.NULL;
     count -= 1;
 
     if deleted != last {
@@ -76,3 +82,9 @@ remove_id :: (using s : *Sparse_Set, element : u32) -> u32, u32 {
 
     return deleted, last;
 }
+
+#scope_module
+
+
+#import "Basic";
+#import "Math";

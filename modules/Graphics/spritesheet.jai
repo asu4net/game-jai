@@ -15,6 +15,10 @@ SpritesheetDef :: struct {
     rects : [..] SheetDefItem;
 }
 
+is_init :: (sheet : *Spritesheet) -> bool {
+    return sheet.tex.id != 0;
+}
+
 init :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
     
     full_path_png  := join(dst_path, "/", sheet_name, ".png" ,,temp);

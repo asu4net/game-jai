@@ -1,3 +1,5 @@
+#if IMGUI {
+
 editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
     name := to_string(name_c);
 
@@ -11,46 +13,52 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
                 editor_draw_drag_u32(name, data);
             }
         case FLOAT;
-            editor_draw_drag_f32(name, data, 0.1, FLOAT32_MIN, FLOAT32_MAX);
+            editor_draw_drag_f32(name, data, 0.1, -FLOAT32_MAX, FLOAT32_MAX);
         case BOOL;
             editor_draw_bool(name, data);
         case STRING;
             editor_draw_input_text(name, data.(*string));
         case STRUCT;
             info_struct := cast(*Type_Info_Struct) info;
-            if ImGui.TreeNode(name_c, "%: %", name, info_struct.name) {
-                for member: info_struct.members {
-                    ignore : bool;
-                    is_color : bool;
-                    for note: member.notes {
-	                	if note == "EditorIgnore" {
-                            ignore = true;
-                        }
-                        if note == "Color" {
-                            is_color = true;
-                        }
-	                }
-                    if !ignore {
-                        member_data := data + member.offset_in_bytes;
-                        if member.type == type_info(v2) {
-                            editor_draw_drag_vector2(member.name, member_data, ZERO_2D, 0.1);
-                        } else if member.type == type_info(v3) {
-                            editor_draw_drag_vector3(member.name, member_data, ZERO_3D, 0.1);
-                        } else if member.type == type_info(v4) {
-                            if !is_color {
-                                editor_draw_drag_vector4(member.name, member_data, ZERO_4D, 0.1);
-                            } else {
-                                editor_draw_color_palette(member.name, member_data);
+            tree_opened := false;
+            ignore_all := editor_should_ignore_struct(info);
+            if !ignore_all {
+                if name_c
+                then tree_opened = ImGui.TreeNode(name_c, "%: %", name, info_struct.name);
+                else tree_opened = ImGui.TreeNode(to_c_string(info_struct.name ,,temp));
+                if tree_opened {
+                    for member: info_struct.members {
+                        ignore : bool;
+                        is_color : bool;
+                        for note: member.notes {
+                            if note == "EditorIgnore" {
+                                ignore = true;
                             }
-                        } else if member.type == type_info(Entity_Ref) {
-                            //todo
-                        }  else {
-                            editor_draw_property(temp_c_string(member.name), member_data, member.type);
+                            if note == "Color" {
+                                is_color = true;
+                            }
+                        }
+                        if !ignore {
+                            member_data := data + member.offset_in_bytes;
+                            if member.type == type_info(v2) {
+                                editor_draw_drag_vector2(member.name, member_data, ZERO_2D, 0.1);
+                            } else if member.type == type_info(v3) {
+                                editor_draw_drag_vector3(member.name, member_data, ZERO_3D, 0.1);
+                            } else if member.type == type_info(v4) {
+                                if !is_color {
+                                    editor_draw_drag_vector4(member.name, member_data, ZERO_4D, 0.1);
+                                } else {
+                                    editor_draw_color_palette(member.name, member_data);
+                                }
+                            } else {
+                                editor_draw_property(temp_c_string(member.name), member_data, member.type);
+                            }
                         }
                     }
+                    ImGui.TreePop();
                 }
-                ImGui.TreePop();
             }
+            
         case ARRAY;
             info_array := cast(*Type_Info_Array) info;
             array_count, array_data := get_array_count_and_data(data, info_array);
@@ -73,8 +81,12 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
     }
 }
 
-editor_draw_spacing :: inline (spacing : u32) {
-    for 1..spacing ImGui.Spacing();
+editor_draw_spacing :: inline (spacing : u32 = 1) {
+    for 0..spacing-1 ImGui.Spacing();
+}
+
+editor_draw_separator :: inline () {
+    ImGui.Separator();
 }
 
 editor_draw_input_text :: (name : string, s : *string) {
@@ -115,7 +127,19 @@ editor_draw_enum_combo :: (name : string, info : *Type_Info, data : *void) {
     info_enum := cast(*Type_Info_Enum) info;
 
     if info_enum.enum_type_flags & .FLAGS {
-        // @@ How to handle flags?
+        // @Review: For now we asume a u16 flag set.
+        my_flags := data.(*u16); 
+        begin_property(name);
+        for 0..info_enum.names.count - 1 {
+            flag_value := info_enum.values[it].(u16);
+            is_set := (my_flags.* & flag_value) != 0;
+            if ImGui.Checkbox(to_c_string(info_enum.names[it] ,,temp), *is_set) {
+                if is_set 
+                then my_flags.* |= flag_value; 
+                else my_flags.* &= ~flag_value;
+            }
+        }
+        end_property();
     } else {
         begin_property(name);
         value := get_enum_value(data, info_enum);
@@ -161,9 +185,9 @@ editor_draw_drag_s32 :: (name: string, value: *s32, speed: f32 = 1.0) -> bool {
 
 editor_draw_drag_u32 :: (name: string, value: *u32, speed: f32 = 1.0) -> bool {
     begin_property(name);
-    tmp: s32 = xx value.*;
+    tmp: s32 = xx,no_check value.*;
     changed := ImGui.DragInt("##", *tmp, speed);
-    value.* = xx tmp;
+    value.* = xx,no_check tmp;
     if in_property_context {
         ImGui.PopItemWidth();
     }
@@ -246,7 +270,30 @@ editor_draw_color_palette :: (name: string, color: *Vector4) -> bool {
     return changed;
 }
 
+editor_draw_centered_button :: (name: string, alignment : f32 = 0.5) -> bool {
+    style := ImGui.GetStyle();
+    size  := ImGui.CalcTextSize(name).x + style.FramePadding.x * 2.0;
+    avail := ImGui.GetContentRegionAvail().x;
+    off   := (avail - size) * alignment;
+    if off > 0
+    then ImGui.SetCursorPosX(ImGui.GetCursorPosX() + off);
+    return ImGui.Button(to_c_string(name ,,temp));
+}
+
+editor_should_ignore_struct :: (t : *Type_Info) -> bool {
+    assert(t.type == .STRUCT);
+    info_struct := t.(*Type_Info_Struct);
+    for info_struct.notes {
+        if it == "EditorIgnore"
+        then return true;
+    }
+    return false;
+}
+
 #scope_file
+
+#import "Reflection";
+#import "String";
 
 COLUMN_WIDTH :: 120;
 
@@ -275,4 +322,10 @@ end_property :: () {
     ImGui.Columns(1);
     ImGui.PopID();
     in_property_context = false;
+}
+
+#scope_file
+
+ImGui :: #import "ImGui";
+
 }
