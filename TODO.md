@@ -1,11 +1,6 @@
 # TODO
 
-- FALLA CUANDO AÑADES LOS PUTOS HIJOS
- - esto quizás es por alguna modificación en el tag component?
 - Hacer que los prefab funcionen como prefab en modo editor y tengan un prefab component que sea nativo.
-- Quitar el tag y hacer que el prefab component tenga una tag dentro? Esto haría que solo los prefab puedan
-- Tener un nombre, lo que quizás no es tan mala idea... Idk.
-
 - Allow entity destruction in editor
 
 - Display Entity refs as drag and drop like unity

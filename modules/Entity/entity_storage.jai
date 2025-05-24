@@ -407,6 +407,7 @@ immediate_destroy_entity :: (entity : Entity) {
         push_back(*state.free_queue, entity);
     }
 
+    set_parent(entity, NULL_ENTITY);
     children := array_copy(get_children(entity) ,,temp);
     
     rem_all_components(entity);
