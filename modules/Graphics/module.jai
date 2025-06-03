@@ -9,6 +9,7 @@
 #load "font.jai";
 #load "render_camera.jai";
 #load "spritesheet.jai";
+#load "frame_buffer.jai";
 
 #scope_module
 
