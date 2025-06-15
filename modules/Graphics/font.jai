@@ -99,7 +99,7 @@ fill_glyph :: (font : *Font, glyph : *Glyph, c : u8) {
     assert(font_is_init(font));
     assert(table_contains(*font.glyphs, c));
     success := false;
-    glyph.*, success = table_find(*font.glyphs, c);
+    success, glyph.* = table_find_new(*font.glyphs, c);
     assert(success);
 }
 

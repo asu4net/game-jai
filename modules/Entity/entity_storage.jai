@@ -383,7 +383,7 @@ make_ref :: (entity : Entity, uuid : u64 = 0) -> Entity_Ref {
 resolve_ref :: (ref : *Entity_Ref) -> Entity {
     EntityStorageContext();
 
-    entity, success := table_find(*state.uuid_table, ref.uuid);
+    success, entity := table_find_new(*state.uuid_table, ref.uuid);
     if !success 
     then return NULL_ENTITY;
     ref.entity = entity;

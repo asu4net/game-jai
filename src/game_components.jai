@@ -84,7 +84,7 @@ draw_sprite_entity :: (entity : Entity, sheet : *Graphics.Spritesheet) {
     // try find the item
     if tex && (rect.width == 0 || rect.height == 0) {
         assert(tex.id != 0);
-        r, found := table_find(*sheet.rects, item);
+        found, r := table_find_new(*sheet.rects, item);
         if found rect = r;
     }
     

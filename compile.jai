@@ -178,7 +178,7 @@ SCOPE
                                         }
                                         if begins_with(note, "max(") {
                                             expected_num := slice(note, 4, note.count-5);
-                                            info, found := table_find(*component_info, it.defined_type.name);
+                                            found, info := table_find_new(*component_info, it.defined_type.name);
                                             if !found {
                                                 log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
                                                 continue;
@@ -192,7 +192,7 @@ SCOPE
                                                     log_error("Error parsing the @Max attribute for %. Expected something like Max(30) but got this % \n", it.defined_type.name, note_obj.text);
                                                     continue;
                                                 } else {
-                                                    info, found := table_find(*component_info, it.defined_type.name);
+                                                    found, info := table_find_new(*component_info, it.defined_type.name);
                                                     if !found {
                                                         log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
                                                         continue;
