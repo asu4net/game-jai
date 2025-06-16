@@ -102,13 +102,13 @@ collect_component_info :: (structs: [..] *Code_Struct) -> Table(string, Componen
 }
 
 assign_component_callbacks :: (procs: [..] *Code_Procedure_Header, info_table: *Table(string, Component_Info)) {
-    CPY_CALLBACL_STR :: "copycomponentcallback"; 
-    REM_CALLBACL_STR :: "removecomponentcallback";
+    CPY_CALLBACK_STR :: "copycomponentcallback"; 
+    REM_CALLBACK_STR :: "removecomponentcallback";
     
     for p : procs {
         for note_obj : p.notes {
             note := to_lower_copy(note_obj.text);
-            if note != CPY_CALLBACL_STR && note != REM_CALLBACL_STR
+            if note != CPY_CALLBACK_STR && note != REM_CALLBACK_STR
             then continue;
             for arg : p.arguments {
                 argument_type := arg.entry.base.type;
@@ -116,8 +116,8 @@ assign_component_callbacks :: (procs: [..] *Code_Procedure_Header, info_table: *
                     struct_type := argument_type.(*Type_Info_Pointer).pointer_to.(*Type_Info_Struct);
                     info := table_find_pointer(info_table, struct_type.name);
                     if note == {
-                        case CPY_CALLBACL_STR; info.cpy_proc = p.name;
-                        case REM_CALLBACL_STR; info.rem_proc = p.name;
+                        case CPY_CALLBACK_STR; info.cpy_proc = p.name;
+                        case REM_CALLBACK_STR; info.rem_proc = p.name;
                     }
                 }
             }
