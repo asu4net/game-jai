@@ -688,6 +688,19 @@ for_expansion :: (view: Entity_View, body: Code, flags: For_Flags) #expand {
     }
 }
 
+clone_entity :: (entity : Entity, name : string) -> Entity {
+    EntityStorageContext();
+    res_entity := create_entity();
+    set_name(res_entity, name);
+    for arena : state.component_arenas {
+        if !arena.has(entity)
+        then continue;
+        res_cmp := arena.add(res_entity);
+        arena.call_cpy_cbk(arena.cpy_cbk_fn, res_entity, arena.get(entity), res_cmp);
+    }
+    return res_entity;
+}
+
 #scope_file
 
 // Just add the info component if the entity is created.

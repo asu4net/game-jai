@@ -5,18 +5,15 @@ CompileFlags :: enum_flags {
     IMGUI;
 }
 
-// Compile settings.
-EXECUTABLE_NAME               :: "game";
-OUTPUT_PATH                   :: "bin";
-BUILD_FILE                    :: "src/game.jai";
-COMPILE_FLAGS                 :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
-
-// Entity code generation.
+EXECUTABLE_NAME :: "game";
+OUTPUT_PATH     :: "bin";
+BUILD_FILE      :: "src/game.jai";
+COMPILE_FLAGS   :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
 
 MAX_ENTITIES                  :: 3000;
 DEFAULT_COMPONENT_ARENA_COUNT :: 30;
 
-GENERATED_COMPONENT_ARENAS    :: #string SCOPE 
+GENERATED_COMPONENT_ARENAS :: #string SCOPE
 
 Generated_Component_Arenas :: struct {
     %1
@@ -56,17 +53,121 @@ MAX_ENTITIES :: %5;
 
 SCOPE
 
+Component_Info :: struct {
+    type_name  : string;
+    max        : s64;
+    init_order : s64 = 30100;
+    cpy_proc   := "null";
+    rem_proc   := "null";
+    add_proc   := "null";
+}
+
+collect_component_info :: (structs: [..] *Code_Struct) -> Table(string, Component_Info) {
+    result: Table(string, Component_Info);
+    for s : structs {
+        for note_obj : s.notes {
+            note := to_lower_copy(note_obj.text);
+
+            if note == "component" {
+                info := Component_Info.{ type_name = s.defined_type.name };
+                table_add(*result, info.type_name, info);
+            }
+
+            if begins_with(note, "initorder(") {
+                info := table_find_pointer(*result, s.defined_type.name);
+                if !info continue;
+
+                parsed, ok := parse_int(*slice(note, 10, note.count-11));
+                if ok info.init_order = parsed;
+            }
+
+            if begins_with(note, "max(") {
+
+                parsed_text := slice(note, 4, note.count-5);
+                found, info := table_find_new(*result, s.defined_type.name);
+                if !found continue;
+
+                if parsed_text == "max_entities" {
+                    info.max = MAX_ENTITIES;
+                } else {
+                    parsed, ok := parse_int(*parsed_text);
+                    if ok info.max = parsed;
+                }
+
+                table_set(*result, info.type_name, info);
+            }
+        }
+    }
+    return result;
+}
+
+assign_component_callbacks :: (procs: [..] *Code_Procedure_Header, info_table: *Table(string, Component_Info)) {
+    CPY_CALLBACL_STR :: "copycomponentcallback"; 
+    REM_CALLBACL_STR :: "removecomponentcallback";
+    
+    for p : procs {
+        for note_obj : p.notes {
+            note := to_lower_copy(note_obj.text);
+            if note != CPY_CALLBACL_STR && note != REM_CALLBACL_STR
+            then continue;
+            for arg : p.arguments {
+                argument_type := arg.entry.base.type;
+                if argument_type.type == .POINTER {
+                    struct_type := argument_type.(*Type_Info_Pointer).pointer_to.(*Type_Info_Struct);
+                    info := table_find_pointer(info_table, struct_type.name);
+                    if note == {
+                        case CPY_CALLBACL_STR; info.cpy_proc = p.name;
+                        case REM_CALLBACL_STR; info.rem_proc = p.name;
+                    }
+                }
+            }
+        }
+    }
+}
+
+generate_component_arenas_code :: (info_table: Table(string, Component_Info)) -> string {
+    builder      : String_Builder;
+    builder_init : String_Builder;
+    builder_deinit : String_Builder;
+    builder_get  : String_Builder;
+
+    info_array: [..] Component_Info;
+    for val, _ : info_table array_add(*info_array, val);
+
+    quick_sort(info_array, x => x.init_order);
+
+    for info : info_array {
+
+        name := to_lower_copy(info.type_name);
+        max := ifx info.max > 0 then info.max else DEFAULT_COMPONENT_ARENA_COUNT;
+
+        print_to_builder(*builder, "%1_arena: Component_Arena(%2);\n", name, info.type_name);
+        print_to_builder(*builder_init, "init(*%1_arena, %2, cpy_proc = %3, add_proc = %4, rem_proc = %5);\n", name, max, info.cpy_proc, info.add_proc, info.rem_proc);
+        print_to_builder(*builder_init, "array_add(all, *%1_arena);\n", name);
+        print_to_builder(*builder_get, "case %1; return *%2_arena;\n", info.type_name, name);
+        log("Registered component arena of type: %. Max elements: %. InitOrder: % \n", info.type_name, max, info.init_order);
+    }
+
+    for info : info_array {
+        name := to_lower_copy(info.type_name);
+        print_to_builder(*builder_deinit, "deinit(*%1_arena);\n", name);
+    }
+
+    return sprint(GENERATED_COMPONENT_ARENAS,
+        builder_to_string(*builder),
+        builder_to_string(*builder_init),
+        builder_to_string(*builder_deinit),
+        builder_to_string(*builder_get),
+        MAX_ENTITIES
+    );
+}
+
 #run {
     set_build_options_dc(.{do_output=false});
-    log("Compiling %...", EXECUTABLE_NAME);  
+    log("Compiling %...", EXECUTABLE_NAME);
 
-    // Workspace creation.
     w := compiler_create_workspace(EXECUTABLE_NAME);
-
-    if !w {
-        print("Workspace creation failed.\n");
-        assert(false);
-    }
+    if !w assert(false);
 
     // Build options.
     {
@@ -115,183 +216,35 @@ SCOPE
         else add_build_string("EDITOR :: false;", w);
         
     }
-    // Message loop.
-    {
-        generated_code := false;
-        struct_expressions: [..] *Code_Struct;
-        proc_headers: [..] *Code_Procedure_Header;
+    
+    generated_code := false;
+    structs: [..] *Code_Struct;
+    procs: [..] *Code_Procedure_Header;
 
-        while true {
-            message := compiler_wait_for_message();
-            if message.kind == {
+    while true {
+        msg := compiler_wait_for_message();
+        if msg.kind == {
+            case .TYPECHECKED;
+                m := cast(*Message_Typechecked) msg;
+                for m.structs array_add(*structs, it.expression);
+                for m.procedure_headers array_add(*procs, it.expression);
 
-                case .TYPECHECKED;
-                    typechecked := cast(*Message_Typechecked) message;
-                    for typechecked.structs {
-                        code_struct := it.expression; 
-                        array_add(*struct_expressions, code_struct);
-                    }
-                    for typechecked.procedure_headers {
-                        code_header := it.expression;
-                        array_add(*proc_headers, code_header);
-                    }
-                
-                case .PHASE;
-                    phase := cast(*Message_Phase) message;
-                    if phase.phase == .TYPECHECKED_ALL_WE_CAN {
-                        if !generated_code {
-                            
-                            Component_Info :: struct {
-                                type_name      : string;
-                                max            : s64;
-                                init_order     : s64 = 30100;
-                                cpy_proc := "null";
-                                rem_proc := "null";
-                                add_proc := "null";
-                            }
+            case .PHASE;
+                phase := cast(*Message_Phase) msg;
+                if phase.phase == .TYPECHECKED_ALL_WE_CAN && !generated_code {
+                    info_table := collect_component_info(structs);
+                    assign_component_callbacks(procs, *info_table);
+                    code := generate_component_arenas_code(info_table);
+                    add_build_string(code, w);
+                    generated_code = true;
+                }
 
-                            // Info
-                            component_info: Table(string, Component_Info);
-                            
-                            // Collect info from the structs.
-                            {
-                                for struct_expressions {
-                                    for note_obj : it.notes {
-                                        note := to_lower_copy(note_obj.text); 
-                                        if note == "component" {
-                                            info := Component_Info.{ type_name = it.defined_type.name };
-                                            table_add(*component_info, info.type_name, info);
-                                        }
-                                        if begins_with(note, "initorder(") {
-                                            expected_init_order := slice(note, 10, note.count-11);
-                                            info := table_find_pointer(*component_info, it.defined_type.name);
-                                            if !info {
-                                                log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
-                                                continue;
-                                            }
-                                            init_order, success := parse_int(*expected_init_order);
-                                            if !success {
-                                                log_error("Error parsing the @InitOrder attribute for %. Expected something like @InitOrder(0) but got this % \n", it.defined_type.name, note_obj.text);
-                                                continue;
-                                            }
-                                            info.init_order = init_order;                                         
-                                        }
-                                        if begins_with(note, "max(") {
-                                            expected_num := slice(note, 4, note.count-5);
-                                            found, info := table_find_new(*component_info, it.defined_type.name);
-                                            if !found {
-                                                log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
-                                                continue;
-                                            }
-                                            if expected_num == "max_entities" {
-                                                info.max = MAX_ENTITIES;
-                                                table_set(*component_info, info.type_name, info);
-                                            } else {
-                                                max, success := parse_int(*expected_num);
-                                                if !success {
-                                                    log_error("Error parsing the @Max attribute for %. Expected something like Max(30) but got this % \n", it.defined_type.name, note_obj.text);
-                                                    continue;
-                                                } else {
-                                                    found, info := table_find_new(*component_info, it.defined_type.name);
-                                                    if !found {
-                                                        log_error("Error: Detected @Max attribute without or before the @Component attribute \n");
-                                                        continue;
-                                                    }
-                                                    info.max = max;
-                                                    table_set(*component_info, info.type_name, info);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            } // Done collecting info.
-                            {
-                                // This is fucking ugly but who cares.
-                                for proc_headers {
-                                    for note_obj : it.notes {
-                                        note := to_lower_copy(note_obj.text);
-                                        if note == "copycomponentcallback" || note == "removecomponentcallback"  {
-                                            for argument : it.arguments {
-                                                argument_type := argument.entry.base.type;
-                                                if argument_type.type == .POINTER {
-                                                    pointer_type := argument_type.(*Type_Info_Pointer);
-                                                    if pointer_type.pointer_to.type == .STRUCT {
-                                                        struct_type := pointer_type.pointer_to.(*Type_Info_Struct);
-                                                        info := table_find_pointer(*component_info, struct_type.name);
-                                                        if info {
-                                                            if note == "copycomponentcallback"
-                                                            then info.cpy_proc = it.name;
-                                                            else if note == "removecomponentcallback"
-                                                            then info.rem_proc = it.name;
-                                                        }
-                                                    } 
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            
-                            // Generate the code.
-                            {
-                                arenas_string      : string;
-                                arenas_init_string : string;
-                                arenas_deinit_string : string;
-                                arenas_get_string : string;
-                                {
-                                    arenas_builder : String_Builder;
-                                    arenas_init_builder : String_Builder;
-                                    arenas_deinit_builder : String_Builder; 
-                                    arenas_get_builder : String_Builder;
-                                    
-                                    component_info_array : [..] Component_Info;
-
-                                    for value, key : component_info {
-                                        array_add(*component_info_array, value);
-                                    }
-                                                                        
-                                    // here sort the array WIP
-                                    quick_sort(component_info_array, x => x.init_order);
-
-                                    for value : component_info_array {
-                                        arena_name := to_lower_copy(value.type_name);
-                                        max := ifx value.max > 0 then value.max else DEFAULT_COMPONENT_ARENA_COUNT; 
-                                        print_to_builder(*arenas_builder, "%1_arena: Component_Arena(%2);\n", arena_name, value.type_name);
-                                        print_to_builder(*arenas_init_builder, "init(*%1_arena, %2, cpy_proc = %3, add_proc = %4, rem_proc = %5);\n", arena_name, max, value.cpy_proc, value.add_proc, value.rem_proc);
-                                        print_to_builder(*arenas_init_builder, "array_add(all, *%1_arena);\n", arena_name);
-                                        print_to_builder(*arenas_get_builder, "case %1; return *%2_arena;\n", value.type_name, arena_name);
-                                        print("Registered component arena of type: %. Max elements: %. InitOrder: % \n", value.type_name, max, value.init_order);
-                                    }
-
-                                    for < value : component_info_array {
-                                        arena_name := to_lower_copy(value.type_name);
-                                        print_to_builder(*arenas_deinit_builder, "deinit(*%1_arena);\n", arena_name);
-                                    }
-
-                                    arenas_string = builder_to_string(*arenas_builder);
-                                    arenas_init_string = builder_to_string(*arenas_init_builder);
-                                    arenas_deinit_string = builder_to_string(*arenas_deinit_builder);
-                                    arenas_get_string = builder_to_string(*arenas_get_builder);
-                                }
-
-                                generated_arenas_string := sprint(GENERATED_COMPONENT_ARENAS, arenas_string, arenas_init_string,
-                                arenas_deinit_string, arenas_get_string, MAX_ENTITIES);
-                                add_build_string(generated_arenas_string, w);
-                                generated_code = true;
-
-                            } // Done generating the code.
-                        }
-                    }
-                
-                case .COMPLETE;
-                    break;
-            }
+            case .COMPLETE;
+                break;
         }
-        
-    } // Done with the message loop.
-    
+    }
+
     compiler_end_intercept(w);
-    
     log("Done!");
 }
 
