@@ -709,6 +709,11 @@ clone_entity :: (entity : Entity, name : string) -> Entity {
         res_cmp := arena.add(res_entity);
         arena.call_cpy_cbk(arena.cpy_cbk_fn, res_entity, res_cmp, arena.get(entity));
     }
+    for get_children(entity) {
+        child := resolve_ref(*it);
+        res_child := clone_entity(child, get_name(child));
+        set_parent(res_child, res_entity);
+    }
     return res_entity;
 }
 
