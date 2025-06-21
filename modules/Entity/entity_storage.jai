@@ -707,7 +707,7 @@ clone_entity :: (entity : Entity, name : string) -> Entity {
         if !arena.has(entity)
         then continue;
         res_cmp := arena.add(res_entity);
-        arena.call_cpy_cbk(arena.cpy_cbk_fn, res_entity, arena.get(entity), res_cmp);
+        arena.call_cpy_cbk(arena.cpy_cbk_fn, res_entity, res_cmp, arena.get(entity));
     }
     return res_entity;
 }

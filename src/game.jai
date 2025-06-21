@@ -33,9 +33,9 @@ main :: () {
     
     Graphics.set_clear_color(DARK_GREY);
     
-    //player := dlz_entity(read_entire_file("assets/player.prefab" ,,temp));
-    //other_player := clone_entity(player, "other player");
-    //get_component(Transform2D_Component, player).pos = RIGHT_2D;
+    player := dlz_entity(read_entire_file("assets/player.prefab" ,,temp));
+    other_player := clone_entity(player, "other player");
+    get_component(Transform2D_Component, player).pos = RIGHT_2D;
     
     while Window.keep_opened() {   
 
