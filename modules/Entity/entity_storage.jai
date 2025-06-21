@@ -36,7 +36,7 @@ Component_Arena :: struct($T : Type) {
     components : []T;
 }
 
-init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Arena(T).ADD_CBK = null, rem_proc : Component_Arena(T).REM_CBK = null, cpy_proc : Component_Arena(T).CPY_CBK = null) {
+init :: (using arena : *Component_Arena($T), cap : s64) {
     array := NewArray(cap, T);
     data = array.data;
     capacity = cap;
@@ -54,6 +54,16 @@ init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Are
 
     #if EDIT_MODE then drw = (entity : Entity) { drw_component(T, entity); }
 
+    log("Initialized % component arena.", arena.type.name);
+}
+
+set_component_callbacks :: (
+    using arena : *Component_Arena($T), 
+    add_proc : Component_Arena(T).ADD_CBK = null, 
+    rem_proc : Component_Arena(T).REM_CBK = null, 
+    cpy_proc : Component_Arena(T).CPY_CBK = null
+)
+{
     add_cbk_fn = xx add_proc;
     rem_cbk_fn = xx rem_proc;
     
@@ -78,7 +88,6 @@ init :: (using arena : *Component_Arena($T), cap : s64, add_proc : Component_Are
         dst_typed := dst.(*T);
         cpy_typed(entity, src, dst);
     }
-    log("Initialized % component arena.", arena.type.name);
 }
 
 deinit :: (using arena : *Component_Arena($T)) {
@@ -145,8 +154,10 @@ init_entity_storage :: () {
     EntityStorageContext();
     
     // Manually init the info arena.
-    init(*state.info_arena, MAX_ENTITIES, cpy_proc = cpy_info, add_proc = null, rem_proc = null);
+    init(*state.info_arena, MAX_ENTITIES);
+    set_component_callbacks(*state.info_arena, cpy_proc = cpy_info, add_proc = null, rem_proc = null);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
+    set_component_callbacks_for_generated_arenas(*state.generated_component_arenas);
     state.uuid_seed = current_time_monotonic().low;
     random_seed(state.uuid_seed);
     init(*state.free_queue, MAX_ENTITIES);

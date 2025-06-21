@@ -13,6 +13,10 @@ COMPILE_FLAGS   :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
 MAX_ENTITIES                  :: 3000;
 DEFAULT_COMPONENT_ARENA_COUNT :: 30;
 
+ADD_CALLBACK_STR :: "addcomponentcallback";
+REM_CALLBACK_STR :: "removecomponentcallback";
+CPY_CALLBACK_STR :: "copycomponentcallback"; 
+
 GENERATED_COMPONENT_ARENAS :: #string SCOPE
 
 Generated_Component_Arenas :: struct {
@@ -53,6 +57,15 @@ MAX_ENTITIES :: %5;
 
 SCOPE
 
+GENERATED_COMPONENT_CALLBACKS :: #string SCOPE
+set_component_callbacks_for_generated_arenas :: (using a : *Generated_Component_Arenas) {
+    %1
+}
+
+#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) set_component_callbacks_for_generated_arenas;
+
+SCOPE
+
 Component_Info :: struct {
     type_name  : string;
     max        : s64;
@@ -62,19 +75,18 @@ Component_Info :: struct {
     add_proc   := "null";
 }
 
-collect_component_info :: (structs: [..] *Code_Struct) -> Table(string, Component_Info) {
-    result: Table(string, Component_Info);
+collect_component_info :: (structs: [..] *Code_Struct, result : *Table(string, Component_Info)) {
     for s : structs {
         for note_obj : s.notes {
             note := to_lower_copy(note_obj.text);
 
             if note == "component" {
                 info := Component_Info.{ type_name = s.defined_type.name };
-                table_add(*result, info.type_name, info);
+                table_add(result, info.type_name, info);
             }
 
             if begins_with(note, "initorder(") {
-                info := table_find_pointer(*result, s.defined_type.name);
+                info := table_find_pointer(result, s.defined_type.name);
                 if !info continue;
 
                 parsed, ok := parse_int(*slice(note, 10, note.count-11));
@@ -84,7 +96,7 @@ collect_component_info :: (structs: [..] *Code_Struct) -> Table(string, Componen
             if begins_with(note, "max(") {
 
                 parsed_text := slice(note, 4, note.count-5);
-                found, info := table_find_new(*result, s.defined_type.name);
+                found, info := table_find_new(result, s.defined_type.name);
                 if !found continue;
 
                 if parsed_text == "max_entities" {
@@ -94,38 +106,14 @@ collect_component_info :: (structs: [..] *Code_Struct) -> Table(string, Componen
                     if ok info.max = parsed;
                 }
 
-                table_set(*result, info.type_name, info);
-            }
-        }
-    }
-    return result;
-}
-
-assign_component_callbacks :: (procs: [..] *Code_Procedure_Header, info_table: *Table(string, Component_Info)) {
-    CPY_CALLBACK_STR :: "copycomponentcallback"; 
-    REM_CALLBACK_STR :: "removecomponentcallback";
-    
-    for p : procs {
-        for note_obj : p.notes {
-            note := to_lower_copy(note_obj.text);
-            if note != CPY_CALLBACK_STR && note != REM_CALLBACK_STR
-            then continue;
-            for arg : p.arguments {
-                argument_type := arg.entry.base.type;
-                if argument_type.type == .POINTER {
-                    struct_type := argument_type.(*Type_Info_Pointer).pointer_to.(*Type_Info_Struct);
-                    info := table_find_pointer(info_table, struct_type.name);
-                    if note == {
-                        case CPY_CALLBACK_STR; info.cpy_proc = p.name;
-                        case REM_CALLBACK_STR; info.rem_proc = p.name;
-                    }
-                }
+                table_set(result, info.type_name, info);
             }
         }
     }
 }
 
 generate_component_arenas_code :: (info_table: Table(string, Component_Info)) -> string {
+    log("Generating code...");
     builder      : String_Builder;
     builder_init : String_Builder;
     builder_deinit : String_Builder;
@@ -142,7 +130,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
         max := ifx info.max > 0 then info.max else DEFAULT_COMPONENT_ARENA_COUNT;
 
         print_to_builder(*builder, "%1_arena: Component_Arena(%2);\n", name, info.type_name);
-        print_to_builder(*builder_init, "init(*%1_arena, %2, cpy_proc = %3, add_proc = %4, rem_proc = %5);\n", name, max, info.cpy_proc, info.add_proc, info.rem_proc);
+        print_to_builder(*builder_init, "init(*%1_arena, %2);\n", name, max);
         print_to_builder(*builder_init, "array_add(all, *%1_arena);\n", name);
         print_to_builder(*builder_get, "case %1; return *%2_arena;\n", info.type_name, name);
         log("Registered component arena of type: %. Max elements: %. InitOrder: % \n", info.type_name, max, info.init_order);
@@ -153,12 +141,50 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
         print_to_builder(*builder_deinit, "deinit(*%1_arena);\n", name);
     }
 
+    log("Done generating code.");
     return sprint(GENERATED_COMPONENT_ARENAS,
         builder_to_string(*builder),
         builder_to_string(*builder_init),
         builder_to_string(*builder_deinit),
         builder_to_string(*builder_get),
         MAX_ENTITIES
+    );
+}
+
+assign_component_callbacks :: (procs: [..] *Code_Procedure_Header, info_table: *Table(string, Component_Info)) {
+    
+    for p : procs {
+        for note_obj : p.notes {
+            note := to_lower_copy(note_obj.text);
+            if note != CPY_CALLBACK_STR && note != REM_CALLBACK_STR && note != ADD_CALLBACK_STR
+            then continue;
+            for arg : p.arguments {
+                argument_type := arg.entry.base.type;
+                if argument_type.type == .POINTER {
+                    struct_type := argument_type.(*Type_Info_Pointer).pointer_to.(*Type_Info_Struct);
+                    info := table_find_pointer(info_table, struct_type.name);
+                    if note == {
+                        case ADD_CALLBACK_STR; info.add_proc = p.name;
+                        case REM_CALLBACK_STR; info.rem_proc = p.name;
+                        case CPY_CALLBACK_STR; info.cpy_proc = p.name;
+                    }
+                }
+            }
+        }
+    }
+}
+
+generate_component_callbacks_code :: (info_table: Table(string, Component_Info)) -> string {
+    log("Generating code...");
+    builder : String_Builder;
+
+    for info, _ : info_table {
+        name := to_lower_copy(info.type_name);
+        print_to_builder(*builder, "set_component_callbacks(*%1_arena, add_proc = %2, rem_proc = %3, cpy_proc = %4); \n", name, info.add_proc, info.rem_proc, info.cpy_proc);
+    }
+    log("Done generating code.");
+    return sprint(GENERATED_COMPONENT_CALLBACKS,
+        builder_to_string(*builder)
     );
 }
 
@@ -218,8 +244,10 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
     }
     
     generated_code := false;
+    generated_callbacks_code := false;
     structs: [..] *Code_Struct;
     procs: [..] *Code_Procedure_Header;
+    component_info : Table(string, Component_Info);
 
     while true {
         msg := compiler_wait_for_message();
@@ -227,14 +255,31 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
             case .TYPECHECKED;
                 m := cast(*Message_Typechecked) msg;
                 for m.structs array_add(*structs, it.expression);
-                for m.procedure_headers array_add(*procs, it.expression);
+                for m.procedure_headers {
+                    found := false;
+                    for it.expression.notes {
+                        if to_lower_copy(it.text) == ADD_CALLBACK_STR || to_lower_copy(it.text) == REM_CALLBACK_STR || to_lower_copy(it.text) == CPY_CALLBACK_STR {
+                            found = true;
+                            log("Collected callback procedure %", it.text);
+                        } 
+
+                    }
+                    if found
+                    then array_add(*procs, it.expression);
+                }
+
+                if procs.count > 0 && generated_code && !generated_callbacks_code {
+                    assign_component_callbacks(procs, *component_info);
+                    code := generate_component_callbacks_code(*component_info);
+                    add_build_string(code, w);
+                    generated_callbacks_code = true;
+                }
 
             case .PHASE;
                 phase := cast(*Message_Phase) msg;
                 if phase.phase == .TYPECHECKED_ALL_WE_CAN && !generated_code {
-                    info_table := collect_component_info(structs);
-                    assign_component_callbacks(procs, *info_table);
-                    code := generate_component_arenas_code(info_table);
+                    collect_component_info(structs, *component_info);
+                    code := generate_component_arenas_code(component_info);
                     add_build_string(code, w);
                     generated_code = true;
                 }
