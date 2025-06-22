@@ -12,7 +12,7 @@ WindowState :: struct {
 
 #add_context window: WindowState;
 
-init :: (name: string = "the window", w: s32 = 1280, h: s32 = 720, process_events_proc : PROCESS_EVENTS_PROC = null) {
+init :: (name: string = "the window", w: s32 = 1280, h: s32 = 720, process_events_proc : PROCESS_EVENTS_PROC = null, vsync := false) {
     using context.window;
     
     assert(handle == null);
@@ -27,9 +27,10 @@ init :: (name: string = "the window", w: s32 = 1280, h: s32 = 720, process_event
         log_error("Failed to create the window.");
         return;
     }
-
+    
     gl_create_context(handle, 4, 4, compatibility = false, debug = DUMP_GL_ERRORS);
     gl_load(*gl);
+
     log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
     
@@ -37,6 +38,8 @@ init :: (name: string = "the window", w: s32 = 1280, h: s32 = 720, process_event
         gl_enable_debug_output( break_on_error = true );
         DumpGLErrors("context");
     }
+
+    wglSwapIntervalEXT(xx vsync);
 }
 
 deinit :: () {
