@@ -699,10 +699,10 @@ for_expansion :: (view: Entity_View, body: Code, flags: For_Flags) #expand {
     }
 }
 
-clone_entity :: (entity : Entity, name : string) -> Entity {
+clone_entity :: (entity : Entity) -> Entity {
     EntityStorageContext();
     res_entity := create_entity();
-    set_name(res_entity, name);
+    set_parent(res_entity, get_parent(entity));
     for arena : state.component_arenas {
         if !arena.has(entity)
         then continue;
@@ -711,7 +711,8 @@ clone_entity :: (entity : Entity, name : string) -> Entity {
     }
     for get_children(entity) {
         child := resolve_ref(*it);
-        res_child := clone_entity(child, get_name(child));
+        res_child := clone_entity(child);
+        set_name(res_child, get_name(child));
         set_parent(res_child, res_entity);
     }
     return res_entity;

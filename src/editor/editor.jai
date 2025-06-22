@@ -18,12 +18,16 @@ Editor :: struct {
     show_create_prefab       : bool;
     create_prefab_parent_ref : Entity_Ref;
     selected_ref             : Entity_Ref;
+
+    clone_pressed            : bool;
 }
 
 #add_context editor : Editor;
 
 draw_editor :: () {
     using context.editor;
+
+    update_clone_shortcut();
 
     if ImGui.BeginMenuBar()  {
         if ImGui.BeginMenu("ImGui") {
@@ -165,7 +169,23 @@ save_prefab :: () {
 
 #scope_file
 
+update_clone_shortcut :: () {
+    using context.editor;
+    if Input.is_key_down(.CTRL) && Input.is_key_down(#char "D" ) {
+        if !clone_pressed {
+            entity := resolve_ref(*context.editor.selected_ref);
+            if entity != NULL_ENTITY {
+                clone_entity(entity);
+            }
+            clone_pressed = true;
+        }
+    } else if clone_pressed {
+        clone_pressed = false;
+    }
+}
+
 ImGui :: #import "ImGui";
+Input :: #import "Input";
 #import "File_Utilities";
 #import "Math";
 #load "editor_props.jai";
