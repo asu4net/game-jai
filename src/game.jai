@@ -39,7 +39,6 @@ main :: () {
 
         Graphics.clear_screen();
         Time.time_step();
-
         if can_update_this_frame()
         then update_game(Time.delta_seconds());
         
@@ -64,6 +63,11 @@ start_game :: () {
 
 update_game :: (delta_seconds : f32) {
     get_component(Transform2D_Component, player).pos += RIGHT_2D * 0.5 * delta_seconds;
+
+    movement := get_entity_view(Transform2D_Component, Movement2D_Component);
+    for entity : movement {
+        update_movement(entity);
+    } 
 }
 
 // --------------------------------
