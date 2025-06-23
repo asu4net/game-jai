@@ -33,14 +33,25 @@ Collider2D_Component :: struct @Component @InitOrder(500) {
     collision_tint   : v4;
 }
 
+init_collisions2d :: () {
 
+}
+
+deinit_collisions2d :: () {
+    using context.collisions2d;
+    array_reset(*collision_enter_events);
+    array_reset(*collision_exit_events);
+
+    for val, _ : collisions_map {
+        
+    }
+}
 
 /* 
 
 finish :: (using instance : *Collisions2D) {
     
     array_reset(*collision_enter_events);
-    delete(collision_enter_events)
     delete(collision_exit_events)
     
     for _, entity_set in collisions_map {
@@ -131,3 +142,5 @@ handle_collision_enter :: proc(entity_A : ^Entity, entity_B : ^Entity) {
     }
 }
 */
+
+#poke_name (#import "Hash_Table") operator==;

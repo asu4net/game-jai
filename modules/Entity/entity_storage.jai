@@ -112,6 +112,10 @@ Entity_Ref :: struct {
     uuid   : u64; @EditorIgnore
 }
 
+operator== :: (a : Entity_Ref, b : Entity_Ref) -> bool {
+    return a == b;
+}
+
 Entity_Info :: struct {
     #if EDIT_MODE id : u32; @JsonIgnore @EditorReadOnly
     name : string;
