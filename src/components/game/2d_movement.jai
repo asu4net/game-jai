@@ -11,10 +11,6 @@ Movement2D_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
     dir     : v2;
 }
 
-on_copy_movement2d_component :: (e : Entity, dst : *Movement2D_Component, src : *Movement2D_Component) {
-    dst.* = src.*;
-} @CopyComponentCallback
-
 update_movement :: (entity : Entity) {
     
     using transform  := get_component(Transform2D_Component, entity);
