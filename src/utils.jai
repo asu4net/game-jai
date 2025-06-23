@@ -50,6 +50,4 @@ update_frame_by_frame_mode :: () {
     }
 }
 
-Input :: #import "Input";
-
 } // #if EDITOR

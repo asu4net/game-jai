@@ -1,5 +1,12 @@
 # TODO
 
+- Mover los componentes a una librería
+- Dividir las librerías entre core, third party, personal
+- Poder reiniciar el juego sin cerrarlo, pausarlo y toda la vaina
+
+
+
+
 - Hacer que los prefab funcionen como prefab en modo editor y tengan un prefab component que sea nativo.
 - Allow entity destruction in editor
 

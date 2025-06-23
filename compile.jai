@@ -7,7 +7,7 @@ CompileFlags :: enum_flags {
 
 EXECUTABLE_NAME :: "game";
 OUTPUT_PATH     :: "bin";
-BUILD_FILE      :: "src/game.jai";
+BUILD_FILE      :: "src/main.jai";
 COMPILE_FLAGS   :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
 
 MAX_ENTITIES                  :: 3000;
