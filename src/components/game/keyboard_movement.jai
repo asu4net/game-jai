@@ -1,7 +1,7 @@
 KeyboardMovement_Component :: struct @Component @InitOrder(1200) @Max(MAX_ENTITIES) {
 }
 
-input_update :: (entity : Entity) {
+update_entity_input :: (entity : Entity) {
     using movement := get_component(Movement2D_Component, entity);
 
     if Input.is_key_down(#char "W") then dir.y = 1; 

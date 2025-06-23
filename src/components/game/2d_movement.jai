@@ -11,7 +11,7 @@ Movement2D_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
     dir     : v2;
 }
 
-update_movement :: (entity : Entity) {
+move_entity :: (entity : Entity) {
     
     using transform  := get_component(Transform2D_Component, entity);
     using movement2d := get_component(Movement2D_Component,  entity);
@@ -19,7 +19,7 @@ update_movement :: (entity : Entity) {
     if !start {
         return;
     }
-
+    
     speed_progress += Time.delta_seconds();
     speed_progress = clamp(speed_progress, 0.0, time_to_max_speed);
     norm_speed_progress := speed_progress / time_to_max_speed;
