@@ -141,7 +141,11 @@ Movement2D_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
     speed_max          : f32  = 8;
     time_to_max_speed  : f32  = 0.7;
     speed_progress     : f32;
-    target             : Vector2; 
+    target             : Vector2;
+    hasTarget          : bool = true;
+
+    // direction used if there's no target
+    dir     : v2;
 }
 
 on_copy_movement2d_component :: (e : Entity, dst : *Movement2D_Component, src : *Movement2D_Component) {
@@ -161,12 +165,17 @@ update_movement :: (entity : Entity) {
     norm_speed_progress := speed_progress / time_to_max_speed;
     speed :=  ease_in_expo_interp(norm_speed_progress, speed_min, speed_max);
     delta_traslation := speed * Time.delta_seconds();
-    distance_sqrd := distance_squared(target, transform.pos);
-    
-    if delta_traslation * delta_traslation >= distance_sqrd {
-        transform.pos = target;
+
+    if hasTarget {
+        distance_sqrd := distance_squared(target, transform.pos);
+
+        if delta_traslation * delta_traslation >= distance_sqrd {
+            transform.pos = target;
+        } else {
+            dir = normalize(target - transform.pos);
+            transform.pos += dir * delta_traslation;
+        }
     } else {
-        dir := normalize(target - transform.pos);
         transform.pos += dir * delta_traslation;
     }
 
@@ -177,8 +186,28 @@ update_movement :: (entity : Entity) {
     }
 }
 
+// ------------------------------------------------
+
+KeyboardMovement_Component :: struct @Component @InitOrder(1200) @Max(MAX_ENTITIES) {
+}
+
+input_update :: (entity : Entity) {
+    using movement := get_component(Movement2D_Component, entity);
+
+    if Input.is_key_down(#char "W") then dir.y = 1; 
+    else if Input.is_key_down(#char "S") then dir.y = -1;
+    else dir.y = 0;
+
+    if Input.is_key_down(#char "A") then dir.x = -1;    
+    else if Input.is_key_down(#char "D") then dir.x = 1;
+    else dir.x = 0;
+
+    if dir != ZERO_2D then dir = normalize(dir);
+}
+
 #scope_file
 
+Input :: #import "Input";
 Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
 Time :: #import "Time";
 #import "Hash_Table";
