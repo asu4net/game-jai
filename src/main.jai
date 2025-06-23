@@ -117,9 +117,10 @@ Input    :: #import "Input";
 
 #load "utils.jai";
 
-#load "components/game/keyboard_movement.jai";
-#load "components/game/2d_movement.jai";
+#load "components/core/2d_movement.jai";
 #load "components/core/2d_transform.jai";
 #load "components/core/blink.jai";
 #load "components/core/sprite.jai";
 #load "components/core/text.jai";
+
+#load "components/game/keyboard_movement.jai";
