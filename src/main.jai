@@ -42,7 +42,7 @@ main :: () {
         Graphics.clear_screen();
         Time.time_step();
         if can_update_this_frame()
-        then update_game(Time.delta_seconds());
+        then update_game();
         
         // Draw.
         draw_entities2d();

@@ -136,21 +136,21 @@ Entity_Storage :: struct {
     uuid_table  : Table(u64, Entity);
 }
 
-#add_context entity_storage : Entity_Storage;
+#add_context entity_storage : *Entity_Storage;
 
 is_entity_storage_initialized :: inline () -> bool {
-    return context.entity_storage.initialized;
+    return context.entity_storage != null;
 }
 
 EntityStorageContext :: () #expand {
     assert(is_entity_storage_initialized());
-    `state := *context.entity_storage;
+    `state := context.entity_storage;
     using state;
 }
 
 init_entity_storage :: () {
     assert(!is_entity_storage_initialized());
-    context.entity_storage.initialized = true;
+    context.entity_storage = New(Entity_Storage);
     EntityStorageContext();
     
     // Manually init the info arena.
@@ -284,7 +284,8 @@ deinit_entity_storage :: () {
     deinit(*state.uuid_table);
     array_reset(*state.component_arenas);
     array_reset(*state.to_clean);
-    state.* = .{};
+    free(context.entity_storage);
+    context.entity_storage = null;
 }
 
 get_component_arena :: ($T : Type) -> *Component_Arena(T) {

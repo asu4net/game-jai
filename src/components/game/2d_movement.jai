@@ -16,6 +16,7 @@ on_copy_movement2d_component :: (e : Entity, dst : *Movement2D_Component, src : 
 } @CopyComponentCallback
 
 update_movement :: (entity : Entity) {
+    
     using transform  := get_component(Transform2D_Component, entity);
     using movement2d := get_component(Movement2D_Component,  entity);
 

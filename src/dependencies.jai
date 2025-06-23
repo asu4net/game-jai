@@ -23,9 +23,10 @@ Input    :: #import "Input";
 #load "utils.jai";
 
 #load "systems/core/2d_entities.jai";
+#load "systems/game/logic.jai";
 
 #load "components/game/keyboard_movement.jai";
-#load "components/core/2d_movement.jai";
+#load "components/game/2d_movement.jai";
 #load "components/core/2d_transform.jai";
 #load "components/core/blink.jai";
 #load "components/core/sprite.jai";

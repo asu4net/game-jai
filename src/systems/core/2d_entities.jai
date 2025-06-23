@@ -11,9 +11,7 @@ deinit_entities2d :: () {
 draw_entities2d :: () {
     Graphics.draw2d_begin(.{context.window.width, context.window.height});
     view := get_entity_view(Transform2D_Component, Sprite_Component);
-    for entity : view {
-        draw_sprite_entity(entity, *sheet);
-    }
+    for view draw_sprite_entity(it, *sheet);
     Graphics.draw2d_end();
 }
 
