@@ -1,5 +1,9 @@
 main :: () {
 
+    //---------------------------
+    //:INITIALIZATION
+    //---------------------------
+
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
@@ -20,7 +24,7 @@ main :: () {
     then draw_imgui = draw_editor;
 
     #if IMGUI
-    then ImGui.Init(imgui_draw_proc = draw_editor);
+    then ImGui.Init(imgui_draw_proc = draw_imgui);
     defer ImGui.Deinit();
 
     init_entity_storage();
@@ -32,6 +36,10 @@ main :: () {
     Graphics.set_clear_color(DARK_GREY);
 
     create_player();
+
+    //---------------------------
+    //:MAIN LOOP
+    //---------------------------
 
     while Window.keep_opened() {   
 
@@ -51,6 +59,10 @@ main :: () {
     }
 
 }
+
+//---------------------------
+//:GAME (split in files later if needed)
+//---------------------------
 
 sheet   : Graphics.Spritesheet;
 moveplc : Entity;
