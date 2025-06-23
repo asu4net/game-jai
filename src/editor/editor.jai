@@ -1,4 +1,4 @@
-#if EDITOR && IMGUI {
+#if IMGUI && EDITOR {
 
 TEXT_BUFF_SIZE :: 100;
 
@@ -184,14 +184,10 @@ update_clone_shortcut :: () {
     }
 }
 
-ImGui :: #import "ImGui";
-Input :: #import "Input";
-#import "File_Utilities";
-#import "Math";
 #load "editor_props.jai";
 
 // Panels
 #load "panels/hierarchy.jai";
 #load "panels/properties.jai";
 
-} //#if EDITOR && IMGUI
+} // #if IMGUI && EDITOR

@@ -1,4 +1,4 @@
-#if EDITOR && IMGUI {
+#if IMGUI && EDITOR {
 
 draw_entity_hierarchy :: (entity : Entity) {
 
@@ -118,8 +118,4 @@ draw_all_entities_hierarchy :: (opened : *bool) {
 
 }
 
-#scope_file
-
-ImGui :: #import "ImGui";
-
-} //#if EDITOR && IMGUI
+} // #if IMGUI && EDITOR

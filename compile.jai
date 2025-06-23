@@ -8,7 +8,7 @@ CompileFlags :: enum_flags {
 EXECUTABLE_NAME :: "game";
 OUTPUT_PATH     :: "bin";
 BUILD_FILE      :: "src/main.jai";
-COMPILE_FLAGS   :: (.DEBUG | .EDITOR | .IMGUI).(CompileFlags);
+COMPILE_FLAGS   :: (.DEBUG | .IMGUI | .EDITOR).(CompileFlags);
 
 MAX_ENTITIES                  :: 3000;
 DEFAULT_COMPONENT_ARENA_COUNT :: 30;
@@ -50,7 +50,7 @@ get_generated_component_arena_base :: (using a : *Generated_Component_Arenas, t 
 #poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) deinit_generated_component_arenas;
 #poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) get_generated_component_arena;
 #poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) get_generated_component_arena_base;
-#if EDITOR
+#if EDITOR && IMGUI
 then #poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) editor_draw_property;
 
 MAX_ENTITIES :: %5;
@@ -238,8 +238,8 @@ generate_component_callbacks_code :: (info_table: Table(string, Component_Info))
         else add_build_string("IMGUI :: false;", w);
 
         if COMPILE_FLAGS & .EDITOR
-        then add_build_string("EDITOR :: true;", w);
-        else add_build_string("EDITOR :: false;", w);
+        then add_build_string("EDITOR :: IMGUI && true;", w);
+        else add_build_string("EDITOR :: IMGUI && false;", w);
         
     }
     

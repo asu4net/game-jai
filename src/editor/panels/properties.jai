@@ -1,4 +1,4 @@
-#if EDITOR && IMGUI {
+#if IMGUI && EDITOR {
 
 editor_draw_entity :: (entity : Entity) {
     EntityStorageContext();
@@ -48,8 +48,4 @@ draw_properties :: (opened : *bool) {
     ImGui.End();
 }
 
-#scope_file
-
-ImGui :: #import "ImGui";
-
-} //#if EDITOR && IMGUI
+} //#if IMGUI && EDITOR

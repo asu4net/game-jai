@@ -301,7 +301,7 @@ Impl_CreateDeviceObjects :: () -> bool {
            Out_Color = Frag_Color * texture( Texture, Frag_UV.st).r;
         }
     END
-
+    
     ShaderHandle = glCreateProgram();
     VertHandle = glCreateShader(GL_VERTEX_SHADER);
     FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
@@ -515,7 +515,3 @@ Impl_CreateFontsTexture :: () -> bool {
 
     return true;
 }
-
-#scope_file
-
-#import "GL" (DUMP_GL_ERRORS = true);

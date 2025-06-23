@@ -1,4 +1,4 @@
-#if IMGUI {
+#if IMGUI && EDITOR {
 
 editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
     name := to_string(name_c);
@@ -324,8 +324,4 @@ end_property :: () {
     in_property_context = false;
 }
 
-#scope_file
-
-ImGui :: #import "ImGui";
-
-}
+} // #if IMGUI && EDITOR

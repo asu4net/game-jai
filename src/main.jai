@@ -9,23 +9,22 @@ main :: () {
     
     process_window_events : Window.PROCESS_EVENTS_PROC;
 
-    #if IMGUI 
-    then process_window_events = ImGui.ProcessInputEvents;
+    #if IMGUI  {
+        process_window_events = ImGui.ProcessInputEvents;
+        draw_imgui : ImGui.DRAW_PROC;
+    }
 
     Window.init("Game", process_events_proc = process_window_events, vsync = true);
     defer Window.deinit();
     
     Graphics.init_draw2d();
     defer Graphics.deinit_draw2d();
-    
-    draw_imgui : ImGui.DRAW_PROC;
 
-    #if IMGUI && EDITOR 
-    then draw_imgui = draw_editor;
-
-    #if IMGUI
-    then ImGui.Init(imgui_draw_proc = draw_imgui);
-    defer ImGui.Deinit();
+    #if IMGUI {
+        #if EDITOR then draw_imgui = draw_editor;
+        ImGui.Init(imgui_draw_proc = draw_imgui);
+        defer ImGui.Deinit();
+    }
 
     init_entity_storage();
     defer deinit_entity_storage();
@@ -98,6 +97,9 @@ draw_entities :: () {
 #import "System";
 #import "Hash_Table";
 #import "File";
+#import "File_Utilities";
+#import "Math";
+#import "String";
 
 #import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
 
@@ -106,14 +108,12 @@ Time     :: #import "Time";
 Window   :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE = EDITOR);
 Input    :: #import "Input";
 
-#if IMGUI then {
-    ImGui :: #import "ImGui";
+#if IMGUI {
+    #if EDITOR then #load "editor/editor.jai";
+    ImGui :: #import "ImGui" (DUMP_ERRORS = DEBUG);
 }
 
-// Editor
-#if EDITOR then {
-    #load "editor/editor.jai";
-}
+
 
 #load "utils.jai";
 

@@ -1,3 +1,5 @@
+#module_parameters(DUMP_ERRORS := false);
+
 #load "impl/imgui_gl.jai";
 #load "imgui.jai";
 
@@ -35,6 +37,7 @@ ImDrawCallback :: #type (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call;
 #import "Basic";
 #import "Math";
 #import "File_Utilities";
+#import "GL" (DUMP_GL_ERRORS = DUMP_ERRORS);
 Input     :: #import "Input";
 Clipboard :: #import "Clipboard";
 
