@@ -68,11 +68,11 @@ main :: () {
 //---------------------------
 
 sheet   : Graphics.Spritesheet;
-moveplc : Entity;
+//moveplc : Entity;
 
 create_player :: () {
-    moveplc = dlz_entity(read_entire_file("assets/moveplaceholder.prefab",,temp));
-    get_component(Movement2D_Component, moveplc).start = true;
+    //moveplc = dlz_entity(read_entire_file("assets/moveplaceholder.prefab",,temp));
+    //get_component(Movement2D_Component, moveplc).start = true;
 }
 
 move_entities :: () {
@@ -104,6 +104,8 @@ draw_entities :: () {
                     if collides_with.count == 0 
                     then Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
                     else Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_RED);
+                } else {
+                    Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
                 }
             }
         }

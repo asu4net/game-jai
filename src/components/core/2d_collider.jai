@@ -33,10 +33,14 @@ Collisions2D :: struct {
 #add_context collisions2d : Collisions2D;
 
 Circle_Collider_Component :: struct @Component @InitOrder(500) {
+    radius          : f32;
     flag            : CollisionFlag;
     collides_with   : CollisionFlag;
-    radius          : f32;
 }
+
+on_copy_circle_collider :: (entity : Entity, dst : *Circle_Collider_Component, src : *Circle_Collider_Component) {
+    dst.* = src.*;
+} @CopyComponentCallback
 
 init_collisions2d :: () {
 
@@ -116,7 +120,7 @@ handle_collision_enter :: (entity_A : Entity, entity_B : Entity) {
     ref_A := make_ref(entity_A);
     ref_B := make_ref(entity_B);
 
-    if(col_A.collides_with & col_B.flag == 1) {
+    if col_A.collides_with & col_B.flag == 1 {
         
         // Not sure if this is required.
         /*

@@ -1,3 +1,4 @@
+
 @Entity(13522000559546919474)
 
 @Component(Entity_Info)
@@ -14,7 +15,7 @@
 @Component(Transform2D_Component)
 {
 	"pos": {
-		"x": 1,
+		"x": -0.933484,
 		"y": 0
 	},
 	"scl": {
@@ -40,6 +41,13 @@
 		"x": 0,
 		"y": 0
 	}
+}
+
+@Component(Circle_Collider_Component)
+{
+	"radius": 0.6,
+	"flag": "PLAYER",
+	"collides_with": "PLAYER | PLAYER_BULLET"
 }
 
 @Component(Sprite_Component)
