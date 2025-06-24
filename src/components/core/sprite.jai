@@ -38,7 +38,7 @@ draw_sprite_entity :: (entity : Entity, sheet : *Graphics.Spritesheet) {
     if flip_y   then flags |= .FLIP_Y;
 
     // try find the item
-    if tex && (rect.width == 0 || rect.height == 0) {
+    if tex {
         assert(tex.id != 0);
         found, r := table_find_new(*sheet.rects, item);
         if found rect = r;
