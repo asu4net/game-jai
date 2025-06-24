@@ -112,6 +112,10 @@ Entity_Ref :: struct {
     uuid   : u64; @EditorIgnore
 }
 
+hash_entity_ref :: (ref : Entity_Ref) -> u32 {
+    return ref.entity;
+}
+
 operator== :: (a : Entity_Ref, b : Entity_Ref) -> bool {
     return a == b;
 }

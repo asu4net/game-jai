@@ -50,6 +50,7 @@ main :: () {
 
         if can_update_this_frame() {
             move_entities();
+            query_2d_collisions();
         }
         
         draw_entities();
@@ -86,8 +87,26 @@ move_entities :: () {
 draw_entities :: () {
     Graphics.draw2d_begin(.{context.window.width, context.window.height});
     {
-        view := get_entity_view(Transform2D_Component, Sprite_Component);
-        for view draw_sprite_entity(it, *sheet);
+        // Sprites.
+        {
+            view := get_entity_view(Transform2D_Component, Sprite_Component);
+            for view draw_sprite_entity(it, *sheet);
+        }
+        // Collisions.
+        {
+            view := get_entity_view(Transform2D_Component, Circle_Collider_Component);
+            collisions_table := context.collisions2d.collisions_table;
+            for view {
+                coll := get_component(Circle_Collider_Component, it);
+                ref := make_ref(it);
+                if table_contains(*collisions_table, ref) {
+                    collides_with := table_find_pointer(*collisions_table, ref);
+                    if collides_with.count == 0 
+                    then Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
+                    else Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_RED);
+                }
+            }
+        }
     }
     Graphics.draw2d_end();
 }

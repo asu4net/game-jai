@@ -12,25 +12,30 @@ CollisionEventEnter :: struct {
     target : Entity_Ref;
 }
 
+operator== :: (a : CollisionEventEnter, b : CollisionEventEnter) -> bool {
+    return a.source == b.source && a.target == a.target;
+}
+
 CollisionEventExit :: struct {
     source : Entity_Ref;
     target : Entity_Ref;
 }
 
+CollisionTable :: Table(Entity_Ref, Table(Entity_Ref, struct{}, hash_entity_ref), hash_entity_ref);
+
 Collisions2D :: struct {
     collisions_in_last_frame : [..] CollisionEventEnter;
     collision_enter_events   : [..] CollisionEventEnter;
     collision_exit_events    : [..] CollisionEventExit;
-    collisions_map           : Table(Entity_Ref, Table(Entity_Ref, struct{}));
+    collisions_table         : CollisionTable;
 }
 
 #add_context collisions2d : Collisions2D;
 
-Collider2D_Component :: struct @Component @InitOrder(500) {
-    collision_flag   : CollisionFlag;
-    collides_with    : CollisionFlag;
-    collision_radius : f32;
-    collision_tint   : v4;
+Circle_Collider_Component :: struct @Component @InitOrder(500) {
+    flag            : CollisionFlag;
+    collides_with   : CollisionFlag;
+    radius          : f32;
 }
 
 init_collisions2d :: () {
@@ -42,105 +47,98 @@ deinit_collisions2d :: () {
     array_reset(*collision_enter_events);
     array_reset(*collision_exit_events);
 
-    for val, _ : collisions_map {
-        
-    }
-}
-
-/* 
-
-finish :: (using instance : *Collisions2D) {
-    
-    array_reset(*collision_enter_events);
-    delete(collision_exit_events)
-    
-    for _, entity_set in collisions_map {
-        delete(entity_set)
+    for table, _ : collisions_table {
+        deinit(*table);
     }
 
-    delete(collisions_map)
-    delete(collisions_in_last_frame)
+    deinit(*collisions_table);
+    array_reset(*collisions_in_last_frame);
 }
 
 query_2d_collisions :: () {
 
-    using collisions_2d_instance
+    using context.collisions2d;
 
-    clear(&collision_enter_events)
-    clear(&collision_exit_events)
+    array_reset_keeping_memory(*collision_enter_events);
+    array_reset_keeping_memory(*collision_exit_events);
     
-    prev_collisions := make([dynamic] CollisionEventEnter, len(collisions_in_last_frame))
-    defer delete(prev_collisions)
+    prev_collisions : [..] CollisionEventEnter;
+    array_reserve(*prev_collisions, collisions_in_last_frame.count);
+    defer array_reset(*prev_collisions);
 
-    copy(prev_collisions[:], collisions_in_last_frame[:])
-    clear(&collisions_in_last_frame)
+    array_copy(*prev_collisions, collisions_in_last_frame);
+    array_reset_keeping_memory(*collisions_in_last_frame);
 
-    for i in 0..< entity_count() {
-        entity_A := entity_at_index(i);
-        if !entity_enabled({entity_A.id}) || !is_collider(entity_A) {
-            continue;
-        }
-        for j in (i + 1) ..< entity_count() {
-            entity_B := entity_at_index(j);
-            if !entity_enabled({entity_B.id}) || !is_collider(entity_B) {
-                continue;
-            }
+    view := get_entity_view(Transform2D_Component, Circle_Collider_Component);
+
+    for entity_A : view {
+        for entity_B : view {
+            if entity_A == entity_B then continue;
             handle_collision_enter(entity_A, entity_B);
             handle_collision_enter(entity_B, entity_A);
-        } 
+        }
     }
 
     // Collision exit handle
-    for prev_collision in prev_collisions {
-        found : bool
-        for curr_collision in collisions_in_last_frame {
+    for prev_collision : prev_collisions {
+        found : bool;
+        for curr_collision : collisions_in_last_frame {
             if prev_collision == curr_collision {
-                found = true
-                break
+                found = true;
+                break;
             }
         }
         
-        if found do continue
+        if found then continue;
 
-        exit_event : CollisionEventExit = {
+        exit_event : CollisionEventExit = .{
             source = prev_collision.source,
-            target = prev_collision.target,
-        }
-        append_elem(&collision_exit_events, exit_event)
-        delete_key(&collisions_map[exit_event.source], exit_event.target)
-    }
+            target = prev_collision.target
+        };
+
+        array_add(*collision_exit_events, exit_event);
+        table_remove(table_find_pointer(*collisions_table, exit_event.source), exit_event.target);
+    }  
 }
 
-circle_collides :: proc(entity_A : ^Entity, entity_B : ^Entity) -> bool {
-    radius_sum := entity_A.collision_radius + entity_B.collision_radius;
-    return linalg.vector_length2(entity_A.position - entity_B.position) <= radius_sum * radius_sum
+query_circle_collision :: (entity_A : Entity, entity_B : Entity) -> bool {
+    radius_sum := get_component(Circle_Collider_Component, entity_A).radius + get_component(Circle_Collider_Component, entity_B).radius;
+    return length(get_pos(entity_A) - get_pos(entity_B)) <= radius_sum * radius_sum;  
 }
 
-handle_collision_enter :: proc(entity_A : ^Entity, entity_B : ^Entity) {
+handle_collision_enter :: (entity_A : Entity, entity_B : Entity) {
     
-    using collisions_2d_instance
+    using context.collisions2d;
 
-    entity_handle_A : Entity_Handle = { id = entity_A.id };
-    entity_handle_B : Entity_Handle = { id = entity_B.id };
-    if(entity_B.collision_flag in entity_A.collides_with) {
+    col_A := get_component(Circle_Collider_Component, entity_A);
+    col_B := get_component(Circle_Collider_Component, entity_B);
+
+    ref_A := make_ref(entity_A);
+    ref_B := make_ref(entity_B);
+
+    if(col_A.collides_with & col_B.flag == 1) {
         
-        if entity_handle_A not_in collisions_map {
+        // Not sure if this is required.
+        /*
+        if !table_contains(*collisions_table, ref_A) {
             collisions_map[entity_handle_A] = make(map[Entity_Handle]struct{})
         }
+        */
 
-        if(circle_collides(entity_A, entity_B)) {
+        if query_circle_collision(entity_A, entity_B) {
             
-            collision_enter_event : CollisionEventEnter = { entity_handle_A, entity_handle_B }
-            append_elem(&collisions_in_last_frame, collision_enter_event)
+            collision_enter_event := CollisionEventEnter.{ ref_A, ref_B };
+            array_add(*collisions_in_last_frame, collision_enter_event);
 
-            if(entity_handle_B not_in collisions_map[entity_handle_A]){
-                append_elem(&collision_enter_events, collision_enter_event);
-                A_collides_width := &collisions_map[entity_handle_A]
-                A_collides_width[entity_handle_B] = {}
+            table_A := table_find_pointer(*collisions_table, ref_A);
+
+            if !table_contains(table_A, ref_B) {
+                array_add(*collision_enter_events, collision_enter_event);
+                table_add(table_A, ref_B, .{});
             }
+            
         }
     }
 }
-*/
 
 #poke_name (#import "Hash_Table") operator==;

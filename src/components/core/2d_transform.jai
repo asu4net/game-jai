@@ -4,6 +4,21 @@ Transform2D_Component :: struct @Component @InitOrder(0) @Max(MAX_ENTITIES) {
     ang := (0.0).(f32);
 }
 
+get_pos :: inline (entity : Entity) -> v2 {
+    transform := get_component(Transform2D_Component, entity);
+    return transform.pos;
+}
+
+get_scl :: inline (entity : Entity) -> v2 {
+    transform := get_component(Transform2D_Component, entity);
+    return transform.scl;
+}
+
+get_ang :: inline (entity : Entity) -> f32 {
+    transform := get_component(Transform2D_Component, entity);
+    return transform.ang;
+}
+
 get_matrix :: (entity : Entity) -> m4 {
     
     transform := get_component(Transform2D_Component, entity);
