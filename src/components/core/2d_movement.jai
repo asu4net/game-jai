@@ -35,13 +35,14 @@ move_entity :: (entity : Entity) {
             dir = normalize(target - transform.pos);
             transform.pos += dir * delta_traslation;
         }
+        
+        if transform.pos == target {
+            speed_progress = 0;
+            speed = 0;
+            start = false;
+        }
     } else {
         transform.pos += dir * delta_traslation;
     }
     
-    if transform.pos == target {
-        speed_progress = 0;
-        speed = 0;
-        start = false;
-    }
 }
