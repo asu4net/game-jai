@@ -38,12 +38,10 @@ Circle_Collider_Component :: struct @Component @InitOrder(500) {
     collides_with   : CollisionFlag;
 }
 
-on_copy_circle_collider :: (entity : Entity, dst : *Circle_Collider_Component, src : *Circle_Collider_Component) {
-    dst.* = src.*;
-} @CopyComponentCallback
-
 init_collisions2d :: () {
 
+    using context.collisions2d;
+    init(*collisions_table);
 }
 
 deinit_collisions2d :: () {
@@ -76,8 +74,11 @@ query_2d_collisions :: () {
     view := get_entity_view(Transform2D_Component, Circle_Collider_Component);
 
     for entity_A : view {
+        if(!is_enabled(entity_A)) then continue;
+        
         for entity_B : view {
-            if entity_A == entity_B then continue;
+            if (!is_enabled(entity_B) || entity_A == entity_B) then continue;
+
             handle_collision_enter(entity_A, entity_B);
             handle_collision_enter(entity_B, entity_A);
         }
@@ -107,7 +108,7 @@ query_2d_collisions :: () {
 
 query_circle_collision :: (entity_A : Entity, entity_B : Entity) -> bool {
     radius_sum := get_component(Circle_Collider_Component, entity_A).radius + get_component(Circle_Collider_Component, entity_B).radius;
-    return length(get_pos(entity_A) - get_pos(entity_B)) <= radius_sum * radius_sum;  
+    return length_squared(get_pos(entity_A) - get_pos(entity_B)) <= radius_sum * radius_sum;
 }
 
 handle_collision_enter :: (entity_A : Entity, entity_B : Entity) {
@@ -120,14 +121,14 @@ handle_collision_enter :: (entity_A : Entity, entity_B : Entity) {
     ref_A := make_ref(entity_A);
     ref_B := make_ref(entity_B);
 
-    if col_A.collides_with & col_B.flag == 1 {
+    if col_A.collides_with & col_B.flag != 0 {
         
         // Not sure if this is required.
-        /*
+        // Ferdom: it is required
+        
         if !table_contains(*collisions_table, ref_A) {
-            collisions_map[entity_handle_A] = make(map[Entity_Handle]struct{})
+            table_add(*collisions_table, ref_A, .{});
         }
-        */
 
         if query_circle_collision(entity_A, entity_B) {
             

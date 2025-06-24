@@ -117,7 +117,7 @@ hash_entity_ref :: (ref : Entity_Ref) -> u32 {
 }
 
 operator== :: (a : Entity_Ref, b : Entity_Ref) -> bool {
-    return a == b;
+    return a.entity == b.entity;
 }
 
 Entity_Info :: struct {
