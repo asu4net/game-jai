@@ -87,33 +87,15 @@ move_entities :: () {
 draw_entities :: () {
     Graphics.draw2d_begin(.{context.window.width, context.window.height});
     {
+        // FlipBook.
+        {
+            view := get_entity_view(FlipBook_Component);
+            for view update_flipbook_entity(it);
+        }
         // Sprites.
         {
             view := get_entity_view(Transform2D_Component, Sprite_Component);
             for view draw_sprite_entity(it, *sheet);
-        }
-        // FlipBook handle.
-        {
-            view := get_entity_view(FlipBook_Component);
-
-            for view {
-                using flipbook := get_component(FlipBook_Component, it);
-                using sprite := get_component(Sprite_Component, it);
-
-                if playing && key_count != 0 {
-                    time += Time.delta_seconds();
-                    key := keys[current_key];
-                    if time >= key.time {
-                        current_key += 1;
-                        if current_key == key_count {
-                            time = 0;
-                            current_key = 0;
-                            if !loop then playing = false;
-                        }
-                    }
-                    item = key.name;
-                }
-            }
         }
         // Collisions.
         {

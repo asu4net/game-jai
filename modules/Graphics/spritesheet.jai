@@ -179,7 +179,7 @@ generate_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max
 }
 
 DEF_SHEET_NAME :: "sheet";
-DEF_ASSET_PATH :: "assets/";
+DEF_ASSET_PATH :: "assets/images";
 DEF_MAX_WIDTH  :: cast(s32) 1024;
 
 flip_pixels :: (pixels: *u8, width: int, height: int) {

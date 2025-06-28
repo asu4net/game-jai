@@ -41,7 +41,9 @@ draw_sprite_entity :: (entity : Entity, sheet : *Graphics.Spritesheet) {
     if tex {
         assert(tex.id != 0);
         found, r := table_find_new(*sheet.rects, item);
-        if found rect = r;
+        if found
+        then rect = r;
+        else tex = null;
     }
     
     Graphics.draw_quad(get_matrix(entity), tex, tiling, size, blend, rect, tint, entity, flags);        

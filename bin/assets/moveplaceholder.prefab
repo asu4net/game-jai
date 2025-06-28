@@ -15,14 +15,37 @@
 @Component(Transform2D_Component)
 {
 	"pos": {
-		"x": -0.933484,
-		"y": 0
+		"x": -0.639586,
+		"y": 0.045021
 	},
 	"scl": {
 		"x": 1,
 		"y": 1
 	},
 	"ang": 0
+}
+
+@Component(FlipBook_Component)
+{
+	"keys": [
+		{
+			"name": "alien",
+			"time": 0
+		},{
+			"name": "kamikaze_saw",
+			"time": 0
+		},{
+			"name": "kamikaze_skull",
+			"time": 0
+		}
+	],
+	"key_count": 3,
+	"duration": 0,
+	"time": 0,
+	"current_key": 0,
+	"playing": false,
+	"loop": false,
+	"adjust_duration": false
 }
 
 @Component(Movement2D_Component)
@@ -53,7 +76,7 @@
 @Component(Sprite_Component)
 {
 	"visible": true,
-	"item": "",
+	"item": "player",
 	"tint": {
 		"x": 0.125948,
 		"y": 0.381821,
@@ -61,7 +84,7 @@
 		"w": 1
 	},
 	"size": {
-		"x": 0.6,
+		"x": 1,
 		"y": 1
 	},
 	"tiling": {
