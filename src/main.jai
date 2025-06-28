@@ -49,6 +49,7 @@ main :: () {
         Time.time_step();
 
         if can_update_this_frame() {
+            update_player();
             move_entities();
             query_2d_collisions();
         }
@@ -75,6 +76,12 @@ create_player :: () {
     //get_component(Movement2D_Component, moveplc).start = true;
 }
 
+update_player :: () {
+    view := get_entity_view(Transform2D_Component, Player_Input, Player_Movement, Player_Weapon);
+    for view {
+        player_update(it);
+    }
+}
 move_entities :: () {
     view := get_entity_view(Transform2D_Component, Movement2D_Component);
     for view {
@@ -155,3 +162,4 @@ Input    :: #import "Input";
 #load "components/core/flipbook.jai";
 
 #load "components/game/keyboard_movement.jai";
+#load "components/game/player.jai";
