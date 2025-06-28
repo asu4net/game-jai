@@ -1,14 +1,21 @@
 # TODO
 
-- Mover los componentes a una librería
-- Dividir las librerías entre core, third party, personal
-- Poder reiniciar el juego sin cerrarlo, pausarlo y toda la vaina
+// SPRITE ----------------------------
+De momento deberíamos mirar de tener un invalidate en el sprite
+y no estar haciendo un lookup constante en la tabla del sprite
+sheet. 
+Podemos usar una función set_sprite que haga el invalidate por nosotros.
+// ----------------------------
 
-
-
-
-- Hacer que los prefab funcionen como prefab en modo editor y tengan un prefab component que sea nativo.
-- Allow entity destruction in editor
+// SPRITE SHEETS ----------------------------
+- For some fucking reason no encontramos en el sprite sheet una de las keys. Probablemente porque
+comparar strings significa comparar los punteros?
+- Si cambiamos el sprite usando el flipbook no estamos dealocando el nombre.
+- Deberíamos de dejar de usar strings para cambiar el sprite y el flipbook debería de tener un current.
+- Luego tener una opción de invalidate para poder actualizar el current del sprite según un nombre?.
+- El flipbook tampoco debería de almacenar string keys. Pero claro eso es complejo de manejar. Una    opción es generar el sprite-sheet y los id de los sprites por meta programación. La otra opción sería
+al principio del motor setear las diferentes.
+// ----------------------------
 
 - Display Entity refs as drag and drop like unity
 - Create entity viewer and work with the prefab
