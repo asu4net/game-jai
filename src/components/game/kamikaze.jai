@@ -8,12 +8,21 @@ Kamikaze_Skull :: struct @Component @InitOrder(1000) @Max(MAX_PLAYERS) {
     idle_time     : f32;
     attack_target : v3;
     attack_cd     : f32;
+    saw_speed     : f32;
 }
 
 kamikaze_update :: (kamikaze : Entity) {
     using kamikaze_skull := get_component(Kamikaze_Skull, kamikaze);
     using movement := get_component(Movement2D_Component, kamikaze);
     using transform := get_component(Transform2D_Component, kamikaze);
+    
+    
+    if get_child_at(kamikaze, 0) != NULL_ENTITY {
+        saw_transform := get_component(Transform2D_Component, get_child_at(kamikaze, 0));
+        saw_transform.ang += Time.delta_seconds() * saw_speed * 100;
+        if saw_transform.ang > 360 then saw_transform.ang = 0;
+    }
+    
 
     if state == {
         case .IDLE;
