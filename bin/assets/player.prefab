@@ -104,7 +104,7 @@
 
 @Component(Sprite_Component)
 {
-	"visible": true,
+	"visible": false,
 	"item": "",
 	"tint": {
 		"x": 1,
@@ -173,7 +173,7 @@
 
 @Component(Sprite_Component)
 {
-	"visible": true,
+	"visible": false,
 	"item": "",
 	"tint": {
 		"x": 0.349057,
