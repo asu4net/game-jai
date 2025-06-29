@@ -224,6 +224,14 @@ get_children :: (entity : Entity) -> [] Entity_Ref {
     return info.children;
 }
 
+get_child_at :: (index : u32) -> Entity {
+    children := get_children();
+    if index >= children.count {
+        return NULL_ENTITY;
+    }
+    return resolve_ref(*children[index]);
+}
+
 set_parent :: (entity : Entity, parent : Entity) {
 
     info := get_info(entity);
