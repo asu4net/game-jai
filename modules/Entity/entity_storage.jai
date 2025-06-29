@@ -651,11 +651,7 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
     if has_component(T, entity) {
         using arena := get_component_arena(T);
         component := get_component(T, entity);
-        #if T == Entity_Info {
-            dlz_info(entity, component, *parsed_data);
-        } else {
-            component.* = parsed_data;
-        }
+        component.* = parsed_data;
         return component;
     } 
 
@@ -788,17 +784,6 @@ rem_info :: (entity : Entity) {
     } else {
         components[deleted] = .{};
     }
-}
-
-//#TODO_asuarez this is going to be a problem when we add the clone feature...
-// - This procedure es being used to deserialize the entity and it is not meant for clone purposes.
-// - We should create a dlz_callback and use that for dlz and keep this to for clone.
-dlz_info :: (entity : Entity, d : *Entity_Info, s : *Entity_Info) {
-    d.flags  = s.flags;
-    d.name   = copy_string(s.name);
-    d.parent = s.parent;
-    if s.children.count
-    then array_copy(*d.children, s.children);
 }
 
 compute_enabled_iterative :: (ref : Entity_Ref) { 
