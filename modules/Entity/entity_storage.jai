@@ -229,7 +229,7 @@ set_parent :: (entity : Entity, parent : Entity) {
     info := get_info(entity);
     current_parent := resolve_ref(*info.parent);
     
-    if is_not_destroyed(current_parent) {
+    if is_not_cleaned(current_parent) {
         
         remove_child :: (entity : Entity, child : Entity) {    
             info := get_info(entity);
@@ -250,7 +250,7 @@ set_parent :: (entity : Entity, parent : Entity) {
         remove_child(current_parent, entity);
     }
 
-    if is_not_destroyed(parent) {
+    if is_not_cleaned(parent) {
 
         info.parent = make_ref(parent);
         add_child :: (entity : Entity, child : Entity) {
@@ -384,7 +384,7 @@ get_entity_at :: (index : s64) -> Entity {
 
 make_ref :: (entity : Entity, uuid : u64 = 0) -> Entity_Ref {
     EntityStorageContext();
-    assert(is_not_destroyed(entity));
+    assert(is_not_cleaned(entity));
     info := get_info(entity);
     if info.uuid != 0 {
         assert(table_contains(*state.uuid_table, info.uuid));
