@@ -29,14 +29,21 @@ kamikaze_update :: (kamikaze : Entity) {
             idle_time += Time.delta_seconds();
             if idle_time > attack_cd then {
                 idle_time = 0;
+                target = get_player_pos();
                 state = .ATTACK;
             }
         case .ATTACK;
-            target.x = -1;
-            target.y = -0.4;
             has_target = true;
             start = true;
             if pos == target then state = .IDLE;
 
     }
+}
+
+get_player_pos :: () -> v2 {
+    view := get_entity_view(Player_Input);
+    for view {
+        return get_component(Transform2D_Component, it).pos;
+    }
+    return ZERO_2D;
 }

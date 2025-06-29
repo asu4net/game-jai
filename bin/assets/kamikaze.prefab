@@ -49,13 +49,13 @@
 @Component(Kamikaze_Skull)
 {
 	"state": "IDLE",
-	"idle_time": 2.419075,
+	"idle_time": 0,
 	"attack_target": {
 		"x": 0,
 		"y": 0,
 		"z": 0
 	},
-	"attack_cd": 7,
+	"attack_cd": 3,
 	"saw_speed": 1
 }
 
