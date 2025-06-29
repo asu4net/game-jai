@@ -19,7 +19,6 @@ kamikaze_update :: (kamikaze : Entity) {
         case .IDLE;
             idle_time += Time.delta_seconds();
             if idle_time > attack_cd then {
-                print("fin");
                 idle_time = 0;
                 state = .ATTACK;
             }
