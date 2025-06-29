@@ -73,7 +73,7 @@ sheet   : Graphics.Spritesheet;
 moveplc : Entity;
 
 create_player :: () {
-    //moveplc = dlz_entity(read_entire_file("assets/moveplaceholder.prefab",,temp));
+    //moveplc = dlz_entity_from_file("assets/moveplaceholder.prefab");
     //get_component(Movement2D_Component, moveplc).start = true;
 }
 

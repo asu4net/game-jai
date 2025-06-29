@@ -481,6 +481,14 @@ slz_entity :: (builder : *String_Builder, entity : Entity) {
     return;
 }
 
+//#NOTE_asuarez: It allocates the string on the temp storage
+dlz_entity_from_file :: inline (path : string) -> Entity {
+    entity_str, success := read_entire_file(path ,,temp);
+    if !success
+    then return NULL_ENTITY;
+    else return dlz_entity(entity_str);
+}
+
 dlz_entity :: (s : string) -> Entity {
     EntityStorageContext();
     
@@ -596,7 +604,7 @@ add_component_with_data :: (d : $T, entity : Entity) -> *T {
     count += 1;
     index := insert_id(*entities, entity);
     component := *components[index];
-    call_cpy_cbk(cpy_cbk_fn, entity, component, *d);
+    component.* = d;
     if add_cbk_fn != null
     then call_add_cbk(add_cbk_fn, entity, component);
     return component;
@@ -626,12 +634,12 @@ slz_component :: ($T : Type, entity : Entity) -> string {
 }
 
 dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
-    success, parsed_data := json_parse_string(s, T ,,temp);
+    success, parsed_data := json_parse_string(s, T);
     
     if has_component(T, entity) {
         using arena := get_component_arena(T);
         component := get_component(T, entity);
-        call_cpy_cbk(cpy_cbk_fn, entity, component, *parsed_data);
+        component.* = parsed_data;
         return component;
     } 
 
@@ -738,7 +746,7 @@ add_info :: (entity : Entity, info := Entity_Info.{}) -> *Entity_Info {
     index := insert_id(*entities, entity);
     info_ptr := *components[index]; 
     #if EDIT_MODE info_ptr.id = entity;
-    call_cpy_cbk(cpy_cbk_fn, entity, info_ptr, *info);
+    info_ptr.* = info;
     return info_ptr;
 }
 

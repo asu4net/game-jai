@@ -1,23 +1,5 @@
 # TODO
 
-// ENTITY ----------------------------
-
-- MIRAR THOUGHTS DEL SERVIDOR DE BB de discord y aplicar.
-- Debería el dlz de las entidades estar funcionando en temporary storage?
-- Creo que no, dado que esa memoria nos la vamos a quedar.
-- El archivo de string debería de estar en temporary, pero las alocaciones
-que hace para generar los objetos al deserializarlos no.
-- Vale sí que deber de ser así porque no queremos almacenar cada componente
-en un heap separado.
-- Podemos quitar el temporary pero quizás deberíamos liberar manualmente
-la memoria de cada componente, pero no la de los punteros que contiene... Por ejemplo se aloca el componente al deserializarse. También se alocan todos sus miembros. Después, manualmente
-tendríamos que borrar el  componente, tras haber copiado el valor de los miembros
-en el nuevo componente. No tendría que ser un deep copy, y por tanto NO necesitaríamos
-el copy callback.
-- APROVECHAMOS PARA HACER DOS VERSIONES DE DLZ, UNA PARA PASARLE LA ENTIDAD EN STRING, Y OTRA EL PATH
-
-- El copy callback pasaría ser el CLONE callback, solo usado para clonar entidades.
-
 // SPRITE ----------------------------
 
 - HACER COMPILE TIME SPRITE SHEETS, SERÁ QUINIENTAS VECES MÁS CÓMODO.

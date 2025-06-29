@@ -62,9 +62,8 @@ draw_editor :: () {
                             context.editor.prefab_ref = .{};
                             context.editor.selected_ref = .{};
                         }
-                        prefab_str, success := read_entire_file(info.full_name ,,temp);
-                        assert(success);
-                        prefab = dlz_entity(prefab_str);
+                        prefab = dlz_entity_from_file(info.full_name);
+                        assert(prefab != NULL_ENTITY);
                         context.editor.prefab_ref = make_ref(prefab);
                         context.editor.selected_ref = context.editor.prefab_ref;
                         context.editor.show_hierarchy = true;
