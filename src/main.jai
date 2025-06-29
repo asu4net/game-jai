@@ -50,6 +50,7 @@ main :: () {
 
         if can_update_this_frame() {
             update_player();
+            update_enemies();
             move_entities();
             query_2d_collisions();
         }
@@ -82,6 +83,14 @@ update_player :: () {
         player_update(it);
     }
 }
+
+update_enemies :: () {
+    view := get_entity_view(Kamikaze_Skull);
+    for view {
+        kamikaze_update(it);
+    }
+}
+
 move_entities :: () {
     view := get_entity_view(Transform2D_Component, Movement2D_Component);
     for view {
@@ -163,3 +172,4 @@ Input    :: #import "Input";
 
 #load "components/game/keyboard_movement.jai";
 #load "components/game/player.jai";
+#load "components/game/kamikaze.jai";

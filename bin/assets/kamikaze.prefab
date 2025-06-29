@@ -1,0 +1,133 @@
+
+@Entity(4280640636033921278)
+
+@Component(Entity_Info)
+{
+	"name": "kamikaze",
+	"flags": "LOCAL_ENABLED | ENABLED",
+	"parent": {
+		"uuid": 0
+	},
+	"children": [
+		{
+			"uuid": 11831050440812013359
+		}
+	]
+}
+
+@Component(Transform2D_Component)
+{
+	"pos": {
+		"x": 0,
+		"y": 0
+	},
+	"scl": {
+		"x": 1,
+		"y": 1
+	},
+	"ang": 0
+}
+
+@Component(Movement2D_Component)
+{
+	"start": false,
+	"speed_min": 0,
+	"speed_max": 8,
+	"time_to_max_speed": 0.7,
+	"speed_progress": 0,
+	"target": {
+		"x": 0,
+		"y": 0
+	},
+	"has_target": true,
+	"dir": {
+		"x": 0,
+		"y": 0
+	}
+}
+
+@Component(Kamikaze_Skull)
+{
+	"state": "IDLE",
+	"idle_time": 0,
+	"attack_target": {
+		"x": 0,
+		"y": 0,
+		"z": 0
+	},
+	"attack_cd": 7
+}
+
+@Component(Sprite_Component)
+{
+	"visible": true,
+	"item": "kamikaze_skull",
+	"tint": {
+		"x": 1,
+		"y": 1,
+		"z": 1,
+		"w": 1
+	},
+	"size": {
+		"x": 1,
+		"y": 1
+	},
+	"tiling": {
+		"x": 1,
+		"y": 1
+	},
+	"blend": "ALPHA",
+	"flip_x": false,
+	"flip_y": false,
+	"autosize": true
+}
+
+@Entity(11831050440812013359)
+
+@Component(Entity_Info)
+{
+	"name": "kamikaze_saw",
+	"flags": "LOCAL_ENABLED | ENABLED",
+	"parent": {
+		"uuid": 4280640636033921278
+	},
+	"children": [
+	]
+}
+
+@Component(Transform2D_Component)
+{
+	"pos": {
+		"x": 0,
+		"y": 0
+	},
+	"scl": {
+		"x": 1,
+		"y": 1
+	},
+	"ang": 0
+}
+
+@Component(Sprite_Component)
+{
+	"visible": true,
+	"item": "kazmikaze_saw",
+	"tint": {
+		"x": 1,
+		"y": 1,
+		"z": 1,
+		"w": 1
+	},
+	"size": {
+		"x": 1,
+		"y": 1
+	},
+	"tiling": {
+		"x": 1,
+		"y": 1
+	},
+	"blend": "ALPHA",
+	"flip_x": false,
+	"flip_y": false,
+	"autosize": true
+}
