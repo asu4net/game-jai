@@ -163,7 +163,7 @@ init_entity_storage :: () {
     
     // Manually init the info arena.
     init(*state.info_arena, MAX_ENTITIES);
-    set_component_callbacks(*state.info_arena, cpy_proc = cpy_info, add_proc = null, rem_proc = null);
+    set_component_callbacks(*state.info_arena, cpy_proc = null, add_proc = null, rem_proc = null);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
     set_component_callbacks_for_generated_arenas(*state.generated_component_arenas);
     state.uuid_seed = current_time_monotonic().low;
@@ -351,6 +351,7 @@ create_entity :: () -> Entity {
 
     entity := create_raw_entity();
     add_info(entity);
+    log("Created entity: %", entity);
     return entity;
 }
 
@@ -420,6 +421,8 @@ resolve_ref :: (ref : *Entity_Ref) -> Entity {
 
 immediate_destroy_entity :: (entity : Entity) {
     
+    log("Destroying entity: %", entity);
+
     rem_all_components :: (entity : Entity) {
         EntityStorageContext();
         for < state.component_arenas {
@@ -442,8 +445,9 @@ immediate_destroy_entity :: (entity : Entity) {
     rem_info(entity);
     immediate_destroy_raw_entity(entity);
 
-    for children {
-        immediate_destroy_entity(resolve_ref(*it));
+    for child_ref : children {
+        child := resolve_ref(*child_ref);
+        immediate_destroy_entity(child);
     }
 }
 
@@ -643,11 +647,15 @@ slz_component :: ($T : Type, entity : Entity) -> string {
 
 dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
     success, parsed_data := json_parse_string(s, T);
-    
+
     if has_component(T, entity) {
         using arena := get_component_arena(T);
         component := get_component(T, entity);
-        component.* = parsed_data;
+        #if T == Entity_Info {
+            dlz_info(entity, component, *parsed_data);
+        } else {
+            component.* = parsed_data;
+        }
         return component;
     } 
 
@@ -785,7 +793,7 @@ rem_info :: (entity : Entity) {
 //#TODO_asuarez this is going to be a problem when we add the clone feature...
 // - This procedure es being used to deserialize the entity and it is not meant for clone purposes.
 // - We should create a dlz_callback and use that for dlz and keep this to for clone.
-cpy_info :: (entity : Entity, d : *Entity_Info, s : *Entity_Info) {
+dlz_info :: (entity : Entity, d : *Entity_Info, s : *Entity_Info) {
     d.flags  = s.flags;
     d.name   = copy_string(s.name);
     d.parent = s.parent;

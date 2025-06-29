@@ -22,7 +22,7 @@ update_frame_by_frame_mode :: () {
     
     using frame_by_frame_mode;
 
-    if Input.is_key_down(.CTRL) && Input.is_key_down(#char "P" ) {
+    if Input.is_key_down(.SHIFT) && Input.is_key_down(.F10) {
     
     if !frame_by_frame_pressed {
             frame_by_frame_pressed = true;
@@ -40,7 +40,7 @@ update_frame_by_frame_mode :: () {
 
     next_frame = false;
     
-    if Input.is_key_down(.CTRL) && Input.is_key_down(.ARROW_RIGHT) {
+    if Input.is_key_down(.F10) {
         if !next_frame_pressed {
             next_frame_pressed = true;
             next_frame = true;

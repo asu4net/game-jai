@@ -39,8 +39,10 @@ main :: () {
     init_collisions2d();
     defer deinit_collisions2d();
 
-    init_game();
-    defer deinit_game();
+    #if RELEASE
+    then init_game();
+
+    defer if is_game_init() then deinit_game();
 
     //---------------------------
     //:MAIN LOOP
