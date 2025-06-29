@@ -651,13 +651,22 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
     if has_component(T, entity) {
         using arena := get_component_arena(T);
         component := get_component(T, entity);
-        component.* = parsed_data;
+        //#HACK_asuarez See dlz_entity, the make ref stuff.
+        #if T == Entity_Info {
+            id   := component.id;
+            uuid := component.uuid;
+            component.* = parsed_data;
+            component.id   = id;
+            component.uuid = uuid;
+        } else 
+        {
+           component.* = parsed_data; 
+        }
         return component;
     } 
 
-    #if T == Entity_Info
-    then return add_info(entity, parsed_data); // @Note: This should not happen....
-    else return add_component_with_data(parsed_data, entity);  
+    assert(T != Entity_Info);
+    return add_component_with_data(parsed_data, entity);  
 }
 
 #if EDIT_MODE {
