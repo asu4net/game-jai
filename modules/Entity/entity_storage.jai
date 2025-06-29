@@ -224,8 +224,8 @@ get_children :: (entity : Entity) -> [] Entity_Ref {
     return info.children;
 }
 
-get_child_at :: (index : u32) -> Entity {
-    children := get_children();
+get_child_at :: (entity : Entity, index : u32) -> Entity {
+    children := get_children(entity);
     if index >= children.count {
         return NULL_ENTITY;
     }
