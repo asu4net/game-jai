@@ -1,3 +1,5 @@
+sheet : Graphics.Spritesheet;
+
 main :: () {
 
     //---------------------------
@@ -37,7 +39,8 @@ main :: () {
     init_collisions2d();
     defer deinit_collisions2d();
 
-    create_player();
+    init_game();
+    defer deinit_game();
 
     //---------------------------
     //:MAIN LOOP
@@ -49,8 +52,7 @@ main :: () {
         Time.time_step();
 
         if can_update_this_frame() {
-            update_player();
-            update_enemies();
+            update_game();
             move_entities();
             query_2d_collisions();
         }
@@ -63,32 +65,6 @@ main :: () {
         reset_temporary_storage();
     }
 
-}
-
-//---------------------------
-//:GAME (split in files later if needed)
-//---------------------------
-
-sheet   : Graphics.Spritesheet;
-moveplc : Entity;
-
-create_player :: () {
-    //moveplc = dlz_entity_from_file("assets/moveplaceholder.prefab");
-    //get_component(Movement2D_Component, moveplc).start = true;
-}
-
-update_player :: () {
-    view := get_entity_view(Transform2D_Component, Player_Input, Player_Movement, Player_Weapon);
-    for view {
-        player_update(it);
-    }
-}
-
-update_enemies :: () {
-    view := get_entity_view(Kamikaze_Skull);
-    for view {
-        kamikaze_update(it);
-    }
 }
 
 move_entities :: () {
@@ -170,6 +146,4 @@ Input    :: #import "Input";
 #load "components/core/text.jai";
 #load "components/core/flipbook.jai";
 
-#load "components/game/keyboard_movement.jai";
-#load "components/game/player.jai";
-#load "components/game/kamikaze.jai";
+#load "game.jai";

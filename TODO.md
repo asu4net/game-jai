@@ -1,5 +1,11 @@
 # TODO
 
+- Hacer game stop and restart con los comandos de visual de debuggear
+  - el menu de prefab hace stop automáticamente y si cuando está abierto le das a play hace unload del prefab 
+- Hacer ingame log messages
+- Hacer componentes para el GUI
+
+
 // SPRITE ----------------------------
 
 - HACER COMPILE TIME SPRITE SHEETS, SERÁ QUINIENTAS VECES MÁS CÓMODO.
@@ -23,16 +29,17 @@ comparar strings significa comparar los punteros?
 al principio del motor setear las diferentes.
 // ----------------------------
 
+- Implementar bucket array para las pools de componentes
 - Display Entity refs as drag and drop like unity
-- Create entity viewer and work with the prefab
 - Add read only attr for imgui
-- Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
 - texture options for sprite_sheet (maybe could be a struct??)
 - Optimize the 2d version of make_transform
 - Intentar generalizar un poco más las llamadas de draw, convertir en función el draw header
 - Leer shaders de ficheros
+- Poder tener un material component
 - Poder cambiar de shader
 - Dumpear errores de OpenGL
 - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
 - Picking
 - Sistema de iluminación: Ambient y Point lights
+- Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).

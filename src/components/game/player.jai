@@ -21,16 +21,16 @@ Player_Input :: struct @Component @InitOrder(1000) @Max(MAX_PLAYERS)  {
     fire               : bool;
 }
 
-player_update :: (player : Entity) {
+update_player :: (player : Entity) {
     
     player_input     := get_component(Player_Input,  player);
-    input_update(player_input);
+    update_input(player_input);
 
-    movement_update(player);
-    weapons_update(player);
+    update_movement(player);
+    update_weapons(player);
 }
 
-input_update :: (using player_input : *Player_Input) {
+update_input :: (using player_input : *Player_Input) {
 
     if Input.is_key_down(#char "W") {
         axis.y = 1;
@@ -55,7 +55,7 @@ input_update :: (using player_input : *Player_Input) {
     fire = Input.is_key_down(.BACKSPACE);
 }
 
-movement_update :: (player : Entity) {
+update_movement :: (player : Entity) {
     
     using transform2d     := get_component(Transform2D_Component, player);
     using player_input    := get_component(Player_Input, player);
@@ -63,7 +63,7 @@ movement_update :: (player : Entity) {
     pos += axis * speed * Time.delta_seconds();
 }
 
-weapons_update :: (player : Entity) {
+update_weapons :: (player : Entity) {
 
     using transform2d     := get_component(Transform2D_Component, player);
     using player_input    := get_component(Player_Input, player);
