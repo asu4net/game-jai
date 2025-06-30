@@ -11,7 +11,7 @@ Kamikaze_Skull :: struct @Component @InitOrder(1000) @Max(MAX_PLAYERS) {
     saw_speed     : f32;
 }
 
-kamikaze_update :: (kamikaze : Entity) {
+update_kamikaze :: (kamikaze : Entity) {
     using kamikaze_skull := get_component(Kamikaze_Skull, kamikaze);
     using movement := get_component(Movement2D_Component, kamikaze);
     using transform := get_component(Transform2D_Component, kamikaze);

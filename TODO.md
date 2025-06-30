@@ -1,10 +1,8 @@
 # TODO
 
-- Hacer game stop and restart con los comandos de visual de debuggear
-  - el menu de prefab hace stop automáticamente y si cuando está abierto le das a play hace unload del prefab 
+- el menu de prefab hace stop automáticamente y si cuando está abierto le das a play hace unload del prefab 
 - Hacer ingame log messages
 - Hacer componentes para el GUI
-
 
 // SPRITE ----------------------------
 

@@ -40,10 +40,7 @@ deinit_game :: () {
 }
 
 update_enemies :: () {
-    view := get_entity_view(Kamikaze_Skull);
-    for view {
-        kamikaze_update(it);
-    }
+    for get_entity_view(Kamikaze_Skull) update_kamikaze(it);
 }
 
 //---------------------------
