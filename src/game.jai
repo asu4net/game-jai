@@ -5,7 +5,8 @@
 
 #scope_file
 
-player : Entity;
+player   : Entity;
+kamikaze : Entity;
 
 #scope_export
 
@@ -20,6 +21,7 @@ get_player :: () -> Entity {
 init_game :: () {
     log("Init game!");
     player = dlz_entity_from_file("assets/player.prefab");
+    kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
 }
 
 update_game :: () {
@@ -32,6 +34,7 @@ update_game :: () {
 
 deinit_game :: () {
     log("Deinit game!");
+    destroy_entity(kamikaze);
     destroy_entity(player);
     player = NULL_ENTITY;  
 }
