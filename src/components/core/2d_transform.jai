@@ -19,6 +19,21 @@ get_ang :: inline (entity : Entity) -> f32 {
     return transform.ang;
 }
 
+set_pos :: inline (entity : Entity, pos : v2) {
+    transform := get_component(Transform2D_Component, entity);
+    transform.pos = pos;
+}
+
+set_scl :: inline (entity : Entity, scl : v2) {
+    transform := get_component(Transform2D_Component, entity);
+    transform.scl = scl;
+}
+
+set_ang :: inline (entity : Entity, ang : f32) {
+    transform := get_component(Transform2D_Component, entity);
+    transform.ang = ang;
+}
+
 get_matrix :: (entity : Entity) -> m4 {
     
     transform := get_component(Transform2D_Component, entity);
