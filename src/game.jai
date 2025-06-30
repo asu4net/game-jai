@@ -24,6 +24,7 @@ init_game :: () {
     player   = dlz_entity_from_file("assets/player.prefab");
     kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
     homing  = dlz_entity_from_file("assets/homing_missile.prefab");
+    set_pos(homing, UP_2D * 1);
 }
 
 update_game :: () {

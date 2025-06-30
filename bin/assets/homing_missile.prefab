@@ -25,24 +25,6 @@
 	"ang": 0
 }
 
-@Component(Movement2D_Component)
-{
-	"start": false,
-	"speed_min": 0,
-	"speed_max": 8,
-	"time_to_max_speed": 0.7,
-	"speed_progress": 0,
-	"target": {
-		"x": 0,
-		"y": 0
-	},
-	"has_target": true,
-	"dir": {
-		"x": 0,
-		"y": 0
-	}
-}
-
 @Component(Sprite_Component)
 {
 	"visible": true,
