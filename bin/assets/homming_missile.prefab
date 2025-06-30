@@ -3,7 +3,7 @@
 
 @Component(Entity_Info)
 {
-	"name": "homming_missile",
+	"name": "homing_missile",
 	"flags": "LOCAL_ENABLED | ENABLED",
 	"parent": {
 		"uuid": 0

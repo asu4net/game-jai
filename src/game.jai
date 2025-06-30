@@ -7,6 +7,7 @@
 
 player   : Entity;
 kamikaze : Entity;
+homing  : Entity;
 
 #scope_export
 
@@ -20,8 +21,9 @@ get_player :: () -> Entity {
 
 init_game :: () {
     log("Init game!");
-    player = dlz_entity_from_file("assets/player.prefab");
+    player   = dlz_entity_from_file("assets/player.prefab");
     kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
+    homing  = dlz_entity_from_file("assets/homing_missile.prefab");
 }
 
 update_game :: () {
@@ -29,14 +31,22 @@ update_game :: () {
     then return;
 
     update_enemies();
-    update_player(player);
+
+    if player != NULL_ENTITY
+    then update_player(player);
 }
 
 deinit_game :: () {
     log("Deinit game!");
-    destroy_entity(kamikaze);
-    destroy_entity(player);
-    player = NULL_ENTITY;  
+    destroy_game_entity :: (entity : *Entity) {
+        if entity.* != NULL_ENTITY {
+            destroy_entity(entity.*);
+            entity.* = NULL_ENTITY;
+        }
+    }
+    destroy_game_entity(*homing);
+    destroy_game_entity(*kamikaze);
+    destroy_game_entity(*player);
 }
 
 update_enemies :: () {
@@ -51,7 +61,7 @@ update_enemies :: () {
 #load "components/game/keyboard_movement.jai";
 #load "components/game/player.jai";
 #load "components/game/kamikaze.jai";
-#load "components/game/homming_missile.jai";
+#load "components/game/homing_missile.jai";
 
 
 #scope_file
