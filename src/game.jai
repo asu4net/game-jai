@@ -6,7 +6,6 @@
 #scope_file
 
 player : Entity;
-inited : bool;
 
 #scope_export
 
@@ -24,18 +23,7 @@ init_game :: () {
 }
 
 update_game :: () {
-
-    #if EDITOR {
-        if !Input.is_key_down(.SHIFT) && Input.is_key_down(.F5) && !inited {
-            inited = true;
-            init_game();
-        } else if  Input.is_key_down(.SHIFT) && Input.is_key_down(.F5) && inited {
-            inited = false;
-            deinit_game();
-        }
-    }
-
-    if !inited 
+    if !should_update_game() 
     then return;
 
     update_enemies();
@@ -62,3 +50,22 @@ update_enemies :: () {
 #load "components/game/keyboard_movement.jai";
 #load "components/game/player.jai";
 #load "components/game/kamikaze.jai";
+
+#scope_file
+
+//#REVIEW_asuarez More commands stuff (maybe this should be in utils or main)
+inited : bool;
+should_update_game :: () -> bool {
+
+    #if EDITOR {
+        if !Input.is_key_down(.SHIFT) && Input.is_key_down(.F5) && !inited {
+            inited = true;
+            init_game();
+        } else if  Input.is_key_down(.SHIFT) && Input.is_key_down(.F5) && inited {
+            inited = false;
+            deinit_game();
+        }
+    }
+
+    return inited;
+}
