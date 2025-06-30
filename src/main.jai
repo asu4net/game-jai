@@ -125,6 +125,8 @@ draw_entities :: () {
 #import "String";
 
 #import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
+#import "Queue";
+
 
 Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
 Time     :: #import "Time";
@@ -140,6 +142,7 @@ Input    :: #import "Input";
 
 #load "utils.jai";
 
+#load "components/game/entity_pool.jai";
 #load "components/core/2d_movement.jai";
 #load "components/core/2d_transform.jai";
 #load "components/core/2d_collider.jai";

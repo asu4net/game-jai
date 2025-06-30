@@ -2,7 +2,16 @@ MAX_PLAYERS              :: 2;
 PLAYER_BULLET_LV1_DAMAGE :: 10;
 PLAYER_BULLET_LV1_SPEED  :: 8.0;
 PLAYER_BULLET_LV1_RADIUS :: 0.1;
+MAX_BULLETS              :: 200;
 
+bullet_pool      : Entity_Pool(MAX_BULLETS);
+
+// TODO: 
+// bullet pool 
+// minions
+// ammo stuff (included in minions ig)
+// collision stuff 
+// life (is that included in collision stuff?)
 
 Player_Movement :: struct @Component @InitOrder(1000) @Max(2) {
     speed : f32 = 4.0;
@@ -21,6 +30,10 @@ Player_Input :: struct @Component @InitOrder(1000) @Max(2)  {
     fire               : bool;
 }
 
+init_player :: (player : Entity) {
+    init_entity_pool(*bullet_pool, "assets/bullet.prefab");
+}
+
 update_player :: (player : Entity) {
     
     player_input     := get_component(Player_Input,  player);
@@ -28,6 +41,10 @@ update_player :: (player : Entity) {
 
     update_movement(player);
     update_weapons(player);
+}
+
+deinit_player :: (player : Entity) { 
+    deinit_entity_pool(*bullet_pool);
 }
 
 update_input :: (using player_input : *Player_Input) {

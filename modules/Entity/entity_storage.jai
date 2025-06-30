@@ -190,16 +190,6 @@ is_enabled :: (entity : Entity) -> bool {
 set_enabled :: (entity : Entity, enabled := true) {
     assert(is_not_destroyed(entity));
     info := get_info(entity);
-    
-    if !has_component(Node_Component, entity) {
-        if enabled 
-        then info.flags |= .ENABLED | .LOCAL_ENABLED;
-        else {
-            info.flags = info.flags &~ .ENABLED;
-            info.flags = info.flags &~ .LOCAL_ENABLED;
-        }
-        return;
-    }
 
     is_local_enabled := (.LOCAL_ENABLED & info.flags).(bool);
     if enabled != is_local_enabled
