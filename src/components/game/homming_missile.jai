@@ -14,8 +14,8 @@ Homing_Missile_Component :: struct @Component @InitOrder(1100) @Max(MAX_ENTITIES
     blink_time         : f32 = 0.5; 
     approach_speed     : f32 = 2; 
     attack_speed       : f32 = 4;
-    line_start_color   : v4  = RED;
-    line_end_color     : v4  = WHITE;
+    line_start_color   : v4  = RED;   @Color
+    line_end_color     : v4  = WHITE; @Color
 }
 
 /*
