@@ -41,6 +41,7 @@ deinit_game :: () {
 
 update_enemies :: () {
     for get_entity_view(Kamikaze_Skull) update_kamikaze(it);
+    for get_entity_view(Homing_Missile_Component) update_homing_missile(it);
 }
 
 //---------------------------
@@ -50,6 +51,8 @@ update_enemies :: () {
 #load "components/game/keyboard_movement.jai";
 #load "components/game/player.jai";
 #load "components/game/kamikaze.jai";
+#load "components/game/homming_missile.jai";
+
 
 #scope_file
 

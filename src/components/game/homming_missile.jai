@@ -1,12 +1,12 @@
-HomingState :: enum {
-    IDLE;
-    WAITING;
-    ATTACK;
-}
+Homing_Missile_Component :: struct @Component @InitOrder(1100) @Max(MAX_ENTITIES)  {
+    State :: enum {
+        IDLE;
+        WAITING;
+        ATTACK;
+    }
 
-HomingMissile :: struct {
-    state              : HomingState;
-    attack_dir         : v3;
+    state              : State;
+    attack_dir         : v2;
     wait_timer         : f32;
 
     distance_to_attack : f32 = 2;
@@ -18,9 +18,7 @@ HomingMissile :: struct {
     line_end_color     : v4  = WHITE;
 }
 
-homing_missile_prefab  : Entity_Handle;
-homing_missile_spawner : Spawner; 
-
+/*
 homing_missile_init :: () {   
     /*
         sprite.item                   = .Kamikaze_Skull;
@@ -44,67 +42,73 @@ homing_missile_init :: () {
         blink.enabled       = true;
     */
 }
-
-
+*/
 
 update_homing_missile :: (entity : Entity) {
 
-        player_position := entity_data(game.player.entity).position;
+    homing_missile := get_component(Homing_Missile_Component, entity);
+    movement_2d := get_component(Movement2D_Component, entity);
 
-        pointer_data : ^Entity = nil;
-        if len(children) > 0 && entity_valid(children[0]) { 
-            pointer_data = entity_data(children[0]);
-            pointer_data.pointer_line.dir = -UP_3D;
+    player_position := get_pos(get_player());
+
+    /*
+    pointer_data : ^Entity = nil;
+    if children.count > 0 && entity_valid(children[0]) { 
+        pointer_data = entity_data(children[0]);
+        pointer_data.pointer_line.dir = -UP_3D;
+    }
+    */
+    
+    if homing_missile.state == {
+        case .IDLE; {
+            movement_2d.start = true;
+            movement_2d.target = get_pos(get_player());
+            
+            dir := player_position - get_pos(entity);
+            distance : f32 = length(dir);
+            angle := -(atan2(dir.y, dir.x) * DEG_PER_RAD) - 90;
+            
+            set_ang(entity, angle);
+            if distance <= homing_missile.distance_to_attack {
+                homing_missile.state = .WAITING;
+            }
+            /*
+            if entity_valid(children[0]) {
+                pointer_data.scale.x = distance;
+            }
+            */
         }
-        
-        switch homing_missile.state {
-            case HomingState.IDLE: {
-                movement_2d.start = true;
-                movement_2d.target = entity_data(game.player.entity).position;
-                
-                dir := player_position - position;
+        case .WAITING; {
+            movement_2d.start = false;
+            dir := player_position - get_pos(entity);
+            angle := -(atan2(dir.y, dir.x) * DEG_PER_RAD) - 90;
+            set_ang(entity, angle);
+
+            homing_missile.wait_timer += Time.delta_seconds();
+            if homing_missile.wait_timer >= homing_missile.wait_time {
+                homing_missile.attack_dir = normalize(player_position - get_pos(entity));
+                homing_missile.state = .ATTACK;
+            }
+            
+            /*
+            if entity_valid(children[0]) {
                 distance : f32 = linalg.vector_length(dir);
-                angle := -math.to_degrees(linalg.atan2(dir.y, dir.x)) - 90;
-                
-                rotation.z = angle;
-                if distance <= homing_missile.distance_to_attack { 
-                    homing_missile.state = HomingState.WAITING;
-                }
-
-                if entity_valid(children[0]) {
-                    pointer_data.scale.x = distance;
-                }
+                pointer_data.scale.x = distance;
+                pointer_data.tint = .RED;
+                pointer_data.blink.enabled = false;
             }
-            case HomingState.WAITING: {
-                movement_2d.start = false;
-
-                dir := player_position - position;
-                angle := -math.to_degrees(linalg.atan2(dir.y, dir.x)) - 90;
-                rotation.z = angle;
-                
-                homing_missile.wait_timer += delta_seconds();
-                if homing_missile.wait_timer >= homing_missile.wait_time {
-                    homing_missile.attack_dir = linalg.vector_normalize(player_position - transform.position);
-                    homing_missile.state = HomingState.ATTACK;
-                }
-                
-                if entity_valid(children[0]) {
-                    distance : f32 = linalg.vector_length(dir);
-                    
-                    pointer_data.scale.x       = distance;
-                    pointer_data.tint          = color.RED;
-                    pointer_data.blink.enabled = false;
-                }
-                
+            */
+        }
+        case .ATTACK; {
+            delta_pos := homing_missile.attack_dir * homing_missile.attack_speed * Time.delta_seconds();
+            set_pos(entity, get_pos(entity) + delta_pos);
+            /*
+            if entity_valid(children[0]) {
+                pointer_data.scale.x = 1000;
+                pointer_data.tint = .RED;
+                pointer_data.blink.enabled = false;
             }
-            case HomingState.ATTACK: {
-                position += homing_missile.attack_dir * homing_missile.attack_speed * delta_seconds();
-
-                if entity_valid(children[0]) {
-                    pointer_data.scale.x       = 1000;
-                    pointer_data.tint          = color.RED;
-                    pointer_data.blink.enabled = false;
-                }
-            }
+            */
+        }
     }
 }

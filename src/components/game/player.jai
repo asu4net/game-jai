@@ -4,19 +4,19 @@ PLAYER_BULLET_LV1_SPEED  :: 8.0;
 PLAYER_BULLET_LV1_RADIUS :: 0.1;
 
 
-Player_Movement :: struct @Component @InitOrder(1000) @Max(MAX_PLAYERS) {
+Player_Movement :: struct @Component @InitOrder(1000) @Max(2) {
     speed : f32 = 4.0;
     // minion stuff if that time comes
 }
 
-Player_Weapon :: struct @Component @InitOrder(1000) @Max(MAX_PLAYERS) {
+Player_Weapon :: struct @Component @InitOrder(1000) @Max(2) {
     firerate         : f32 = 0.1;
     time_since_fired : f32 = 0.0;
     level            : u8  = 1;
     ammo             : u32 = 0;
 }
 
-Player_Input :: struct @Component @InitOrder(1000) @Max(MAX_PLAYERS)  {
+Player_Input :: struct @Component @InitOrder(1000) @Max(2)  {
     axis               : v2;
     fire               : bool;
 }

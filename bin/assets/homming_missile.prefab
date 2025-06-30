@@ -1,0 +1,95 @@
+
+@Entity(7898409673204575282)
+
+@Component(Entity_Info)
+{
+	"name": "homming_missile",
+	"flags": "LOCAL_ENABLED | ENABLED",
+	"parent": {
+		"uuid": 0
+	},
+	"children": [
+	]
+}
+
+@Component(Transform2D_Component)
+{
+	"pos": {
+		"x": 0,
+		"y": 0
+	},
+	"scl": {
+		"x": 1,
+		"y": 1
+	},
+	"ang": 0
+}
+
+@Component(Movement2D_Component)
+{
+	"start": false,
+	"speed_min": 0,
+	"speed_max": 8,
+	"time_to_max_speed": 0.7,
+	"speed_progress": 0,
+	"target": {
+		"x": 0,
+		"y": 0
+	},
+	"has_target": true,
+	"dir": {
+		"x": 0,
+		"y": 0
+	}
+}
+
+@Component(Sprite_Component)
+{
+	"visible": true,
+	"item": "kamikaze_skull",
+	"tint": {
+		"x": 1,
+		"y": 1,
+		"z": 1,
+		"w": 1
+	},
+	"size": {
+		"x": 1,
+		"y": 1
+	},
+	"tiling": {
+		"x": 1,
+		"y": 1
+	},
+	"blend": "ALPHA",
+	"flip_x": false,
+	"flip_y": false,
+	"autosize": true
+}
+
+@Component(Homing_Missile_Component)
+{
+	"state": "IDLE",
+	"attack_dir": {
+		"x": 0,
+		"y": 0
+	},
+	"wait_timer": 0,
+	"distance_to_attack": 2,
+	"wait_time": 0.5,
+	"blink_time": 0.5,
+	"approach_speed": 2,
+	"attack_speed": 4,
+	"line_start_color": {
+		"x": 1,
+		"y": 0,
+		"z": 0,
+		"w": 1
+	},
+	"line_end_color": {
+		"x": 1,
+		"y": 1,
+		"z": 1,
+		"w": 1
+	}
+}
