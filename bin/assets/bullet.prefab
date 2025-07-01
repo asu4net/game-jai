@@ -16,7 +16,7 @@
 {
 	"pos": {
 		"x": 0,
-		"y": 0
+		"y": 244.731598
 	},
 	"scl": {
 		"x": 0.2,
@@ -30,8 +30,8 @@
 	"start": true,
 	"speed_min": 0,
 	"speed_max": 8,
-	"time_to_max_speed": 0,
-	"speed_progress": 0,
+	"time_to_max_speed": 0.001,
+	"speed_progress": 0.001,
 	"target": {
 		"x": 0,
 		"y": 0
@@ -41,6 +41,11 @@
 		"x": 0,
 		"y": 1
 	}
+}
+
+@Component(DamageSource_Component)
+{
+	"damage": 10
 }
 
 @Component(Sprite_Component)

@@ -62,6 +62,7 @@ update_enemies :: () {
 //:DEPENDENCIES
 //---------------------------
 
+#load "components/game/damage.jai";
 #load "components/game/keyboard_movement.jai";
 #load "components/game/player.jai";
 #load "components/game/kamikaze.jai";

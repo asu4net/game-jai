@@ -1,7 +1,8 @@
-Entity_Pool :: struct($N : s64, get_cbk : Entity_Pool.GET_ELEMENT_CBK = null, remove_cbk : Entity_Pool.REMOVE_ELEMENT_CBK = null)
+GET_ENTITY_POOL_ELEMENT_CBK    :: #type (Entity);
+REMOVE_ENTITY_POOL_ELEMENT_CBK :: #type (Entity);
+
+Entity_Pool :: struct($N : s64, get_cbk : GET_ENTITY_POOL_ELEMENT_CBK = null, remove_cbk : REMOVE_ENTITY_POOL_ELEMENT_CBK  = null)
 {
-    GET_ELEMENT_CBK    :: #type (Entity);
-    REMOVE_ELEMENT_CBK :: #type (Entity);
 
     prefab        : Entity;
     pool_size     : s64 = N;
@@ -41,7 +42,7 @@ deinit_entity_pool :: (entity_pool : *Entity_Pool) {
 
 get_pool_element :: (entity_pool : *Entity_Pool) -> Entity {
     
-    index := pop_front(entity_pool.available_ids);
+    index := pop_front(*entity_pool.available_ids);
     if(entity_pool.get_element_cbk) {
         entity_pool.get_element_cbk(entity_pool.elements[index]);
     }
@@ -63,5 +64,5 @@ return_pool_element :: (entity_pool : *Entity_Pool, entity : Entity) {
     if(entity_pool.remove_element_cbk) {
         entity_pool.remove_element_cbk(entity);
     }
-    push_back(entity_pool.available_ids, index);
+    push_back(*entity_pool.available_ids, xx index);
 }

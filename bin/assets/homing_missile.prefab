@@ -1,4 +1,4 @@
-
+"w":
 @Entity(7898409673204575282)
 
 @Component(Entity_Info)
@@ -43,6 +43,11 @@
 	}
 }
 
+@Component(DamageSource_Component)
+{
+	"damage": 10
+}
+
 @Component(Sprite_Component)
 {
 	"visible": true,
@@ -65,6 +70,12 @@
 	"flip_x": false,
 	"flip_y": false,
 	"autosize": true
+}
+
+@Component(DamageTarget_Component)
+{
+	"max_life": 20,
+	"life": 20
 }
 
 @Component(Homing_Missile_Component)

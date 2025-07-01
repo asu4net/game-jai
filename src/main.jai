@@ -142,9 +142,10 @@ Input    :: #import "Input";
 
 #load "utils.jai";
 
-#load "components/game/entity_pool.jai";
+#load "entity_pool.jai";
 #load "components/core/2d_movement.jai";
 #load "components/core/2d_transform.jai";
+#load "components/core/timer.jai";
 #load "components/core/2d_collider.jai";
 #load "components/core/blink.jai";
 #load "components/core/sprite.jai";

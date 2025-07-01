@@ -1,4 +1,4 @@
-
+"size
 @Entity(12320152129788292146)
 
 @Component(Entity_Info)
@@ -59,6 +59,11 @@
 	"saw_speed": 1
 }
 
+@Component(DamageSource_Component)
+{
+	"damage": 10
+}
+
 @Component(Sprite_Component)
 {
 	"visible": true,
@@ -81,6 +86,12 @@
 	"flip_x": false,
 	"flip_y": false,
 	"autosize": true
+}
+
+@Component(DamageTarget_Component)
+{
+	"max_life": 30,
+	"life": 30
 }
 
 @Entity(11831050440812013359)

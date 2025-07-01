@@ -69,7 +69,7 @@ update_input :: (using player_input : *Player_Input) {
         axis = normalize(axis);
     }
 
-    fire = Input.is_key_down(.BACKSPACE);
+    fire = Input.is_key_down(.SPACEBAR);
 }
 
 update_movement :: (player : Entity) {
@@ -101,5 +101,26 @@ update_weapons :: (player : Entity) {
 
 fire_projectile :: (pos : Vector2, dir : Vector2, damage : u32, speed : f32, radius : f32) {
 
-    log("Beep, firing bullet, remember to make that bullet pool, beep");
+    bullet         := get_pool_element(*bullet_pool);
+    transform2d    := get_component(Transform2D_Component, bullet);
+    movement2d     := get_component(Movement2D_Component, bullet);
+    timer          := get_component(Timer_Component, bullet);
+
+    transform2d.pos             = pos; 
+    movement2d.dir              = dir;
+    timer.on_timer_finished_cbk = on_bullet_timer_finished;
+
+    set_enabled(bullet, true);
+    movement2d.start = true; 
+}
+
+on_bullet_timer_finished :: (bullet : Entity) {
+    
+    set_enabled(bullet, false);
+    return_pool_element(*bullet_pool, bullet);
+}
+
+player_damage_collision :: (player : Entity, source : Entity) {
+    
+    log("Player: Got damaged bleeeh :p");
 }
