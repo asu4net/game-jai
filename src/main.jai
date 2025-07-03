@@ -9,16 +9,9 @@ main :: () {
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
-    process_window_events : Window.PROCESS_EVENTS_PROC;
+    init_window("Game");
+    defer deinit_window();
 
-    #if IMGUI  {
-        process_window_events = ImGui.ProcessInputEvents;
-        draw_imgui : ImGui.DRAW_PROC;
-    }
-
-    Window.init("Game", process_events_proc = process_window_events, vsync = true);
-    defer Window.deinit();
-    
     Graphics.init_draw2d();
     defer Graphics.deinit_draw2d();
 
@@ -39,7 +32,7 @@ main :: () {
     init_collisions2d();
     defer deinit_collisions2d();
 
-    #if RELEASE
+    #if !EDITOR
     then init_game();
 
     defer if is_game_init() then deinit_game();
@@ -48,8 +41,9 @@ main :: () {
     //:MAIN LOOP
     //---------------------------
 
-    while Window.keep_opened() {   
+    while !context.window.done {   
 
+        process_window_events();
         Graphics.clear_screen();
         Time.time_step();
 
@@ -65,6 +59,7 @@ main :: () {
 
         clean_destroyed_entities();
         reset_temporary_storage();
+        swap_buffers();
     }
 
 }
@@ -130,7 +125,6 @@ Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
 #import "Graphics" (DUMP_ERRORS = DEBUG);
 
 Time     :: #import "Time";
-Window   :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE = EDITOR);
 
 #import "Input";
 
@@ -139,8 +133,9 @@ Window   :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE 
     ImGui :: #import "ImGui" (DUMP_ERRORS = DEBUG);
 }
 
+#import "SDL3";
 
-
+#load "window.jai";
 #load "utils.jai";
 
 #load "components/core/2d_movement.jai";

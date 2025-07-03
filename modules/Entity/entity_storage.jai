@@ -653,10 +653,12 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
         component := get_component(T, entity);
         //#HACK_asuarez See dlz_entity, the make ref stuff.
         #if T == Entity_Info {
-            id   := component.id;
+            #if EDIT_MODE 
+            then id := component.id;
             uuid := component.uuid;
             component.* = parsed_data;
-            component.id   = id;
+            #if EDIT_MODE 
+            then component.id   = id;
             component.uuid = uuid;
         } else 
         {

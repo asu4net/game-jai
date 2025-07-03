@@ -79,6 +79,8 @@ should_update_game :: () -> bool {
             inited = false;
             deinit_game();
         }
+    } else {
+        inited = true;
     }
 
     return inited;
