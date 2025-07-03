@@ -43,7 +43,7 @@ init :: (using arena : *Component_Arena($T), cap : s64) {
     components.data = data;
     components.count = cap;
     type = type_info(T);
-    init(*entities, xx cap);
+    init(*entities, xx MAX_ENTITIES);
      
     get = (entity : Entity)             -> *void        { return get_component(T, entity);    }
     add = (entity : Entity)             -> *void        { return add_component(T, entity);    }
