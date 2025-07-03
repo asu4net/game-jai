@@ -127,9 +127,12 @@ draw_entities :: () {
 #import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
 
 Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
+#import "Graphics" (DUMP_ERRORS = DEBUG);
+
 Time     :: #import "Time";
 Window   :: #import "Window_Creation" (DUMP_GL_ERRORS = DEBUG, CLOSE_WITH_SCAPE = EDITOR);
-Input    :: #import "Input";
+
+#import "Input";
 
 #if IMGUI {
     #if EDITOR then #load "editor/editor.jai";

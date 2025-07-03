@@ -170,7 +170,7 @@ save_prefab :: () {
 
 update_clone_shortcut :: () {
     using context.editor;
-    if Input.is_key_down(.CTRL) && Input.is_key_down(#char "D" ) {
+    if is_key_down(.CTRL) && is_key_down(#char "D" ) {
         if !clone_pressed {
             entity := resolve_ref(*context.editor.selected_ref);
             if entity != NULL_ENTITY {

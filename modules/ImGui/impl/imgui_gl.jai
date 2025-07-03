@@ -185,7 +185,7 @@ Impl_Shutdown :: () {
     ui_state.ctx = null;
 }
 
-Impl_NewFrame :: (display_width: s32, display_height: s32, current_time : f64) {
+Impl_NewFrame :: (display_width: s32, display_height: s32, current_time : float64) {
     using ui_state;
 
     io := GetIO();

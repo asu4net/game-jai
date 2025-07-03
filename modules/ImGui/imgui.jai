@@ -53,7 +53,7 @@ ProcessInputEvents :: inline (event : Input.Event) {
     Impl_ProcessEvent(event);
 }   
 
-Draw :: (time : f64) {
+Draw :: (time : float64) {
     using context.imgui;
     Impl_NewFrame(context.window.width, context.window.height, time);
     
@@ -66,7 +66,7 @@ Draw :: (time : f64) {
         SetNextWindowViewport(viewport.ID_);
         PushStyleVar(.WindowRounding, 0);
         PushStyleVar(.WindowBorderSize, 0);
-        PushStyleVar(.WindowPadding, ZERO_2D);
+        PushStyleVar(.WindowPadding, Vector2.{0, 0});
 
         window_flags : WindowFlags;
         window_flags |= .NoDocking;
@@ -83,7 +83,7 @@ Draw :: (time : f64) {
         
         PopStyleVar(3);
         assert(xx GetIO().ConfigFlags_ & .DockingEnable);
-        DockSpace(GetID("Dockspace"), size = ZERO_2D);
+        DockSpace(GetID("Dockspace"), size = .{0, 0});
     }    
     
     if context.imgui.draw_proc

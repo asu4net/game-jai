@@ -1,3 +1,5 @@
+// Math
+
 RAD_PER_DEG :: TAU/360.0;
 DEG_PER_RAD :: 360.0/TAU;
 

@@ -32,17 +32,17 @@ update_player :: (player : Entity) {
 
 update_input :: (using player_input : *Player_Input) {
 
-    if Input.is_key_down(#char "W") {
+    if is_key_down(#char "W") {
         axis.y = 1;
-    } else if Input.is_key_down(#char "S") {
+    } else if is_key_down(#char "S") {
         axis.y = -1;
     } else {
         axis.y = 0;
     }
 
-    if Input.is_key_down(#char "A") {
+    if is_key_down(#char "A") {
         axis.x = -1;
-    } else if Input.is_key_down(#char "D") {
+    } else if is_key_down(#char "D") {
         axis.x = 1;
     } else {
         axis.x = 0;
@@ -52,7 +52,7 @@ update_input :: (using player_input : *Player_Input) {
         axis = normalize(axis);
     }
 
-    fire = Input.is_key_down(.BACKSPACE);
+    fire = is_key_down(.BACKSPACE);
 }
 
 update_movement :: (player : Entity) {
