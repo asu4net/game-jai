@@ -11,7 +11,7 @@ main :: () {
     
     init_window("Game");
     defer deinit_window();
-
+    
     Graphics.init_draw2d();
     defer Graphics.deinit_draw2d();
 
@@ -41,12 +41,11 @@ main :: () {
     //:MAIN LOOP
     //---------------------------
 
-    while !context.window.done {   
+    while keep_window_opened() {   
 
-        process_window_events();
         Graphics.clear_screen();
         Time.time_step();
-
+        
         if can_update_this_frame() {
             update_game();
             move_entities();
@@ -59,7 +58,6 @@ main :: () {
 
         clean_destroyed_entities();
         reset_temporary_storage();
-        swap_buffers();
     }
 
 }

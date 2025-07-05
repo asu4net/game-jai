@@ -8,87 +8,80 @@ Window :: struct {
 
 #add_context window: Window;
 
-init_window :: (name :string = "the window", w: s32 = 1920, h: s32 = 1080) {
-    using context.window;
-    assert(handle == null);
+init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 720) {
+    window := *context.window;
     
-    width  = w;
-    height = h;
+    assert(window.handle == null);
 
     SDL_Init(SDL_INIT_VIDEO);
-    
-    handle = SDL_CreateWindow(name.data, width, height, SDL_WINDOW_OPENGL);
+    handle := SDL_CreateWindow(name.data, width, height, SDL_WINDOW_OPENGL);
     
     if !handle {
         log_error("SDL Failed to create the window.");
         return;
     }
 
-    gl_ctx = SDL_GL_CreateContext(handle);
+    SDL_SetWindowResizable(handle, true);
+    
+    window.handle = handle;
+    window.width  = width;
+    window.height = height;
+    
+    gl_ctx := SDL_GL_CreateContext(window.handle);
 
     if !gl_ctx {
         log_error("SDL Failed to create the OpenGL context.");
         return;
     }
 
-    SDL_GL_MakeCurrent(handle, gl_ctx);
+    window.gl_ctx = gl_ctx;
+     
+    SDL_GL_MakeCurrent(window.handle, window.gl_ctx);
 
     gl_load(*gl, xx SDL_GL_GetProcAddress);
     log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
     
-    set_clear_color(DARK_GRAY);
+    Graphics.set_clear_color(DARK_GRAY);
 }
 
-swap_buffers :: () {
-    using context.window;
-    SDL_GL_SwapWindow(handle);
-} 
-
 deinit_window :: () {
-    using context.window;
+    handle := context.window.handle;
     assert(handle != null);
     SDL_DestroyWindow(handle);
     SDL_Quit();
 }
 
+keep_window_opened :: () -> bool {
+    SDL_GL_SwapWindow(context.window.handle);
+    process_window_events();
+    return !context.window.done;
+}
+
 process_window_events :: () {
 
-    using context.window;
+    window := *context.window;
     event : SDL_Event;
     
     while SDL_PollEvent(*event) {
         
-        //#if IMGUI then process_imgui_sdl_events(*event);
+        #if IMGUI then process_imgui_sdl_events(*event);
         
         if event.type == {
             
-            /*
-            case SDL_EventType.KEYUP;
-            {
-                if event.key.keysym.sym == SDLK_ESCAPE then {
-                    done = true;
-                }
-            }
-            
-            case SDL_EventType.WINDOW_DISPLAY_CHANGED;
-            {
-                if event.window.event == SDL_WINDOWEVENT_CLOSE then {
-                    done = true;
-                }
-                else if event.window.event == SDL_WINDOWEVENT_SIZE_CHANGED then {
-                    width  = event.window.data1;
-                    height = event.window.data2;
-                }
-            }
-            */
-            case xx SDL_EventType.QUIT;
-                    done = true;
+            case xx SDL_EventType.WINDOW_RESIZED;
+                window.width  = event.window.data1;
+                window.height = event.window.data2;
 
-                case xx SDL_EventType.KEY_DOWN;
-                    if event.key.key == SDLK_ESCAPE
-                        done = false;
-                case;
+            case xx SDL_EventType.QUIT;
+                window.done = true;
+
+            case xx SDL_EventType.KEY_DOWN;
+            #if DEBUG {
+                if event.key.key == SDLK_ESCAPE
+                then window.done = true;
+            }
+            case;
         }
     }
 }
