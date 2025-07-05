@@ -22,7 +22,7 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
     }
 
     SDL_SetWindowResizable(handle, true);
-    
+
     window.handle = handle;
     window.width  = width;
     window.height = height;
@@ -85,5 +85,13 @@ process_window_events :: () {
         }
     }
 }
+
+is_key_down :: (input : SDL_Scancode) -> bool {
+    numkeys : s32;
+    state := SDL_GetKeyboardState(*numkeys);
+    return state[input];
+}
+
+#scope_file
 
 #import "GL" (DUMP_GL_ERRORS = DEBUG);

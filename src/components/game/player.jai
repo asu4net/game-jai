@@ -32,17 +32,17 @@ update_player :: (player : Entity) {
 
 update_input :: (using player_input : *Player_Input) {
 
-    if is_key_down(#char "W") {
+    if is_key_down(.W) {
         axis.y = 1;
-    } else if is_key_down(#char "S") {
+    } else if is_key_down(.S) {
         axis.y = -1;
     } else {
         axis.y = 0;
     }
 
-    if is_key_down(#char "A") {
+    if is_key_down(.A) {
         axis.x = -1;
-    } else if is_key_down(#char "D") {
+    } else if is_key_down(.D) {
         axis.x = 1;
     } else {
         axis.x = 0;
