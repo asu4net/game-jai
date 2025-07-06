@@ -1,4 +1,4 @@
-sheet : Graphics.Spritesheet;
+sheet : Spritesheet;
 
 main :: () {
 
@@ -12,8 +12,8 @@ main :: () {
     init_window("Game");
     defer deinit_window();
     
-    Graphics.init_draw2d();
-    defer Graphics.deinit_draw2d();
+    init_draw2d();
+    defer deinit_draw2d();
 
     #if IMGUI {
         #if EDITOR then draw_imgui = draw_editor;
@@ -24,10 +24,10 @@ main :: () {
     init_entity_storage();
     defer deinit_entity_storage();
 
-    Graphics.init(*sheet);
-    defer Graphics.deinit(*sheet);
+    init(*sheet);
+    defer deinit(*sheet);
 
-    Graphics.set_clear_color(DARK_GREY);
+    set_clear_color(DARK_GREY);
 
     init_collisions2d();
     defer deinit_collisions2d();
@@ -43,8 +43,8 @@ main :: () {
 
     while keep_window_opened() {   
 
-        Graphics.clear_screen();
-        Time.time_step();
+        clear_screen();
+        time_step();
         
         if can_update_this_frame() {
             update_game();
@@ -72,7 +72,7 @@ move_entities :: () {
 }
 
 draw_entities :: () {
-    Graphics.draw2d_begin(.{context.window.width, context.window.height});
+    draw2d_begin(.{context.window.width, context.window.height});
     {
         // FlipBook.
         {
@@ -94,15 +94,15 @@ draw_entities :: () {
                 if table_contains(*collisions_table, ref) {
                     collides_with := table_find_pointer(*collisions_table, ref);
                     if collides_with.count == 0 
-                    then Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
-                    else Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_RED);
+                    then draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
+                    else draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_RED);
                 } else {
-                    Graphics.draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
+                    draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
                 }
             }
         }
     }
-    Graphics.draw2d_end();
+    draw2d_end();
 }
 
 //---------------------------
@@ -117,25 +117,17 @@ draw_entities :: () {
 #import "Math";
 #import "String";
 
-#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
+#import "SDL3";
+#if IMGUI ImGui :: #import "ImGui";
 
-Graphics :: #import "Graphics" (DUMP_ERRORS = DEBUG);
+#import "Entity"   (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
 #import "Graphics" (DUMP_ERRORS = DEBUG);
-
-Time     :: #import "Time";
+#import "Time";
 
 #import "Input";
 
-#if IMGUI {
-    #if EDITOR then #load "editor/editor.jai";
-    ImGui :: #import "ImGui" (DUMP_ERRORS = DEBUG);
-}
-
-#import "SDL3";
-
-#load "window.jai";
-#load "utils.jai";
-
+// Game files
+#if EDITOR #load "editor/editor.jai";
 #load "components/core/2d_movement.jai";
 #load "components/core/2d_transform.jai";
 #load "components/core/2d_collider.jai";
@@ -143,5 +135,6 @@ Time     :: #import "Time";
 #load "components/core/sprite.jai";
 #load "components/core/text.jai";
 #load "components/core/flipbook.jai";
-
+#load "window.jai";
+#load "utils.jai";
 #load "game.jai";

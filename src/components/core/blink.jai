@@ -9,7 +9,7 @@ Blink_Component :: struct @Component @InitOrder(10300) @Max(MAX_ENTITIES) {
 update_blink :: (using blink : *Blink_Component, tint : *v4) {
     if enabled && tint {
 
-        progress += Time.delta_seconds();
+        progress += delta_seconds();
         progress = clamp(progress, 0.0, duration);
         normalized_progress := progress / duration;
         tint.* = linear_interp(normalized_progress, start_tint, end_tint); 

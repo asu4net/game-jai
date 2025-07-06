@@ -42,7 +42,7 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
     log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
     
-    Graphics.set_clear_color(DARK_GRAY);
+    set_clear_color(DARK_GRAY);
 }
 
 deinit_window :: () {

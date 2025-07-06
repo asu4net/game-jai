@@ -20,11 +20,11 @@ move_entity :: (entity : Entity) {
         return;
     }
     
-    speed_progress += Time.delta_seconds();
+    speed_progress += delta_seconds();
     speed_progress = clamp(speed_progress, 0.0, time_to_max_speed);
     norm_speed_progress := speed_progress / time_to_max_speed;
     speed :=  ease_in_expo_interp(norm_speed_progress, speed_min, speed_max);
-    delta_traslation := speed * Time.delta_seconds();
+    delta_traslation := speed * delta_seconds();
 
     if has_target {
         distance_sqrd := distance_squared(target, transform.pos);

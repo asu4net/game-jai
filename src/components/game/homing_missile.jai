@@ -78,7 +78,7 @@ update_homing_missile :: (entity : Entity) {
             angle := -(atan2(dir.y, dir.x) * DEG_PER_RAD) - 90;
             set_ang(entity, angle);
 
-            homing_missile.wait_timer += Time.delta_seconds();
+            homing_missile.wait_timer += delta_seconds();
             if homing_missile.wait_timer >= homing_missile.wait_time {
                 homing_missile.attack_dir = normalize(player_position - get_pos(entity));
                 homing_missile.state = .ATTACK;
@@ -94,7 +94,7 @@ update_homing_missile :: (entity : Entity) {
             */
         }
         case .ATTACK; {
-            delta_pos := homing_missile.attack_dir * homing_missile.attack_speed * Time.delta_seconds();
+            delta_pos := homing_missile.attack_dir * homing_missile.attack_speed * delta_seconds();
             set_pos(entity, get_pos(entity) + delta_pos);
             /*
             if entity_valid(children[0]) {

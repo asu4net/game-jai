@@ -60,7 +60,7 @@ update_movement :: (player : Entity) {
     using transform2d     := get_component(Transform2D_Component, player);
     using player_input    := get_component(Player_Input, player);
     using player_movement := get_component(Player_Movement, player);
-    pos += axis * speed * Time.delta_seconds();
+    pos += axis * speed * delta_seconds();
 }
 
 update_weapons :: (player : Entity) {
@@ -69,7 +69,7 @@ update_weapons :: (player : Entity) {
     using player_input    := get_component(Player_Input, player);
     using player_weapon   := get_component(Player_Weapon, player);
 
-    time_since_fired += Time.delta_seconds();
+    time_since_fired += delta_seconds();
     if (fire && time_since_fired >= firerate) {
         if (level == 1) {
             fire_projectile(pos, UP_2D, PLAYER_BULLET_LV1_DAMAGE, PLAYER_BULLET_LV1_SPEED, PLAYER_BULLET_LV1_RADIUS);
