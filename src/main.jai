@@ -4,7 +4,7 @@ main :: () {
     //---------------------------
     //:INITIALIZATION
     //---------------------------
-    
+
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     

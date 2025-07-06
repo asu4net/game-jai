@@ -32,7 +32,7 @@ draw_frame :: () {
             }
         }
     }
-    draw2d_begin(.{context.window.width, context.window.height});
+    draw2d_end();
 
     //---------------------------
     //:DRAW IMGUI
