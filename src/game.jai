@@ -21,7 +21,7 @@ is_game_init :: inline () -> bool {
 init_game :: () {
     if is_game_init()
     then deinit_game();
-
+    
     log("Init game!");
     game := New(Game_State);
     context.game_state = game; 
@@ -66,28 +66,11 @@ deinit_game :: () {
         }
     }
 
-    using context.game_state;
+    using game := context.game_state;
     destroy_game_entity(*homing);
     destroy_game_entity(*kamikaze);
     destroy_game_entity(*player);
-}
 
-//---------------------------
-//:DEPENDENCIES
-//---------------------------
-
-#scope_file
-
-//#REVIEW_asuarez More commands stuff (maybe this should be in utils or main)
-should_update_game :: () -> bool {
-
-    #if EDITOR {
-        if !is_key_down(.RSHIFT) && is_key_down(.F5) && !inited {
-            init_game();
-        } else if  is_key_down(.RSHIFT) && is_key_down(.F5) && inited {
-            deinit_game();
-        }
-    }
-
-    return is_game_init();
+    free(game);
+    context.game_state = null;
 }

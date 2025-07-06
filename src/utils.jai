@@ -51,3 +51,17 @@ update_frame_by_frame_mode :: () {
 }
 
 } // #if EDITOR
+
+//#REVIEW_asuarez More commands stuff (maybe this should be in utils or main)
+should_update_game :: () -> bool {
+
+    #if EDITOR {
+        if !is_key_down(.RSHIFT) && is_key_down(.F5) && !is_game_init() {
+            init_game();
+        } else if  is_key_down(.RSHIFT) && is_key_down(.F5) && is_game_init() {
+            deinit_game();
+        }
+    }
+
+    return is_game_init();
+}

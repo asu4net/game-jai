@@ -57,6 +57,7 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
         {
             style.WindowRounding = 0.0;
             style.Colors[ImGui.Col.WindowBg].w = 1.0;
+            style.Colors[ImGui.Col.DockingEmptyBg] = .{0, 0, 0, 0};
         }
 
         ImGui.ImplSDL3_InitForOpenGL(window.handle, window.gl_ctx);
@@ -115,9 +116,45 @@ process_window_events :: () {
         ImGui.ImplOpenGL3_NewFrame();
         ImGui.ImplSDL3_NewFrame();
         ImGui.NewFrame();
+
+        //---------------------------
+        //:DOCKSPACE
+        //---------------------------
+    
+        if ImGui.GetIO().ConfigFlags_ & .DockingEnable {
+
+            viewport := ImGui.GetMainViewport();
+            ImGui.SetNextWindowPos(viewport.WorkPos);
+            ImGui.SetNextWindowSize(viewport.WorkSize);
+            ImGui.SetNextWindowViewport(viewport.ID_);
+
+            ImGui.PushStyleVar(.WindowRounding, 0);
+            ImGui.PushStyleVar(.WindowBorderSize, 0);
+            ImGui.PushStyleVar(.WindowPadding, Vector2.{0, 0});
+
+            window_flags : ImGui.WindowFlags;
+            window_flags |= .NoDocking;
+            window_flags |= .MenuBar;
+            window_flags |= .NoTitleBar;
+            window_flags |= .NoCollapse;
+            window_flags |= .NoResize;
+            window_flags |= .NoMove;
+            window_flags |= .NoBringToFrontOnFocus;
+            window_flags |= .NoNavFocus;
+            window_flags |= .NoBackground;
+
+            ImGui.Begin("Dockspace Window", null, window_flags);
+            
+            ImGui.PopStyleVar(3);
+            ImGui.DockSpace(ImGui.GetID("Dockspace"), size = .{0, 0});
+        }
     }
     
     end_draw_imgui :: () {
+
+        if ImGui.GetIO().ConfigFlags_ & .DockingEnable
+        then ImGui.End(); // Viewport end.
+
         ImGui.Render(); 
         ImGui.ImplOpenGL3_RenderDrawData(ImGui.GetDrawData());
         

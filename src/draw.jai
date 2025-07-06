@@ -40,9 +40,7 @@ draw_frame :: () {
 
     #if IMGUI {
         begin_draw_imgui();
-        ImGui.Begin("Random Window");
-        ImGui.Text("Hello from random window!");
-        ImGui.End();
+        draw_editor();
         end_draw_imgui();
     }
 }
