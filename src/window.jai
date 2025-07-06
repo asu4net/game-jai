@@ -75,7 +75,9 @@ deinit_window :: () {
 }
 
 keep_window_opened :: () -> bool {
+    SDL_GL_SwapWindow(context.window.handle);
     process_window_events();
+    time_step();
     return !context.window.done;
 }
 
@@ -103,6 +105,32 @@ process_window_events :: () {
                 then window.done = true;
             }
             case;
+        }
+    }
+}
+
+#if IMGUI {
+    
+    begin_draw_imgui :: () {
+        ImGui.ImplOpenGL3_NewFrame();
+        ImGui.ImplSDL3_NewFrame();
+        ImGui.NewFrame();
+    }
+    
+    end_draw_imgui :: () {
+        ImGui.Render(); 
+        ImGui.ImplOpenGL3_RenderDrawData(ImGui.GetDrawData());
+        
+        // Update and Render additional Platform Windows
+        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+        //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
+        
+        if (ImGui.GetIO().ConfigFlags_ & .ViewportsEnable) {
+            backup_current_window := SDL_GL_GetCurrentWindow();
+            backup_current_context := SDL_GL_GetCurrentContext();
+            ImGui.UpdatePlatformWindows();
+            ImGui.RenderPlatformWindowsDefault();
+            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
         }
     }
 }

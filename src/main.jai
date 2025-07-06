@@ -1,11 +1,10 @@
 sheet : Spritesheet;
 
 main :: () {
-
     //---------------------------
     //:INITIALIZATION
     //---------------------------
-
+    
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
@@ -28,7 +27,6 @@ main :: () {
 
     #if !EDITOR
     then init_game();
-
     defer if is_game_init() then deinit_game();
 
     //---------------------------
@@ -37,91 +35,15 @@ main :: () {
 
     while keep_window_opened() {   
 
-
-        time_step();
-        
-        if can_update_this_frame() {
-            update_game();
-            move_entities();
-            query_2d_collisions();
-        }
+        if can_update_this_frame()
+        then update_game();
         
         clear_screen();
-        draw_entities();
+        draw_frame();
 
-        #if IMGUI {
-            ImGui.ImplOpenGL3_NewFrame();
-            ImGui.ImplSDL3_NewFrame();
-            ImGui.NewFrame();
-        }
-
-        ImGui.Begin("Random Window");
-        ImGui.Text("Hello from random window!");
-        ImGui.End();
-
-        ImGui.Render();
-        ImGui.ImplOpenGL3_RenderDrawData(ImGui.GetDrawData());
-        
-        // Update and Render additional Platform Windows
-        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
-        //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
-        
-        if (ImGui.GetIO().ConfigFlags_ & .ViewportsEnable) {
-            backup_current_window := SDL_GL_GetCurrentWindow();
-            backup_current_context := SDL_GL_GetCurrentContext();
-            ImGui.UpdatePlatformWindows();
-            ImGui.RenderPlatformWindowsDefault();
-            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
-        }
-
-        SDL_GL_SwapWindow(context.window.handle);
         clean_destroyed_entities();
         reset_temporary_storage();
     }
-
-}
-
-move_entities :: () {
-    view := get_entity_view(Transform2D_Component, Movement2D_Component);
-    for view {
-        if has_component(KeyboardMovement_Component, it) 
-        then update_entity_input(it);
-        move_entity(it);
-    }
-}
-
-draw_entities :: () {
-    draw2d_begin(.{context.window.width, context.window.height});
-    {
-        // FlipBook.
-        {
-            view := get_entity_view(FlipBook_Component);
-            for view update_flipbook_entity(it);
-        }
-        // Sprites.
-        {
-            view := get_entity_view(Transform2D_Component, Sprite_Component);
-            for view draw_sprite_entity(it, *sheet);
-        }
-        // Collisions.
-        {
-            view := get_entity_view(Transform2D_Component, Circle_Collider_Component);
-            collisions_table := context.collisions2d.collisions_table;
-            for view {
-                coll := get_component(Circle_Collider_Component, it);
-                ref := make_ref(it);
-                if table_contains(*collisions_table, ref) {
-                    collides_with := table_find_pointer(*collisions_table, ref);
-                    if collides_with.count == 0 
-                    then draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
-                    else draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_RED);
-                } else {
-                    draw_circle(pos = get_pos(it), rad = coll.radius, tint = LIGHT_GREEN);
-                }
-            }
-        }
-    }
-    draw2d_end();
 }
 
 //---------------------------
@@ -154,6 +76,8 @@ draw_entities :: () {
 #load "components/core/sprite.jai";
 #load "components/core/text.jai";
 #load "components/core/flipbook.jai";
+
 #load "window.jai";
 #load "utils.jai";
+#load "draw.jai";
 #load "game.jai";

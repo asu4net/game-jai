@@ -44,5 +44,4 @@ move_entity :: (entity : Entity) {
     } else {
         transform.pos += dir * delta_traslation;
     }
-    
 }

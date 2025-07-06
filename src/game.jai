@@ -35,6 +35,9 @@ update_game :: () {
 
     if player != NULL_ENTITY
     then update_player(player);
+
+    move_entities();
+    query_2d_collisions();
 }
 
 deinit_game :: () {
@@ -64,8 +67,16 @@ update_enemies :: () {
 #load "components/game/kamikaze.jai";
 #load "components/game/homing_missile.jai";
 
-
 #scope_file
+
+move_entities :: () {
+    view := get_entity_view(Transform2D_Component, Movement2D_Component);
+    for view {
+        if has_component(KeyboardMovement_Component, it) 
+        then update_entity_input(it);
+        move_entity(it);
+    }
+}
 
 //#REVIEW_asuarez More commands stuff (maybe this should be in utils or main)
 inited : bool;
