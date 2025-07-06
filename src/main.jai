@@ -15,12 +15,6 @@ main :: () {
     init_draw2d();
     defer deinit_draw2d();
 
-    #if IMGUI {
-        #if EDITOR then draw_imgui = draw_editor;
-        ImGui.Init(imgui_draw_proc = draw_imgui);
-        defer ImGui.Deinit();
-    }
-
     init_entity_storage();
     defer deinit_entity_storage();
 
@@ -43,7 +37,7 @@ main :: () {
 
     while keep_window_opened() {   
 
-        clear_screen();
+
         time_step();
         
         if can_update_this_frame() {
@@ -52,10 +46,35 @@ main :: () {
             query_2d_collisions();
         }
         
+        clear_screen();
         draw_entities();
 
-        #if IMGUI ImGui.Draw(Time.get_time());
+        #if IMGUI {
+            ImplOpenGL3_NewFrame();
+            ImplSDL3_NewFrame();
+            ImGui.NewFrame();
+        }
 
+        ImGui.Begin("Random Window");
+        ImGui.Text("Hello from random window!");
+        ImGui.End();
+
+        ImGui.Render();
+        ImplOpenGL3_RenderDrawData(ImGui.GetDrawData());
+        
+        // Update and Render additional Platform Windows
+        // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.
+        //  For this specific demo app we could also call SDL_GL_MakeCurrent(window, gl_context) directly)
+        
+        if (ImGui.GetIO().ConfigFlags_ & .ViewportsEnable) {
+            backup_current_window := SDL_GL_GetCurrentWindow();
+            backup_current_context := SDL_GL_GetCurrentContext();
+            ImGui.UpdatePlatformWindows();
+            ImGui.RenderPlatformWindowsDefault();
+            SDL_GL_MakeCurrent(backup_current_window, backup_current_context);
+        }
+
+        SDL_GL_SwapWindow(context.window.handle);
         clean_destroyed_entities();
         reset_temporary_storage();
     }

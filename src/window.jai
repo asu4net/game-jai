@@ -4,6 +4,7 @@ Window :: struct {
     width   : s32;
     height  : s32;    
     gl_ctx  : SDL_GLContext;
+    #if IMGUI imgui_ctx : ImGui.ImGuiContext; 
 }
 
 #add_context window: Window;
@@ -37,15 +38,36 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
     window.gl_ctx = gl_ctx;
      
     SDL_GL_MakeCurrent(window.handle, window.gl_ctx);
+    SDL_GL_SetSwapInterval(1);
 
     gl_load(*gl, xx SDL_GL_GetProcAddress);
     log("GL Vendor = %\n", to_string(glGetString(GL_VENDOR)));
     log("GL Version = %\n", to_string(glGetString(GL_VERSION)));
     
+    #if IMGUI {
+        window.imgui_ctx = ImGui.CreateContext();
+        io := ImGui.GetIO();
+        io.ConfigFlags_ |= .NavEnableKeyboard;     // Enable Keyboard Controls
+        io.ConfigFlags_ |= .NavEnableGamepad;      // Enable Gamepad Controls
+        io.ConfigFlags_ |= .DockingEnable;         // Enable Docking
+        io.ConfigFlags_ |= .ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+        style := ImGui.GetStyle();
+        if (io.ConfigFlags_ & .ViewportsEnable)
+        {
+            style.WindowRounding = 0.0;
+            style.Colors[ImGui.Col.WindowBg].w = 1.0;
+        }
+
+        ImplSDL3_InitForOpenGL(window.handle, window.gl_ctx);
+        ImplOpenGL3_Init();
+    }
+
     set_clear_color(DARK_GRAY);
 }
 
 deinit_window :: () {
+    #if IMGUI then ImplSDL3_Shutdown();
     handle := context.window.handle;
     assert(handle != null);
     SDL_DestroyWindow(handle);
@@ -53,7 +75,6 @@ deinit_window :: () {
 }
 
 keep_window_opened :: () -> bool {
-    SDL_GL_SwapWindow(context.window.handle);
     process_window_events();
     return !context.window.done;
 }
@@ -62,10 +83,10 @@ process_window_events :: () {
 
     window := *context.window;
     event : SDL_Event;
-    
+
     while SDL_PollEvent(*event) {
         
-        #if IMGUI then process_imgui_sdl_events(*event);
+        #if IMGUI then ImplSDL3_ProcessEvent(*event);
         
         if event.type == {
             
@@ -95,3 +116,6 @@ is_key_down :: (input : SDL_Scancode) -> bool {
 #scope_file
 
 #import "GL" (DUMP_GL_ERRORS = DEBUG);
+
+#load "windows_sdl3_opengl3.jai";
+#import "ImGui";

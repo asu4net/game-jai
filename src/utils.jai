@@ -22,7 +22,7 @@ update_frame_by_frame_mode :: () {
     
     using frame_by_frame_mode;
 
-    if is_key_down(.SHIFT) && is_key_down(.F10) {
+    if is_key_down(.RSHIFT) && is_key_down(.F10) {
     
     if !frame_by_frame_pressed {
             frame_by_frame_pressed = true;

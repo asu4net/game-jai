@@ -72,10 +72,10 @@ inited : bool;
 should_update_game :: () -> bool {
 
     #if EDITOR {
-        if !is_key_down(.SHIFT) && is_key_down(.F5) && !inited {
+        if !is_key_down(.RSHIFT) && is_key_down(.F5) && !inited {
             inited = true;
             init_game();
-        } else if  is_key_down(.SHIFT) && is_key_down(.F5) && inited {
+        } else if  is_key_down(.RSHIFT) && is_key_down(.F5) && inited {
             inited = false;
             deinit_game();
         }
