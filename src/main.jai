@@ -24,8 +24,8 @@ main :: () {
     init_entity_storage();
     defer deinit_entity_storage();
 
-    init(*sheet);
-    defer deinit(*sheet);
+    init_spritesheet(*sheet);
+    defer deinit_spritesheet(*sheet);
 
     set_clear_color(DARK_GREY);
 
@@ -109,7 +109,7 @@ draw_entities :: () {
 //:DEPENDENCIES
 //---------------------------
 
-#import "Basic"()(MEMORY_DEBUGGER=true);
+#import "Basic"()(MEMORY_DEBUGGER = DEBUG);
 #import "System";
 #import "Hash_Table";
 #import "File";

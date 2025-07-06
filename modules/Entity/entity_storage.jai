@@ -43,7 +43,7 @@ init :: (using arena : *Component_Arena($T), cap : s64) {
     components.data = data;
     components.count = cap;
     type = type_info(T);
-    init(*entities, xx MAX_ENTITIES);
+    init_sparse_set(*entities, xx MAX_ENTITIES);
      
     get = (entity : Entity)             -> *void        { return get_component(T, entity);    }
     add = (entity : Entity)             -> *void        { return add_component(T, entity);    }
@@ -93,7 +93,7 @@ set_component_callbacks :: (
 deinit :: (using arena : *Component_Arena($T)) {
     arena_name := copy_string(arena.type.name ,,temp);
     free(data);
-    deinit(*entities);
+    deinit_sparse_set(*entities);
     arena.* = .{};
     log("Freed % component arena.", arena_name);
 }
@@ -168,7 +168,7 @@ init_entity_storage :: () {
     set_component_callbacks_for_generated_arenas(*state.generated_component_arenas);
     state.uuid_seed = current_time_monotonic().low;
     random_seed(state.uuid_seed);
-    init(*state.free_queue, MAX_ENTITIES);
+    init_queue(*state.free_queue, MAX_ENTITIES);
     
     for 0..MAX_ENTITIES {
         push_back(*state.free_queue, xx it);
@@ -296,7 +296,7 @@ deinit_entity_storage :: () {
     clean_destroyed_entities();
     deinit_generated_component_arenas(*state.generated_component_arenas);
     deinit(*state.info_arena);
-    deinit(*state.free_queue);
+    deinit_queue(*state.free_queue);
     deinit(*state.uuid_table);
     array_reset(*state.component_arenas);
     array_reset(*state.to_clean);

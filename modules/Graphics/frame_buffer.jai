@@ -17,7 +17,7 @@ Frame_Buffer :: struct {
     samples : int;
 }
 
-init :: (fb : *Frame_Buffer) {
+init_frame_buffer :: (fb : *Frame_Buffer) {
     create_textures(true, 0);
 }
 

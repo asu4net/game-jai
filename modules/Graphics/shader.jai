@@ -12,21 +12,21 @@ is_shader_init :: (shader : *Shader) -> bool {
     return shader.program != 0;
 }
 
-init :: (shader : *Shader, def : Default_Shader) {
+init_shader :: (shader : *Shader, def : Default_Shader) {
     if def == {
-        case .QUAD;   init(shader, QUAD_SHADER_SOURCE);
-        case .CIRCLE; init(shader, CIRCLE_SHADER_SOURCE);
+        case .QUAD;   init_shader(shader, QUAD_SHADER_SOURCE);
+        case .CIRCLE; init_shader(shader, CIRCLE_SHADER_SOURCE);
     }
 }
 
-init :: (shader : *Shader, source : string) {
+init_shader :: (shader : *Shader, source : string) {
     assert(!is_shader_init(shader));
     shader.program = get_shader_program(source);
     if shader.program == 0 then return;
     //#REVIEW_asuarez: Maybe do something is shader is valid
 }
 
-deinit :: (shader : *Shader) {
+deinit_shader :: (shader : *Shader) {
     assert(is_shader_init(shader));
     glDeleteProgram(shader.program);
     shader.* = .{};

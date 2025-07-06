@@ -15,11 +15,11 @@ SpritesheetDef :: struct {
     rects : [..] SheetDefItem;
 }
 
-is_init :: (sheet : *Spritesheet) -> bool {
+is_init_spritesheet :: (sheet : *Spritesheet) -> bool {
     return sheet.tex.id != 0;
 }
 
-init :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
+init_spritesheet :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MAX_WIDTH, src_path := DEF_ASSET_PATH, dst_path := DEF_ASSET_PATH) {
     
     full_path_png  := join(dst_path, "/", sheet_name, ".png" ,,temp);
     full_path_json := join(dst_path, "/", sheet_name, ".json" ,,temp);
@@ -33,16 +33,16 @@ init :: (sheet : *Spritesheet, sheet_name := DEF_SHEET_NAME, max_width := DEF_MA
     success, sheet_def := json_parse_string(json_string, SpritesheetDef ,,temp);
     assert(success);
     
-    init(*sheet.tex, full_path_png);
+    init_texture(*sheet.tex, full_path_png);
     
     for sheet_def.rects {
         table_add(*sheet.rects, copy_string(it.name), it.rect);
     }
 }
 
-deinit :: (sheet : *Spritesheet) {
+deinit_spritesheet :: (sheet : *Spritesheet) {
     assert(sheet != null);
-    deinit(*sheet.tex);
+    deinit_texture(*sheet.tex);
     for _, name : sheet.rects {
         free(name);
     }
