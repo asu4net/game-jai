@@ -59,15 +59,15 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
             style.Colors[ImGui.Col.WindowBg].w = 1.0;
         }
 
-        ImplSDL3_InitForOpenGL(window.handle, window.gl_ctx);
-        ImplOpenGL3_Init();
+        ImGui.ImplSDL3_InitForOpenGL(window.handle, window.gl_ctx);
+        ImGui.ImplOpenGL3_Init();
     }
 
     set_clear_color(DARK_GRAY);
 }
 
 deinit_window :: () {
-    #if IMGUI then ImplSDL3_Shutdown();
+    #if IMGUI then ImGui.ImplSDL3_Shutdown();
     handle := context.window.handle;
     assert(handle != null);
     SDL_DestroyWindow(handle);
@@ -86,7 +86,7 @@ process_window_events :: () {
 
     while SDL_PollEvent(*event) {
         
-        #if IMGUI then ImplSDL3_ProcessEvent(*event);
+        #if IMGUI then ImGui.ImplSDL3_ProcessEvent(*event);
         
         if event.type == {
             
@@ -116,6 +116,4 @@ is_key_down :: (input : SDL_Scancode) -> bool {
 #scope_file
 
 #import "GL" (DUMP_GL_ERRORS = DEBUG);
-
-#load "windows_sdl3_opengl3.jai";
-#import "ImGui";
+ImGui :: #import "ImGui";

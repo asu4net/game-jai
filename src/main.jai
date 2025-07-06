@@ -50,8 +50,8 @@ main :: () {
         draw_entities();
 
         #if IMGUI {
-            ImplOpenGL3_NewFrame();
-            ImplSDL3_NewFrame();
+            ImGui.ImplOpenGL3_NewFrame();
+            ImGui.ImplSDL3_NewFrame();
             ImGui.NewFrame();
         }
 
@@ -60,7 +60,7 @@ main :: () {
         ImGui.End();
 
         ImGui.Render();
-        ImplOpenGL3_RenderDrawData(ImGui.GetDrawData());
+        ImGui.ImplOpenGL3_RenderDrawData(ImGui.GetDrawData());
         
         // Update and Render additional Platform Windows
         // (Platform functions may change the current OpenGL context, so we save/restore it to make it easier to paste this code elsewhere.

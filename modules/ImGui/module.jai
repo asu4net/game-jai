@@ -12,8 +12,19 @@ ImVector :: struct (T: Type) {
 
 ImDrawCallback :: #type (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call;
 
+// #NOTE_asuarez If you get an error around here, it's probably because the
+// bindings haven't been generated yet. Open the ImGui folder in the command prompt and type:
+// jai generate.jai --backend_sdl3_opengl3.
+// If the backend generation is still failing check generate.jai, maybe something is missing.
+#if OS == {
+    case .WINDOWS;  #load "backends/windows/windows_sdl3_opengl3.jai";
+    case .LINUX;    #load "backends/unix/unix_sdl3_opengl3.jai";
+    case .MACOS;    #load "backends/macos/macos_sdl3_opengl3.jai";
+}
+
 #scope_module
 
+#import "SDL3";
 #import "Basic";
 #import "Math";
 
