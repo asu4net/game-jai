@@ -53,10 +53,13 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
         io.ConfigFlags_ |= .ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
 
         style := ImGui.GetStyle();
-        if (io.ConfigFlags_ & .ViewportsEnable)
-        {
+
+        frame_bg_col := *style.Colors[ImGui.Col.TabActive]; 
+        frame_bg_col.w = 0.2;
+        
+        if io.ConfigFlags_ & .ViewportsEnable {
             style.WindowRounding = 0.0;
-            style.Colors[ImGui.Col.WindowBg].w = 1.0;
+            style.Colors[ImGui.Col.WindowBg].w = 0.5;
             style.Colors[ImGui.Col.DockingEmptyBg] = .{0, 0, 0, 0};
         }
 

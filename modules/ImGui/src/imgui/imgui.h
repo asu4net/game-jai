@@ -461,6 +461,7 @@ namespace ImGui
     IMGUI_API void          PopItemFlag();
 
     // Parameters stacks (current window)
+    IMGUI_API void          PushMultiItemsWidths(int components, float w_full);
     IMGUI_API void          PushItemWidth(float item_width);                                // push width of items for common large "item+label" widgets. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -FLT_MIN always align width to the right side).
     IMGUI_API void          PopItemWidth();
     IMGUI_API void          SetNextItemWidth(float item_width);                             // set width of the _next_ common large "item+label" widget. >0.0f: width in pixels, <0.0f align xx pixels to the right of window (so -FLT_MIN always align width to the right side)

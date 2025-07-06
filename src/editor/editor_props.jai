@@ -312,7 +312,7 @@ begin_property :: (name : string, items : u32 = 1) {
     ImGui.SetColumnWidth(0, COLUMN_WIDTH);
     ImGui.Text(name);
     ImGui.NextColumn();
-    //ImGui.PushMultiItemsWidths(xx items, ImGui.CalcItemWidth());
+    ImGui.PushMultiItemsWidths(xx items, ImGui.CalcItemWidth());
     ImGui.PushStyleVar(.ItemSpacing, ITEM_SPACING);
     in_property_context = true;
 }

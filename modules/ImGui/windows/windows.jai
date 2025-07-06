@@ -1,7 +1,7 @@
 //
 // This file was auto-generated using the following command:
 //
-// jai generate.jai - -compile
+// jai generate.jai
 //
 
 
@@ -658,6 +658,7 @@ PushItemFlag :: (option: ItemFlags, enabled: bool) -> void #foreign imgui "?Push
 PopItemFlag :: () -> void #foreign imgui "?PopItemFlag@ImGui@@YAXXZ";
 
 // Parameters stacks (current window)
+PushMultiItemsWidths :: (components: s32, w_full: float) -> void #foreign imgui "?PushMultiItemsWidths@ImGui@@YAXHM@Z";
 PushItemWidth :: (item_width: float) -> void #foreign imgui "?PushItemWidth@ImGui@@YAXM@Z";
 PopItemWidth :: () -> void #foreign imgui "?PopItemWidth@ImGui@@YAXXZ";
 SetNextItemWidth :: (item_width: float) -> void #foreign imgui "?SetNextItemWidth@ImGui@@YAXM@Z";
