@@ -58,17 +58,25 @@ main :: () {
 #import "Math";
 #import "String";
 #import "Input";
+#import "Random";
+#import "Text_File_Handler";
 
+#import "Jaison";
 #import "SDL3";
 #if IMGUI ImGui :: #import "ImGui";
 
-#import "Entity"   (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
 #import "Graphics" (DUMP_ERRORS = DEBUG);
 #import "Time";
+#import "Sparse_Set";
+#import "Queue";
 
 #if EDITOR #load "editor/editor.jai";
+
 #load "components/core/all.jai";
 #load "components/game/all.jai";
+#load "entity/entity_storage.jai";
+#load "entity/entity_pool.jai";
+
 #load "window.jai";
 #load "utils.jai";
 #load "draw.jai";

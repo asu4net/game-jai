@@ -5,3 +5,4 @@
 #load "sprite.jai";
 #load "text.jai";
 #load "flipbook.jai";
+#load "timer.jai";

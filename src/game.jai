@@ -35,7 +35,8 @@ init_game :: () {
 update_game :: () {
     if !should_update_game() 
     then return;
-
+    
+    for get_entity_view(Timer_Component) update_timer_component(it);
     for get_entity_view(Kamikaze_Skull) update_kamikaze(it);
     for get_entity_view(Homing_Missile_Component) update_homing_missile(it);
 

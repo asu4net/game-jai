@@ -13,7 +13,7 @@ Component_Arena_Base :: struct {
     slz : (entity : Entity)             -> string;
     dlz : (entity : Entity, s : string) -> *void;
 
-    #if EDIT_MODE then drw : (entity : Entity);
+    #if EDITOR then drw : (entity : Entity);
 
     // Callbacks generic callers.
     call_add_cbk : (fn : *void, entity : Entity, component : *void);
@@ -52,7 +52,7 @@ init :: (using arena : *Component_Arena($T), cap : s64) {
     slz = (entity : Entity)             -> string       { return slz_component(T, entity);    }
     dlz = (entity : Entity, s : string) -> *void        { return dlz_component(T, entity, s); } 
 
-    #if EDIT_MODE then drw = (entity : Entity) { drw_component(T, entity); }
+    #if EDITOR then drw = (entity : Entity) { drw_component(T, entity); }
 
     log("Initialized % component arena.", arena.type.name);
 }
@@ -121,7 +121,7 @@ operator== :: (a : Entity_Ref, b : Entity_Ref) -> bool {
 }
 
 Entity_Info :: struct {
-    #if EDIT_MODE id : u32; @JsonIgnore @EditorReadOnly
+    #if EDITOR id : u32; @JsonIgnore @EditorReadOnly
     name : string;
     flags : Entity_Flag = .LOCAL_ENABLED | .ENABLED;
     uuid : u64; @JsonIgnore @EditorIgnore
@@ -190,17 +190,6 @@ is_enabled :: (entity : Entity) -> bool {
 set_enabled :: (entity : Entity, enabled := true) {
     assert(is_not_destroyed(entity));
     info := get_info(entity);
-    
-    if !has_component(Node_Component, entity) {
-        if enabled 
-        then info.flags |= .ENABLED | .LOCAL_ENABLED;
-        else {
-            info.flags = info.flags &~ .ENABLED;
-            info.flags = info.flags &~ .LOCAL_ENABLED;
-        }
-        return;
-    }
-
     is_local_enabled := (.LOCAL_ENABLED & info.flags).(bool);
     if enabled != is_local_enabled
     then compute_enabled_iterative(make_ref(entity));
@@ -653,11 +642,11 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
         component := get_component(T, entity);
         //#HACK_asuarez See dlz_entity, the make ref stuff.
         #if T == Entity_Info {
-            #if EDIT_MODE 
+            #if EDITOR 
             then id := component.id;
             uuid := component.uuid;
             component.* = parsed_data;
-            #if EDIT_MODE 
+            #if EDITOR 
             then component.id   = id;
             component.uuid = uuid;
         } else 
@@ -671,7 +660,7 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
     return add_component_with_data(parsed_data, entity);  
 }
 
-#if EDIT_MODE {
+#if EDITOR {
     drw_component :: ($T : Type, entity : Entity) {
         EntityStorageContext();
         c := get_component(T, entity);
@@ -768,7 +757,7 @@ add_info :: (entity : Entity, info := Entity_Info.{}) -> *Entity_Info {
     count += 1;
     index := insert_id(*entities, entity);
     info_ptr := *components[index]; 
-    #if EDIT_MODE info_ptr.id = entity;
+    #if EDITOR info_ptr.id = entity;
     info_ptr.* = info;
     return info_ptr;
 }
