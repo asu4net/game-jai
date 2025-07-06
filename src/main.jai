@@ -57,6 +57,7 @@ main :: () {
 #import "File_Utilities";
 #import "Math";
 #import "String";
+#import "Input";
 
 #import "SDL3";
 #if IMGUI ImGui :: #import "ImGui";
@@ -65,18 +66,9 @@ main :: () {
 #import "Graphics" (DUMP_ERRORS = DEBUG);
 #import "Time";
 
-#import "Input";
-
-// Game files
 #if EDITOR #load "editor/editor.jai";
-#load "components/core/2d_movement.jai";
-#load "components/core/2d_transform.jai";
-#load "components/core/2d_collider.jai";
-#load "components/core/blink.jai";
-#load "components/core/sprite.jai";
-#load "components/core/text.jai";
-#load "components/core/flipbook.jai";
-
+#load "components/core/all.jai";
+#load "components/game/all.jai";
 #load "window.jai";
 #load "utils.jai";
 #load "draw.jai";
