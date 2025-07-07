@@ -85,7 +85,8 @@
 
 @Component(Damage_Target)
 {
-	"max_life": 1
+	"max_life": 1,
+	"life": 1
 }
 
 @Entity(3178532888591834674)

@@ -17,7 +17,7 @@ RenderCamera :: struct {
     pv_matrix  : m4   = IDENTITY;
 
     //2D Specific
-    size : f32 = +1;
+    size : f32 = +1.5;
 }
 
 update_render_camera :: (using camera : *RenderCamera) {

@@ -32,6 +32,7 @@ init_game :: () {
     game.kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
     game.homing  = dlz_entity_from_file("assets/homing_missile.prefab");
     set_pos(game.homing, UP_2D * 1);
+    set_pos(game.kamikaze, UP_2D * 1);
 }
 
 update_game :: () {
@@ -54,6 +55,7 @@ update_game :: () {
     move_entities();
     query_2d_collisions();
     query_damage_collisions();
+    process_player_damage();
 }
 
 deinit_game :: () {

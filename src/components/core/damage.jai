@@ -4,13 +4,13 @@ Damage_Source :: struct @Component @Max(MAX_ENTITIES) {
 
 Damage_Target :: struct @Component @Max(MAX_ENTITIES) {
     max_life: u32 = 100;
-    life: u32 = 0; @JsonIgnore
+    life: s32 = 0;
 }
 
 on_damage_target_added :: (entity : Entity, dmg_target : *Damage_Target) {
     if dmg_target.life != 0 
     then return;
-    dmg_target.life = dmg_target.max_life; 
+    dmg_target.life = xx dmg_target.max_life; 
 } @addcomponentcallback
 
 Damage_Event :: struct {
@@ -43,7 +43,7 @@ reset_life :: (entity : Entity) -> bool {
         return false;
     }
     dmg_target := get_component(Damage_Target, entity);
-    dmg_target.life = dmg_target.max_life;
+    dmg_target.life = xx dmg_target.max_life;
     return true; 
 }
 
@@ -57,7 +57,11 @@ query_damage_collisions :: () {
         if has_component(Damage_Target, target) && has_component(Damage_Source, source) {
             dmg_target := get_component(Damage_Target, target);
             dmg_source := get_component(Damage_Source, source);
-            dmg_target.life -= dmg_source.damage;
+            dmg_target.life -= xx dmg_source.damage;
+            event : Damage_Event;
+            event.source = it.source;
+            event.target = it.target;
+            array_add(*damage_events, event);
         } 
     }
 }

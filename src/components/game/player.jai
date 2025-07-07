@@ -90,3 +90,17 @@ fire_projectile :: (pos : Vector2, dir : Vector2, damage : u32, speed : f32, rad
 
     log("Beep, firing bullet, remember to make that bullet pool, beep");
 }
+
+process_player_damage :: () {
+    for context.damage_registry.damage_events {
+        entity := resolve_ref(*it.target);
+        if entity != get_player()
+        then continue;
+        target := get_component(Damage_Target, resolve_ref(*it.target));
+        if target.life <= 0 {
+            //#TODO_asuarez Placeholder
+            deinit_game();
+        }
+        break;
+    }
+}
