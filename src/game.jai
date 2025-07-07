@@ -26,6 +26,7 @@ init_game :: () {
     game := New(Game_State);
     context.game_state = game; 
 
+    init_collisions2d();
     init_damage_registry();
 
     game.player   = dlz_entity_from_file("assets/player.prefab");
@@ -75,6 +76,7 @@ deinit_game :: () {
     destroy_game_entity(*player);
 
     deinit_damage_registry();
+    deinit_collisions2d();
 
     free(game);
     context.game_state = null;

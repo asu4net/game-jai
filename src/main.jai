@@ -22,9 +22,6 @@ main :: () {
 
     set_clear_color(DARK_GREY);
 
-    init_collisions2d();
-    defer deinit_collisions2d();
-
     #if !EDITOR
     then init_game();
     defer if is_game_init() then deinit_game();
