@@ -26,6 +26,8 @@ init_game :: () {
     game := New(Game_State);
     context.game_state = game; 
 
+    init_damage_registry();
+
     game.player   = dlz_entity_from_file("assets/player.prefab");
     game.kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
     game.homing  = dlz_entity_from_file("assets/homing_missile.prefab");
@@ -36,24 +38,22 @@ update_game :: () {
     if !should_update_game() 
     then return;
     
-    for get_entity_view(Timer_Component) update_timer_component(it);
-    for get_entity_view(Kamikaze_Skull) update_kamikaze(it);
-    for get_entity_view(Homing_Missile_Component) update_homing_missile(it);
+    for get_entity_view(Timer_Component) {
+        update_timer_component(it);
+    }
+    for get_entity_view(Kamikaze_Skull) {
+        update_kamikaze(it);
+    }
+    for get_entity_view(Homing_Missile_Component) {
+        update_homing_missile(it);
+    }
 
     if get_player() != NULL_ENTITY
     then update_player(get_player());
-
-    move_entities :: () {
-        view := get_entity_view(Transform2D_Component, Movement2D_Component);
-        for view {
-            if has_component(KeyboardMovement_Component, it) 
-            then update_entity_input(it);
-            move_entity(it);
-        }
-    }
     
     move_entities();
     query_2d_collisions();
+    query_damage_collisions();
 }
 
 deinit_game :: () {
@@ -71,6 +71,8 @@ deinit_game :: () {
     destroy_game_entity(*homing);
     destroy_game_entity(*kamikaze);
     destroy_game_entity(*player);
+
+    deinit_damage_registry();
 
     free(game);
     context.game_state = null;

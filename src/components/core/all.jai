@@ -6,3 +6,4 @@
 #load "text.jai";
 #load "flipbook.jai";
 #load "timer.jai";
+#load "damage.jai";
