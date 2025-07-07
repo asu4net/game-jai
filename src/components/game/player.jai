@@ -65,9 +65,13 @@ update_movement :: (player : Entity) {
 
 update_weapons :: (player : Entity) {
 
+    if !has_component(Transform2D_Component, player) || !has_component(Player_Input, player) || !has_component(Player_Weapon, player) {
+        return;
+    }
     using transform2d     := get_component(Transform2D_Component, player);
     using player_input    := get_component(Player_Input, player);
     using player_weapon   := get_component(Player_Weapon, player);
+
 
     time_since_fired += delta_seconds();
     if (fire && time_since_fired >= firerate) {
