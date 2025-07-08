@@ -55,10 +55,13 @@ query_damage_collisions :: () {
         source := resolve_ref(*it.source); 
         target := resolve_ref(*it.target); 
         if has_component(Damage_Target, target) && has_component(Damage_Source, source) {
-            dmg_target := get_component(Damage_Target, target);
-            dmg_source := get_component(Damage_Source, source);
-            dmg_target.life -= xx dmg_source.damage;
             event : Damage_Event;
+            if is_not_destroyed(source) && is_not_destroyed(target) {
+                dmg_target := get_component(Damage_Target, target);
+                dmg_source := get_component(Damage_Source, source);
+                dmg_target.life -= xx dmg_source.damage;
+                event.damage = dmg_source.damage;
+            }
             event.source = it.source;
             event.target = it.target;
             array_add(*damage_events, event);

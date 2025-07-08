@@ -89,6 +89,11 @@ update_weapons :: (player : Entity) {
 fire_projectile :: (pos : Vector2, dir : Vector2, damage : u32, speed : f32, radius : f32) {
 
     log("Beep, firing bullet, remember to make that bullet pool, beep");
+    bullet := dlz_entity_from_file("assets/player_bullet.prefab");
+    set_pos(bullet, get_pos(get_player()));
+    get_component(Timer_Component, bullet).on_end_cbk = (entity : Entity) {
+        destroy_entity(entity);
+    };
 }
 
 process_player_damage :: () {

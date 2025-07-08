@@ -49,8 +49,6 @@ move_entity :: (entity : Entity) {
 move_entities :: () {
     view := get_entity_view(Transform2D_Component, Movement2D_Component);
     for view {
-        if has_component(KeyboardMovement_Component, it) 
-        then update_entity_input(it);
         move_entity(it);
     }
 }
