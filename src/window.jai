@@ -85,6 +85,7 @@ deinit_window :: () {
 keep_window_opened :: () -> bool {
     SDL_GL_SwapWindow(context.window.handle);
     process_window_events();
+    #if EDITOR update_shortcuts();
     time_step();
     return !context.window.done;
 }

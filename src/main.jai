@@ -57,6 +57,7 @@ main :: () {
 #import "Input";
 #import "Random";
 #import "Text_File_Handler";
+#import "Enumerated_Array";
 
 #import "Jaison";
 #import "SDL3";
@@ -75,6 +76,5 @@ main :: () {
 #load "entity/entity_pool.jai";
 
 #load "window.jai";
-#load "utils.jai";
 #load "draw.jai";
 #load "game.jai";
