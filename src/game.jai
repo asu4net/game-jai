@@ -6,6 +6,7 @@ Game_State :: struct {
     player   : Entity;
     kamikaze : Entity;
     homing  : Entity;
+    bullet : Entity;
 }
 
 #add_context game_state: *Game_State;
@@ -32,6 +33,7 @@ init_game :: () {
     game.player   = dlz_entity_from_file("assets/player.prefab");
     game.kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
     game.homing  = dlz_entity_from_file("assets/homing_missile.prefab");
+    game.bullet  = dlz_entity_from_file("assets/player_bullet.prefab");
     set_pos(game.homing, UP_2D * 1);
     set_pos(game.kamikaze, UP_2D * 1);
 }
@@ -74,6 +76,7 @@ deinit_game :: () {
     destroy_game_entity(*homing);
     destroy_game_entity(*kamikaze);
     destroy_game_entity(*player);
+    destroy_game_entity(*bullet);
 
     deinit_damage_registry();
     deinit_collisions2d();

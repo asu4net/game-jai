@@ -1,0 +1,57 @@
+
+@Entity(3201756202830734642)
+
+@Component(Entity_Info)
+{
+	"name": "player_bullet",
+	"flags": "LOCAL_ENABLED | ENABLED",
+	"parent": {
+		"uuid": 0
+	},
+	"children": [
+	]
+}
+
+@Component(Transform2D_Component)
+{
+	"pos": {
+		"x": 0,
+		"y": 0
+	},
+	"scl": {
+		"x": 1,
+		"y": 1
+	},
+	"ang": 0
+}
+
+@Component(Circle_Collider_Component)
+{
+	"radius": 0,
+	"flag": "PLAYER_BULLET",
+	"collides_with": "ENEMY"
+}
+
+@Component(Sprite_Component)
+{
+	"visible": true,
+	"item": "player_bullet",
+	"tint": {
+		"x": 1,
+		"y": 1,
+		"z": 1,
+		"w": 1
+	},
+	"size": {
+		"x": 1,
+		"y": 1
+	},
+	"tiling": {
+		"x": 1,
+		"y": 1
+	},
+	"blend": "ALPHA",
+	"flip_x": false,
+	"flip_y": false,
+	"autosize": true
+}

@@ -27,7 +27,11 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
     window.handle = handle;
     window.width  = width;
     window.height = height;
-    
+
+    SDL_GL_SetAttribute(.SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(.SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+    SDL_GL_SetAttribute(.SDL_GL_CONTEXT_MINOR_VERSION, 3);
+
     gl_ctx := SDL_GL_CreateContext(window.handle);
 
     if !gl_ctx {
@@ -36,7 +40,7 @@ init_window :: (name :string = "the window", width: s32 = 1280, height: s32 = 72
     }
 
     window.gl_ctx = gl_ctx;
-     
+    
     SDL_GL_MakeCurrent(window.handle, window.gl_ctx);
     SDL_GL_SetSwapInterval(1);
 
