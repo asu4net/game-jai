@@ -188,4 +188,3 @@ is_key_down :: (input : SDL_Scancode) -> bool {
 #scope_file
 
 #import "GL" (DUMP_GL_ERRORS = DEBUG);
-ImGui :: #import "ImGui";
