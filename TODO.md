@@ -4,8 +4,6 @@
 
 ## Player
 - Hacer pools de proyectiles
-- Destruir el proyectil al contactar
-- Hacer que los misiles no interpolen 
 
 ## Waves
 

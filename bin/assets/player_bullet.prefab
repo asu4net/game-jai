@@ -1,4 +1,4 @@
-
+_mode": "NONE
 @Entity(3201756202830734642)
 
 @Component(Entity_Info)
@@ -79,6 +79,10 @@
 {
 	"started": true,
 	"time": 3
+}
+
+@Component(Projectile_Component)
+{
 }
 
 @Component(Damage_Source)
