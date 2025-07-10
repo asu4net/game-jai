@@ -1,27 +1,25 @@
-# TODO
-
-## Game
+# Game
 - Hacer que el enemigo de la sierra sea destruible.
 - Hacer la línea de la pointer line y meter que el enemigo haga daño y sea destrible.
 
-### Player
+## Player
 - Hacer pools de proyectiles
 - Destruir el proyectil al contactar
 - Hacer que los misiles no interpolen 
 
-### Waves
+## Waves
 
 - N numero de enemigos de N tipos en X posiciones con N tiempo de cooldown entre spawns.
 - N tiempo entre oleadas
 - Se termina cuando mueren todos lo enemigos o (opcionalmente) después de que pase un máximo de tiempo.
 
-## Editor
+# Editor
 - Comando para reducir el time scale (ALT + up / down arrows).
 - Representación en checkboxes de todos los comandos.
 - Revisar interacción del flujo del editor de prefabs con el del juego.
 - Sistema de logs en pantalla, que salgan, vayan fadeandose y se acumulen en una columna.
 
-## Engine
+# Engine
 - Terminar las pools.
 - Hacer que el movement component tenga la opción de elegir la función de interpolación y añadir una función que no interpole.
 - Componentes de UI.
