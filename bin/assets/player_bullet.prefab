@@ -27,10 +27,11 @@
 
 @Component(Movement2D_Component)
 {
+	"interp_mode": "NONE",
 	"start": true,
 	"speed_min": 0,
 	"speed_max": 8,
-	"time_to_max_speed": 0.7,
+	"time_to_max_speed": 0,
 	"speed_progress": 0,
 	"target": {
 		"x": 0,

@@ -21,7 +21,6 @@
 
 # Engine
 - Terminar las pools.
-- Hacer que el movement component tenga la opción de elegir la función de interpolación y añadir una función que no interpole.
 - Componentes de UI.
 - Compile time sprite sheet, quitar strings de los sprites.
 - Revisar los flipbook
