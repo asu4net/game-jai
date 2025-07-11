@@ -130,7 +130,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
         max := ifx info.max > 0 then info.max else DEFAULT_COMPONENT_ARENA_COUNT;
 
         print_to_builder(*builder, "%1_arena: Component_Arena(%2);\n", name, info.type_name);
-        print_to_builder(*builder_init, "init(*%1_arena, %2);\n", name, max);
+        print_to_builder(*builder_init, "init_component_arena(*%1_arena, %2);\n", name, max);
         print_to_builder(*builder_init, "array_add(all, *%1_arena);\n", name);
         print_to_builder(*builder_get, "case %1; return *%2_arena;\n", info.type_name, name);
         log("Registered component arena of type: %. Max elements: %. InitOrder: % \n", info.type_name, max, info.init_order);
@@ -138,7 +138,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
 
     for info : info_array {
         name := to_lower_copy(info.type_name);
-        print_to_builder(*builder_deinit, "deinit(*%1_arena);\n", name);
+        print_to_builder(*builder_deinit, "deinit_component_arena(*%1_arena);\n", name);
     }
 
     log("Done generating code.");

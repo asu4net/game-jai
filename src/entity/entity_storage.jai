@@ -1,36 +1,4 @@
-#load "component_type.jai";
-
-Component_Arena_Base :: struct {
-    data      : *void;    
-    count     : s64;
-    capacity  : s64;
-    type      : Component_Type;
-    entities  : Sparse_Set;
-}
-
-Component_Arena :: struct($T : Type) {
-    #as using base : Component_Arena_Base;
-    components : []T;
-}
-
-init :: (using arena : *Component_Arena($T), cap : s64) {
-    array := NewArray(cap, T);
-    data = array.data;
-    capacity = cap;
-    components.data = data;
-    components.count = cap;
-    init_sparse_set(*entities, xx MAX_ENTITIES);
-    init_component_type(*type, T);
-    log("Initialized % component arena.", arena.type.info.name);
-}
-
-deinit :: (using arena : *Component_Arena($T)) {
-    arena_name := copy_string(arena.type.info.name ,,temp);
-    free(data);
-    deinit_sparse_set(*entities);
-    arena.* = .{};
-    log("Freed % component arena.", arena_name);
-}
+#load "component_arena.jai";
 
 Entity :: u32;
 NULL_ENTITY :: U32_MAX;
@@ -96,7 +64,7 @@ init_entity_storage :: () {
     EntityStorageContext();
     
     // Manually init the info arena.
-    init(*state.info_arena, MAX_ENTITIES);
+    init_component_arena(*state.info_arena, MAX_ENTITIES);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
     set_component_callbacks_for_generated_arenas(*state.generated_component_arenas);
     state.uuid_seed = current_time_monotonic().low;
@@ -217,7 +185,7 @@ deinit_entity_storage :: () {
 
     clean_destroyed_entities();
     deinit_generated_component_arenas(*state.generated_component_arenas);
-    deinit(*state.info_arena);
+    deinit_component_arena(*state.info_arena);
     deinit_queue(*state.free_queue);
     deinit(*state.uuid_table);
     array_reset(*state.component_arenas);
