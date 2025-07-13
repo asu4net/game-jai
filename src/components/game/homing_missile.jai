@@ -47,8 +47,6 @@ homing_missile_init :: () {
 update_homing_missile :: (entity : Entity) {
 
     homing_missile := get_component(Homing_Missile_Component, entity);
-    movement_2d := get_component(Movement2D_Component, entity);
-
     player_position := get_pos(get_player());
 
     /*
@@ -61,9 +59,6 @@ update_homing_missile :: (entity : Entity) {
     
     if homing_missile.state == {
         case .IDLE; {
-            movement_2d.start = true;
-            movement_2d.target = get_pos(get_player());
-            
             dir := player_position - get_pos(entity);
             distance : f32 = length(dir);
             angle := -(atan2(dir.y, dir.x) * DEG_PER_RAD) - 90;
@@ -79,12 +74,11 @@ update_homing_missile :: (entity : Entity) {
             */
         }
         case .WAITING; {
-            movement_2d.start = false;
             dir := player_position - get_pos(entity);
             angle := -(atan2(dir.y, dir.x) * DEG_PER_RAD) - 90;
             set_ang(entity, angle);
 
-            homing_missile.wait_timer += Time.delta_seconds();
+            homing_missile.wait_timer += delta_seconds();
             if homing_missile.wait_timer >= homing_missile.wait_time {
                 homing_missile.attack_dir = normalize(player_position - get_pos(entity));
                 homing_missile.state = .ATTACK;
@@ -100,7 +94,7 @@ update_homing_missile :: (entity : Entity) {
             */
         }
         case .ATTACK; {
-            delta_pos := homing_missile.attack_dir * homing_missile.attack_speed * Time.delta_seconds();
+            delta_pos := homing_missile.attack_dir * homing_missile.attack_speed * delta_seconds();
             set_pos(entity, get_pos(entity) + delta_pos);
             /*
             if entity_valid(children[0]) {

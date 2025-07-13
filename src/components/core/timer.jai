@@ -1,19 +1,20 @@
-ON_TIMER_FINISHED_CBK :: #type (Entity);
+
+ON_END_CBK :: #type (Entity);
 
 Timer_Component :: struct @Component @InitOrder(1000) @Max(MAX_ENTITIES) {
-    started                : bool = false;
-    time_to_uuuh_something : f32;
-    current_time           : f32  = 0;
-    on_timer_finished_cbk  : ON_TIMER_FINISHED_CBK; @JsonIgnore @EditorIgnore
+    started      : bool = false;
+    time         : f32;
+    current_time : f32  = 0; @JsonIgnore
+    on_end_cbk   : ON_END_CBK; @JsonIgnore @EditorIgnore
 }
 
 // not init
-start_timer_component :: (entity : Entity, finished_cbk : ON_TIMER_FINISHED_CBK) {
+start_timer_component :: (entity : Entity, finished_cbk : ON_END_CBK) {
 
     using timer := get_component(Timer_Component, entity);
     started               = true;
     current_time          = 0;
-    on_timer_finished_cbk = finished_cbk;
+    on_end_cbk = finished_cbk;
 }
 
 update_timer_component :: (entity : Entity) {
@@ -22,9 +23,9 @@ update_timer_component :: (entity : Entity) {
 
     if (!started) { return; }
 
-    current_time += Time.delta_seconds();
-    if (current_time > time_to_uuuh_something) {
+    current_time += delta_seconds();
+    if (current_time > time) {
         started = false;
-        on_timer_finished_cbk(entity);
+        on_end_cbk(entity);
     }
 }

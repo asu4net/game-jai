@@ -103,9 +103,9 @@ inverse_test :: () {
 
     // print ("%\n", m);
 
-    mi1 := inverse(m);
-    mi2 := inverse_gaussian_elimination(m);
-    mi3 := inverse_lengyel(m);
+    success1, mi1 := inverse(m);
+    success2, mi2 := inverse_gaussian_elimination(m);
+    success3, mi3 := inverse_lengyel(m);
 
     // print("\nInverses:\n");
 

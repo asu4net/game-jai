@@ -81,7 +81,7 @@ update_flipbook_entity :: (entity : Entity) {
         adjust_duration = false;
     }
     if playing && key_count != 0 {
-        time += Time.delta_seconds();
+        time += delta_seconds();
         key := keys[current_key];
         if time >= key.time {
             current_key += 1;

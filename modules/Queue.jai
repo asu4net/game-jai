@@ -6,13 +6,13 @@ Queue :: struct($T: Type) {
 }
 
 // procedure to initialize a queue
-init :: (q: *Queue($T), capacity := 100) {
+init_queue :: (q: *Queue($T), capacity := 100) {
 	clear(q);
 	reserve(q, capacity);
 }
 
 // procedure to destroy a queue
-deinit :: (q: *Queue($T)) {
+deinit_queue :: (q: *Queue($T)) {
 	array_reset(*q.data);
 }
 

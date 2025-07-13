@@ -11,7 +11,7 @@ initialized :: (using s : *Sparse_Set) -> bool {
     return sparse.data != null && dense.data != null && capacity > 0;
 }
 
-init :: (using s : *Sparse_Set, start_capacity : u32 = 30) {
+init_sparse_set :: (using s : *Sparse_Set, start_capacity : u32 = 30) {
     assert(!initialized(s));
     assert(start_capacity < Sparse_Set.NULL);
     capacity = start_capacity;
@@ -21,7 +21,7 @@ init :: (using s : *Sparse_Set, start_capacity : u32 = 30) {
     for * dense  it.* = Sparse_Set.NULL;
 }
 
-deinit :: (using s : *Sparse_Set) {
+deinit_sparse_set :: (using s : *Sparse_Set) {
     assert(initialized(s));
     array_reset(*sparse);
     array_reset(*dense);

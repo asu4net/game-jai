@@ -13,12 +13,12 @@ Font :: struct {
     pixel_height : s32;
 }
 
-font_is_init :: (font : *Font) -> bool {
+is_font_init :: (font : *Font) -> bool {
     assert(font != null);
     return font.is_init;
 }
 
-init :: (font : *Font, path : string = DEF_FONT_PATH) {
+init_font :: (font : *Font, path : string = DEF_FONT_PATH) {
     assert(!font_is_init(font));
     
     file, success := file_open(path);
@@ -96,14 +96,14 @@ init :: (font : *Font, path : string = DEF_FONT_PATH) {
 }
 
 fill_glyph :: (font : *Font, glyph : *Glyph, c : u8) {
-    assert(font_is_init(font));
+    assert(is_font_init(font));
     assert(table_contains(*font.glyphs, c));
     success := false;
     success, glyph.* = table_find_new(*font.glyphs, c);
     assert(success);
 }
 
-deinit :: (font : *Font) {
+deinit_font :: (font : *Font) {
     assert(font_is_init(font));
     deinit(*font.atlas);
     deinit(*font.glyphs);

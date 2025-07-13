@@ -132,8 +132,8 @@ init_draw2d :: () {
         state.tex_slots[i] = xx i;
     }
 
-    init(*state.quad_shader, .QUAD);
-    init(*state.circle_shader, .CIRCLE);
+    init_shader(*state.quad_shader, .QUAD);
+    init_shader(*state.circle_shader, .CIRCLE);
 
     {
         INDEX_COUNT :: MAX_2D_PRIMITIVES_PER_BATCH * INDICES_PER_2D_PRIMITIVE;
@@ -157,15 +157,15 @@ init_draw2d :: () {
             i += INDICES_PER_2D_PRIMITIVE;
         }
 
-        init(*state.quad_ibo, indices.data, INDEX_COUNT);
+        init_index_buffer(*state.quad_ibo, indices.data, INDEX_COUNT);
         
         VERTICES :: MAX_2D_PRIMITIVES_PER_BATCH * VERTICES_PER_2D_PRIMITIVE;
 
         // Quad
         {
             state.quad_batch = NewArray(VERTICES, Quad_Vertex);
-            init(*state.quad_vao);
-            init(*state.quad_vbo, VERTICES * size_of(Quad_Vertex));
+            init_vertex_array(*state.quad_vao);
+            init_vertex_buffer(*state.quad_vbo, VERTICES * size_of(Quad_Vertex));
             add_layout(*state.quad_vbo, type = .Float4, name = "a_Position");
             add_layout(*state.quad_vbo, type = .Float4, name = "a_Tint");
             add_layout(*state.quad_vbo, type = .Float2, name = "a_UV");
@@ -178,8 +178,8 @@ init_draw2d :: () {
         // Circle
         {
             state.circle_batch = NewArray(VERTICES, Circle_Vertex);
-            init(*state.circle_vao);
-            init(*state.circle_vbo, VERTICES * size_of(Circle_Vertex));
+            init_vertex_array(*state.circle_vao);
+            init_vertex_buffer(*state.circle_vbo, VERTICES * size_of(Circle_Vertex));
             add_layout(*state.circle_vbo, type = .Float4, name = "a_Position");
             add_layout(*state.circle_vbo, type = .Float4, name = "a_LocalPosition");
             add_layout(*state.circle_vbo, type = .Float4, name = "a_Tint");
@@ -196,15 +196,15 @@ init_draw2d :: () {
 
 deinit_draw2d :: () {
     Draw2DStateHeader();
-    deinit(*state.white_texture);
+    deinit_texture(*state.white_texture);
 
     array_free(state.quad_batch);
-    deinit(*state.quad_vbo);
-    deinit(*state.quad_shader);
+    deinit_vertex_buffer(*state.quad_vbo);
+    deinit_shader(*state.quad_shader);
     
     array_free(state.circle_batch);
-    deinit(*state.circle_vbo);
-    deinit(*state.circle_shader);
+    deinit_vertex_buffer(*state.circle_vbo);
+    deinit_shader(*state.circle_shader);
     
     state.* = .{};
 }
@@ -257,17 +257,22 @@ draw_quad :: (
         for *vertex_uvs multiply(it.*, tiling);
         flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
 
+        PIXEL_TO_WORLD :: 1.0 / 500.0;
+
         if .AUTOSIZE & flags {
-            
-            pixel_size := v2.{xx pixel_width, xx pixel_height};
-            final_size := multiply(pixel_size, size);
+            pixel_size := ifx .USE_SUBTEX & flags then {
+                v2.{xx rect.width, xx rect.height};
+            } else {
+                v2.{xx tex.width, xx tex.height};
+            }
 
-            pos := normalize(final_size) / 2.0;
+            final_size := pixel_size * size * PIXEL_TO_WORLD;
+            half_size  := final_size / 2.0;
 
-            vertex_positions[0] = .{ -pos.x, -pos.y, 0.0, 1.0 };
-            vertex_positions[1] = .{  pos.x, -pos.y, 0.0, 1.0 };
-            vertex_positions[2] = .{  pos.x,  pos.y, 0.0, 1.0 };
-            vertex_positions[3] = .{ -pos.x,  pos.y, 0.0, 1.0 };
+            vertex_positions[0] = .{ -half_size.x, -half_size.y, 0.0, 1.0 };
+            vertex_positions[1] = .{  half_size.x, -half_size.y, 0.0, 1.0 };
+            vertex_positions[2] = .{  half_size.x,  half_size.y, 0.0, 1.0 };
+            vertex_positions[3] = .{ -half_size.x,  half_size.y, 0.0, 1.0 };
         }
     }
     
@@ -320,17 +325,22 @@ draw_quad :: (
         for *vertex_uvs multiply(it.*, tiling);
         flip_quad_vertex_uv(*vertex_uvs, xx .FLIP_X & flags, xx .FLIP_Y & flags);
 
+        PIXEL_TO_WORLD :: 1.0 / 500.0;
+
         if .AUTOSIZE & flags {
-            
-            pixel_size := v2.{xx pixel_width, xx pixel_height};
-            final_size := multiply(pixel_size, size);
+            pixel_size := ifx .USE_SUBTEX & flags then {
+                v2.{xx rect.width, xx rect.height};
+            } else {
+                v2.{xx tex.width, xx tex.height};
+            }
 
-            pos := normalize(final_size) / 2.0;
+            final_size := pixel_size * size * PIXEL_TO_WORLD;
+            half_size  := final_size / 2.0;
 
-            vertex_positions[0] = .{ -pos.x, -pos.y, 0.0, 1.0 };
-            vertex_positions[1] = .{  pos.x, -pos.y, 0.0, 1.0 };
-            vertex_positions[2] = .{  pos.x,  pos.y, 0.0, 1.0 };
-            vertex_positions[3] = .{ -pos.x,  pos.y, 0.0, 1.0 };
+            vertex_positions[0] = .{ -half_size.x, -half_size.y, 0.0, 1.0 };
+            vertex_positions[1] = .{  half_size.x, -half_size.y, 0.0, 1.0 };
+            vertex_positions[2] = .{  half_size.x,  half_size.y, 0.0, 1.0 };
+            vertex_positions[3] = .{ -half_size.x,  half_size.y, 0.0, 1.0 };
         }
     }
     

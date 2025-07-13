@@ -1,13 +1,13 @@
 Time :: struct {
-    max_delta_time      : f64 = 0.06;
-    fixed_delta_seconds : f64 = 0.06;
-    delta_seconds       : f32 = 0;
-    seconds             : f64 = -1;
+    max_delta_time      : float64 = 0.06;
+    fixed_delta_seconds : float64 = 0.06;
+    delta_seconds       : float32 = 0;
+    seconds             : float64 = -1;
     frame_count         : u32 = 0;
-    acc_fixed_delta     : f64 = 0;
-    last_time           : f64 = 0;
+    acc_fixed_delta     : float64 = 0;
+    last_time           : float64 = 0;
     fixed_update_calls  : u32 = 0;
-    scale               : f32 = 1;
+    scale               : float32 = 1;
 }
 
 #add_context time : Time;
@@ -36,7 +36,7 @@ time_step :: () {
     }
 }
 
-delta_seconds :: () -> f32 {
+delta_seconds :: () -> float32 {
     return context.time.delta_seconds;
 }
 

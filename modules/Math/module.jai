@@ -2,7 +2,6 @@
 #load "plane.jai";
 #load "matrix.jai";
 #load "print.jai";
-#load "utils.jai";
 
 // Scalar constants.
 
@@ -215,36 +214,36 @@ Vector2 :: struct {
     x, y: float;
 
 #place x;
-    component: [2] float = ---; @JsonIgnore @EditorIgnore
+    component: [2] float = ---; @JsonIgnore
 }
 
 Vector3 :: struct {
     x, y, z: float;
 
 #place x;
-    xy: Vector2 = ---; @JsonIgnore @EditorIgnore
+    xy: Vector2 = ---; @JsonIgnore
 #place y;
-    yz: Vector2 = ---; @JsonIgnore @EditorIgnore
+    yz: Vector2 = ---; @JsonIgnore
 
 #place x;
-    component: [3] float = ---; @JsonIgnore @EditorIgnore
+    component: [3] float = ---; @JsonIgnore
 }
 
 Vector4 :: struct {
     x, y, z, w: float;
 
 #place x;
-    xy: Vector2 = ---; @JsonIgnore @EditorIgnore
+    xy: Vector2 = ---; @JsonIgnore
 #place y;
-    yz: Vector2 = ---; @JsonIgnore @EditorIgnore
+    yz: Vector2 = ---; @JsonIgnore
 #place z;
-    zw: Vector2 = ---; @JsonIgnore @EditorIgnore
+    zw: Vector2 = ---; @JsonIgnore
 #place x;
-    xyz: Vector3 = ---; @JsonIgnore @EditorIgnore
+    xyz: Vector3 = ---; @JsonIgnore
 #place y;
-    yzw: Vector3 = ---; @JsonIgnore @EditorIgnore
+    yzw: Vector3 = ---; @JsonIgnore
 #place x;
-    component: [4] float = ---; @JsonIgnore @EditorIgnore
+    component: [4] float = ---; @JsonIgnore
 }
 
 Quaternion :: struct {
@@ -252,10 +251,10 @@ Quaternion :: struct {
     w      := 1.0;
 
 #place x;
-    component: [4] float = ---;
+    component: [4] float = ---; @JsonIgnore
 
 #place x;
-    xyz: Vector3 = ---;
+    xyz: Vector3 = ---; @JsonIgnore
 }
 
 

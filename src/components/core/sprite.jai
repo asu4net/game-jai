@@ -4,11 +4,11 @@ Sprite_Component :: struct @Component @InitOrder(1000) @Max(MAX_ENTITIES) {
     tint     := WHITE;       @Color
     size     := ONE_2D;
     tiling   := ONE_2D;
-    blend    := Graphics.Blend.ALPHA;
+    blend    := Blend.ALPHA;
     flip_x   := false;
     flip_y   := false;
     autosize := true;
-    rect     := Graphics.Rect.{};     @JsonIgnore @EditorReadOnly 
+    rect     := Rect.{};     @JsonIgnore @EditorReadOnly 
 }
 
 on_copy_sprite_component :: (e : Entity, dst : *Sprite_Component, src : *Sprite_Component) {
@@ -20,7 +20,7 @@ on_remove_sprite_component :: (e : Entity, cmp : *Sprite_Component) {
     free(cmp.item);
 } @RemoveComponentCallback
 
-draw_sprite_entity :: (entity : Entity, sheet : *Graphics.Spritesheet) {
+draw_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
 
     using transform := get_component(Transform2D_Component, entity);
     using sprite    := get_component(Sprite_Component,      entity);
@@ -31,7 +31,7 @@ draw_sprite_entity :: (entity : Entity, sheet : *Graphics.Spritesheet) {
     then update_blink(get_component(Blink_Component, entity), *tint);
     
     tex := ifx item.count > 0 then *sheet.tex else null;
-    flags := ifx item.count > 0 then Graphics.DEFAULT_QUAD_FLAGS | .USE_SUBTEX else Graphics.DEFAULT_QUAD_FLAGS;
+    flags := ifx item.count > 0 then DEFAULT_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_QUAD_FLAGS;
     
     if autosize then flags |= .AUTOSIZE;
     if flip_x   then flags |= .FLIP_X;
@@ -46,5 +46,5 @@ draw_sprite_entity :: (entity : Entity, sheet : *Graphics.Spritesheet) {
         else tex = null;
     }
     
-    Graphics.draw_quad(get_matrix(entity), tex, tiling, size, blend, rect, tint, entity, flags);        
+    draw_quad(get_matrix(entity), tex, tiling, size, blend, rect, tint, entity, flags);        
 }

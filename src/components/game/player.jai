@@ -49,17 +49,17 @@ deinit_player :: (player : Entity) {
 
 update_input :: (using player_input : *Player_Input) {
 
-    if Input.is_key_down(#char "W") {
+    if is_key_down(.W) {
         axis.y = 1;
-    } else if Input.is_key_down(#char "S") {
+    } else if is_key_down(.S) {
         axis.y = -1;
     } else {
         axis.y = 0;
     }
 
-    if Input.is_key_down(#char "A") {
+    if is_key_down(.A) {
         axis.x = -1;
-    } else if Input.is_key_down(#char "D") {
+    } else if is_key_down(.D) {
         axis.x = 1;
     } else {
         axis.x = 0;
@@ -69,7 +69,7 @@ update_input :: (using player_input : *Player_Input) {
         axis = normalize(axis);
     }
 
-    fire = Input.is_key_down(.SPACEBAR);
+    fire = is_key_down(.SPACEBAR);
 }
 
 update_movement :: (player : Entity) {
@@ -77,16 +77,20 @@ update_movement :: (player : Entity) {
     using transform2d     := get_component(Transform2D_Component, player);
     using player_input    := get_component(Player_Input, player);
     using player_movement := get_component(Player_Movement, player);
-    pos += axis * speed * Time.delta_seconds();
+    pos += axis * speed * delta_seconds();
 }
 
 update_weapons :: (player : Entity) {
 
+    if !has_component(Transform2D_Component, player) || !has_component(Player_Input, player) || !has_component(Player_Weapon, player) {
+        return;
+    }
     using transform2d     := get_component(Transform2D_Component, player);
     using player_input    := get_component(Player_Input, player);
     using player_weapon   := get_component(Player_Weapon, player);
 
-    time_since_fired += Time.delta_seconds();
+
+    time_since_fired += delta_seconds();
     if (fire && time_since_fired >= firerate) {
         if (level == 1) {
             fire_projectile(pos, UP_2D, PLAYER_BULLET_LV1_DAMAGE, PLAYER_BULLET_LV1_SPEED, PLAYER_BULLET_LV1_RADIUS);
@@ -101,6 +105,7 @@ update_weapons :: (player : Entity) {
 
 fire_projectile :: (pos : Vector2, dir : Vector2, damage : u32, speed : f32, radius : f32) {
 
+<<<<<<< HEAD
     bullet         := get_pool_element(*bullet_pool);
     transform2d    := get_component(Transform2D_Component, bullet);
     movement2d     := get_component(Movement2D_Component, bullet);
@@ -112,6 +117,14 @@ fire_projectile :: (pos : Vector2, dir : Vector2, damage : u32, speed : f32, rad
 
     set_enabled(bullet, true);
     movement2d.start = true; 
+
+    /*
+    bullet := dlz_entity_from_file("assets/player_bullet.prefab");
+    set_pos(bullet, get_pos(get_player()));
+    get_component(Timer_Component, bullet).on_end_cbk = (entity : Entity) {
+        destroy_entity(entity);
+    };
+    */
 }
 
 on_bullet_timer_finished :: (bullet : Entity) {
@@ -120,7 +133,16 @@ on_bullet_timer_finished :: (bullet : Entity) {
     return_pool_element(*bullet_pool, bullet);
 }
 
-player_damage_collision :: (player : Entity, source : Entity) {
-    
-    log("Player: Got damaged bleeeh :p");
+process_player_damage :: () {
+    for context.damage_registry.damage_events {
+        entity := resolve_ref(*it.target);
+        if entity != get_player()
+        then continue;
+        target := get_component(Damage_Target, resolve_ref(*it.target));
+        if target.life <= 0 {
+            //#TODO_asuarez Placeholder
+            deinit_game();
+        }
+        break;
+    }
 }

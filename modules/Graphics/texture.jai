@@ -73,7 +73,7 @@ init_white_texture :: (using texture : *Texture) {
     upload_texture_to_gpu(texture);
 }
 
-init :: (
+init_texture :: (
     texture  : *Texture, 
     path     : string, 
     mag      : Mag_Filter = .LINEAR,
@@ -110,7 +110,7 @@ init :: (
     upload_texture_to_gpu(texture);
 }
 
-deinit :: (using texture : *Texture) {
+deinit_texture :: (using texture : *Texture) {
     assert(id != 0);
     glDeleteTextures(1, *id);
     assert(pixels.data != null);

@@ -46,17 +46,11 @@
 	}
 }
 
-@Component(Kamikaze_Skull)
+@Component(Circle_Collider_Component)
 {
-	"state": "IDLE",
-	"idle_time": 0,
-	"attack_target": {
-		"x": 0,
-		"y": 0,
-		"z": 0
-	},
-	"attack_cd": 3,
-	"saw_speed": 1
+	"radius": 0.37,
+	"flag": "ENEMY",
+	"collides_with": "PLAYER | PLAYER_BULLET"
 }
 
 @Component(DamageSource_Component)
@@ -88,10 +82,29 @@
 	"autosize": true
 }
 
-@Component(DamageTarget_Component)
+
+@Component(Kamikaze_Skull)
 {
-	"max_life": 30,
-	"life": 30
+	"state": "IDLE",
+	"idle_time": 0,
+	"attack_target": {
+		"x": 0,
+		"y": 0,
+		"z": 0
+	},
+	"attack_cd": 3,
+	"saw_speed": 1
+}
+
+@Component(Damage_Target)
+{
+	"max_life": 100,
+	"life": 100
+}
+
+@Component(Damage_Source)
+{
+	"damage": 10
 }
 
 @Entity(11831050440812013359)

@@ -397,7 +397,7 @@ operator == :: (a: $T/interface AnyMatrix, b: T) -> bool {
     return true;
 }
 
-make_matrix3 :: (m: $T/interface AnyMatrix3) -> Matrix3  {  // Can use this to go from Matrix4x3 or Matrix4 down to Matrix3.
+make_matrix3 :: (m: $T/interface AnyMatrix3) -> Matrix3 {  // Can use this to go from Matrix4x3 or Matrix4 down to Matrix3.
     r: Matrix3 = ---;
     for i: 0..2 for j: 0..2 {
         r.coef[i][j] = m.coef[i][j];
@@ -406,7 +406,7 @@ make_matrix3 :: (m: $T/interface AnyMatrix3) -> Matrix3  {  // Can use this to g
     return r;
 }
 
-make_matrix4 :: (m: $T/interface AnyMatrix3) -> Matrix4  {
+make_matrix4 :: (m: $T/interface AnyMatrix3) -> Matrix4 {
     // We'll start with Matrix4_Identity, then overwrite members below. Instead of this,
     // we could do a bunch of static checks that make the code more complex, but
     // that are more guaranteed to be optimized. But here we are relying on the
@@ -429,7 +429,7 @@ make_matrix4 :: (m: $T/interface AnyMatrix3) -> Matrix4  {
 }
 
 // We should remove this. I mean, come on...
-make_matrix4 :: (values: ..float) -> Matrix4  #deprecated "Use a struct literal instead." {
+make_matrix4 :: (values: ..float) -> Matrix4 #deprecated "Use a struct literal instead." {
     r: Matrix4 = ---;
 
     for values {
@@ -442,7 +442,7 @@ make_matrix4 :: (values: ..float) -> Matrix4  #deprecated "Use a struct literal 
 // @Cleanup: Make transpose() polymorphic?
 
 // Transpose a 4x4 matrix.
-transpose :: (m: Matrix4) -> Matrix4  {
+transpose :: (m: Matrix4) -> Matrix4 {
     r: Matrix4 = ---;
 
     for i: 0..3 for j: 0..3 {
@@ -453,7 +453,7 @@ transpose :: (m: Matrix4) -> Matrix4  {
 }
 
 // Transpose a 3x3 matrix.
-transpose :: (m: Matrix3) -> Matrix3  {
+transpose :: (m: Matrix3) -> Matrix3 {
     r: Matrix3 = ---;
 
     for i: 0..2 for j: 0..2 {
@@ -485,7 +485,7 @@ transpose :: (m: *Matrix3) {
 
 // @Cleanup: Remove make_scale_*, these are goofy.
 
-make_scale_matrix4 :: (v: Vector3) -> Matrix4  {
+make_scale_matrix4 :: (v: Vector3) -> Matrix4 {
     m: Matrix4 = ---;
     identity(*m);
 
@@ -496,7 +496,7 @@ make_scale_matrix4 :: (v: Vector3) -> Matrix4  {
     return m;
 }
 
-scale :: (m: $T/interface AnyMatrix3, s: float) -> T  {
+scale :: (m: $T/interface AnyMatrix3, s: float) -> T {
     scale(*m, s);   // This * implicitly creates a copy of m.
     return m;
 }
@@ -515,7 +515,7 @@ scale :: (m: *$T/interface AnyMatrix3, s: float) {
     m._33 *= s;
 }
 
-scale :: (m: $T/interface AnyMatrix3, v: Vector3) -> T  {
+scale :: (m: $T/interface AnyMatrix3, v: Vector3) -> T {
     scale(*m, v);   // This * implicitly creates a copy of m.
     return m;
 }
@@ -536,7 +536,7 @@ scale :: (m: *$T/interface AnyMatrix3, v: Vector3) {
 
 
 // Returns a translation matrix given a translation vector.
-make_translation_matrix4 :: (v: Vector3) -> Matrix4  {
+make_translation_matrix4 :: (v: Vector3) -> Matrix4 {
     m: Matrix4 = ---;
     identity(*m);
 
@@ -548,7 +548,7 @@ make_translation_matrix4 :: (v: Vector3) -> Matrix4  {
 }
 
 // Apply a translation to the given matrix.
-translate :: (using m: Matrix4, t: Vector3) -> Matrix4  {
+translate :: (using m: Matrix4, t: Vector3) -> Matrix4 {
     result := m;
     inline translate(*result, t);
     return result;
@@ -565,14 +565,14 @@ translate :: (using m: *Matrix4, t: Vector3) {
 
 // @Cleanup: Remove this...
 // Apply the given quaternion rotation to the given 3x3 matrix.
-rotate :: (m: Matrix3, q: Quaternion) -> Matrix3  {
+rotate :: (m: Matrix3, q: Quaternion) -> Matrix3 {
     R := rotation_matrix(Matrix3, q);
     return m * R;
 }
 
 // @Cleanup: Remove this...
 // Apply the given quaternion rotation to the given 4x4 matrix.
-rotate :: (m: Matrix4, q: Quaternion) -> Matrix4  {
+rotate :: (m: Matrix4, q: Quaternion) -> Matrix4 {
     R := rotation_matrix(Matrix3, q);
     return m * R;
 }
@@ -584,7 +584,7 @@ rotate :: (m: Matrix4, q: Quaternion) -> Matrix4  {
 // way to do this is put the basis vectors in one matrix as rows,
 // in the other as columns, and then multiply them together.
 
-make_matrix_from_rows :: (xprime: Vector3, yprime: Vector3, zprime: Vector3, $T := Matrix4) -> T  {
+make_matrix_from_rows :: (xprime: Vector3, yprime: Vector3, zprime: Vector3, $T := Matrix4) -> T {
     result: T;
     result._11 = xprime.x;
     result._12 = xprime.y;
@@ -603,7 +603,7 @@ make_matrix_from_rows :: (xprime: Vector3, yprime: Vector3, zprime: Vector3, $T 
     return result;
 }
 
-make_matrix_from_columns :: (xprime: Vector3, yprime: Vector3, zprime: Vector3, $T := Matrix4) -> T  {
+make_matrix_from_columns :: (xprime: Vector3, yprime: Vector3, zprime: Vector3, $T := Matrix4) -> T {
     result: T;
     result._11 = xprime.x;
     result._21 = xprime.y;
@@ -669,11 +669,11 @@ orthographic_projection_matrix :: (left: float, right: float, bottom: float, top
 
     m._22 = 2.0 / (top - bottom);
     m._24 = - (top + bottom) / (top - bottom);
-    
+
     // if depth_range_01 {
     //     m._33 = -1 / (far - near);
     //     m._34 = near / (far - near);
-    // } 
+    // }
     // else {
         m._33 = -2 / (far - near);
         m._34 = - (far + near) / (far - near);
@@ -812,7 +812,7 @@ lerp :: (a: Matrix3, b: Matrix3, t: float) -> Matrix3 {
 }
 
 
-inverse :: (a: Matrix3, epsilon := 0.001) -> Matrix3 {
+inverse :: (a: Matrix3, epsilon := 0.001) -> (success: bool, result: Matrix3) {
     r: Matrix3 = ---;
 
     c11 := a._22*a._33 - a._32*a._23;
@@ -822,7 +822,7 @@ inverse :: (a: Matrix3, epsilon := 0.001) -> Matrix3 {
     // Determinant.
     det := a._11*c11 - a._12*c12 + a._13*c13;
 
-    if (det < epsilon) && (det > -epsilon)  return a;  // Failure... undefined!
+    if (det < epsilon) && (det > -epsilon)  return false, a;  // Failure... undefined!
 
     idet := 1/det;
 
@@ -836,7 +836,7 @@ inverse :: (a: Matrix3, epsilon := 0.001) -> Matrix3 {
     r._32 = -idet*(a._11*a._32 - a._12*a._31);
     r._33 =  idet*(a._11*a._22 - a._12*a._21);
 
-    return r;
+    return true, r;
 }
 
 
@@ -845,7 +845,7 @@ inverse :: (a: Matrix3, epsilon := 0.001) -> Matrix3 {
 // UGLY STUFF!
 //
 
-inverse :: (m: Matrix4) -> Matrix4 , bool {
+inverse :: (m: Matrix4) -> (success: bool, result: Matrix4) {
     matr := m; // Arguments are immutable, even though the code below compiles fine! -ic 7 August 2019
 
     k, l, ll: int = ---;
@@ -870,7 +870,7 @@ inverse :: (m: Matrix4) -> Matrix4 , bool {
                             icol=k;
                         }
                     } else {
-                        if ipiv[k] > 1  return ident, false;
+                        if ipiv[k] > 1  return false, ident;
                     }
                 }
             }
@@ -886,7 +886,7 @@ inverse :: (m: Matrix4) -> Matrix4 , bool {
         indxr[i] = irow;
         indxc[i] = icol;
 
-        if matr.coef[icol][icol] == 0.0  return ident, false;
+        if matr.coef[icol][icol] == 0.0  return false, ident;
         pivinv : float64 = 1 / matr.coef[icol][icol];
         matr.coef[icol][icol] = 1;
 
@@ -923,14 +923,11 @@ inverse :: (m: Matrix4) -> Matrix4 , bool {
         }
     }
 
-    return ident, true;
+    return true, ident;
 }
 
-
-
 // Inverse using gaussian elimination.
-inverse_gaussian_elimination :: (m: Matrix4) -> Matrix4  {
-
+inverse_gaussian_elimination :: (m: Matrix4) -> (success: bool, result: Matrix4) {
     A := m;
     B := Matrix4_Identity;
     det := 1.0;
@@ -945,7 +942,8 @@ inverse_gaussian_elimination :: (m: Matrix4) -> Matrix4  {
             }
         }
 
-        if max <= 0 return B;           // if no nonzero pivot, PUNT
+        if max <= 0 return false, B;           // if no nonzero pivot, PUNT
+        
         if j != i {                     // swap rows i and j
             for k: i..3     Swap(*A.coef[i][k], *A.coef[j][k]);
             for k: 0..3     Swap(*B.coef[i][k], *B.coef[j][k]);
@@ -977,7 +975,7 @@ inverse_gaussian_elimination :: (m: Matrix4) -> Matrix4  {
         }
     }
 
-    return B;
+    return true, B;
 }
 
 
@@ -985,7 +983,7 @@ inverse_gaussian_elimination :: (m: Matrix4) -> Matrix4  {
 // but is faster and  works well enough for most of the well conditioned matrices we have typically have in the game.
 //
 // For reference, see: 1.7.5 Inverses of Small Matrices in 'Foundations of Game Development: Mathematics' by Eric Lengyel.
-inverse_lengyel :: (m: Matrix4, epsilon := 0.0001) -> Matrix4 , bool {
+inverse_lengyel :: (m: Matrix4, epsilon := 0.0001) -> (success: bool, result: Matrix4) {
     a := Vector3.{m._11, m._21, m._31};
     b := Vector3.{m._12, m._22, m._32};
     c := Vector3.{m._13, m._23, m._33};
@@ -1002,6 +1000,11 @@ inverse_lengyel :: (m: Matrix4, epsilon := 0.0001) -> Matrix4 , bool {
     v := c * w - d * z;
 
     det := dot(s, v) + dot(t, u);
+    
+    if abs(det) < epsilon {
+        return false, Matrix4_Identity;
+    }
+    
     inv_det := 1.0 / det;
     s *= inv_det;
     t *= inv_det;
@@ -1013,18 +1016,18 @@ inverse_lengyel :: (m: Matrix4, epsilon := 0.0001) -> Matrix4 , bool {
     r2 := cross(d, u) + s * w;
     r3 := cross(u, c) - s * z;
 
-    return .{
+    return true,
+           .{
             r0.x, r0.y, r0.z, -dot(b, t),
             r1.x, r1.y, r1.z,  dot(a, t),
             r2.x, r2.y, r2.z, -dot(d, s),
-            r3.x, r3.y, r3.z,  dot(c, s)},
-        abs(det) < epsilon;
+            r3.x, r3.y, r3.z,  dot(c, s)};
 }
 
 // The adjugate is the inverse of matrix M multiplied by its determinant. The adjugate always exists and is a cheaper to compute than the inverse.
 //
 // For reference, see: 1.7.5 Inverses of Small Matrices in 'Foundations of Game Development: Mathematics' by Eric Lengyel.
-adjugate_lengyel :: (m: Matrix4) -> Matrix4  {
+adjugate_lengyel :: (m: Matrix4) -> Matrix4 {
 
     a := Vector3.{m._11, m._21, m._31};
     b := Vector3.{m._12, m._22, m._32};
@@ -1055,7 +1058,7 @@ adjugate_lengyel :: (m: Matrix4) -> Matrix4  {
 
 adjugate :: adjugate_lengyel;
 
-determinant :: (m: Matrix4) -> float  {
+determinant :: (m: Matrix4) -> float {
     // return
     //     m._14 * m._23 * m._32 * m._41 - m._13 * m._24 * m._32 * m._41 - m._14 * m._22 * m._33 * m._41 + m._12 * m._24 * m._33 * m._41 +
     //     m._13 * m._22 * m._34 * m._41 - m._12 * m._23 * m._34 * m._41 - m._14 * m._23 * m._31 * m._42 + m._13 * m._24 * m._31 * m._42 +
@@ -1082,7 +1085,7 @@ determinant :: (m: Matrix4) -> float  {
     return dot(s, v) + dot(t, u);
 }
 
-isometry_inverse :: (m: Matrix4) -> Matrix4  {
+isometry_inverse :: (m: Matrix4) -> Matrix4 {
     result := Matrix4_Identity;
 
     // transposed 3x3 upper left matrix
