@@ -1,4 +1,12 @@
+Interp_Mode :: enum {
+    NONE;
+    EASE_IN_EXPO;
+}
+
+INTERP_PROC :: #type (x: f32, min: f32, max: f32) -> float;
+
 Movement2D_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
+    interp_mode        : Interp_Mode;
     start              : bool;
     speed_min          : f32;
     speed_max          : f32  = 8;
@@ -6,9 +14,8 @@ Movement2D_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
     speed_progress     : f32;
     target             : Vector2;
     has_target         : bool = true;
-
-    // direction used if there's no target
-    dir     : v2;
+    dir                : v2;
+    interp_proc        : INTERP_PROC; @JsonIgnore
 }
 
 move_entity :: (entity : Entity) {
@@ -16,14 +23,26 @@ move_entity :: (entity : Entity) {
     using transform  := get_component(Transform2D_Component, entity);
     using movement2d := get_component(Movement2D_Component,  entity);
 
+    if interp_mode == {
+        case .NONE;         interp_proc = linear_interp;
+        case .EASE_IN_EXPO; interp_proc = ease_in_expo_interp;
+    }
+
+    assert(interp_proc != null);
+
     if !start {
         return;
     }
     
-    speed_progress += delta_seconds();
-    speed_progress = clamp(speed_progress, 0.0, time_to_max_speed);
-    norm_speed_progress := speed_progress / time_to_max_speed;
-    speed :=  ease_in_expo_interp(norm_speed_progress, speed_min, speed_max);
+    speed := ifx time_to_max_speed > 0 {
+        speed_progress += delta_seconds();
+        speed_progress = clamp(speed_progress, 0.0, time_to_max_speed);
+        norm_speed_progress := speed_progress / time_to_max_speed;
+        interp_proc(norm_speed_progress, speed_min, speed_max);
+    } else {
+        speed_max;
+    }
+    
     delta_traslation := speed * delta_seconds();
 
     if has_target {

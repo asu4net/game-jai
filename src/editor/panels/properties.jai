@@ -3,20 +3,20 @@
 editor_draw_entity :: (entity : Entity) {
     EntityStorageContext();
         
-    ignore_info := editor_should_ignore_struct(state.info_arena.type);
+    ignore_info := editor_should_ignore_struct(state.info_arena.type.info);
         
     if !ignore_info {
-        if EDITOR state.info_arena.drw(entity);
+        if EDITOR generic_drw_component(state.info_arena.type, entity);
         editor_draw_separator();
         editor_draw_spacing();
     } 
 
     for state.component_arenas {
-        if !it.has(entity)
+        if !generic_has_component(it.type, entity)
         then continue;
-        ignore_all := editor_should_ignore_struct(it.type);
+        ignore_all := editor_should_ignore_struct(it.type.info);
         if !ignore_all {
-            it.drw(entity);
+            generic_drw_component(it.type, entity);
             editor_draw_separator();
             editor_draw_spacing();
         }
@@ -28,10 +28,10 @@ editor_draw_entity :: (entity : Entity) {
 
     if ImGui.BeginPopup("Add Component") {
         for state.component_arenas {
-            if it.has(entity)
+            if generic_has_component(it.type, entity)
             then continue;
-            if ImGui.MenuItem(to_c_string(it.type.name ,,temp)) {
-                it.add(entity);
+            if ImGui.MenuItem(to_c_string(it.type.info.name ,,temp)) {
+                generic_add_component(it.type, entity);
             }
         }
         ImGui.EndPopup();

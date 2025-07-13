@@ -3,7 +3,7 @@
 //---------------------------
 
 Game_State :: struct {
-    player   : Entity;
+    player : Entity;
     kamikaze : Entity;
     homing  : Entity;
 }
@@ -29,9 +29,9 @@ init_game :: () {
     init_collisions2d();
     init_damage_registry();
 
-    game.player   = dlz_entity_from_file("assets/player.prefab");
+    game.player = dlz_entity_from_file("assets/player.prefab");
     game.kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
-    game.homing  = dlz_entity_from_file("assets/homing_missile.prefab");
+    game.homing = dlz_entity_from_file("assets/homing_missile.prefab");
     set_pos(game.homing, UP_2D * 1);
     set_pos(game.kamikaze, UP_2D * 1);
 }
@@ -57,6 +57,7 @@ update_game :: () {
     query_2d_collisions();
     query_damage_collisions();
     process_player_damage();
+    process_projectile_collisions();
 }
 
 deinit_game :: () {

@@ -1,102 +1,4 @@
-Component_Arena_Base :: struct {
-    data      : *void;    
-    count     : s64;
-    capacity  : s64;
-    type      : *Type_Info_Struct;
-    entities  : Sparse_Set;
-
-    // Generic procs.
-    get : (entity : Entity)             -> *void;
-    add : (entity : Entity)             -> *void;
-    has : (entity : Entity)             -> bool;
-    rem : (entity : Entity);
-    slz : (entity : Entity)             -> string;
-    dlz : (entity : Entity, s : string) -> *void;
-
-    #if EDITOR then drw : (entity : Entity);
-
-    // Callbacks generic callers.
-    call_add_cbk : (fn : *void, entity : Entity, component : *void);
-    call_cpy_cbk : (fn : *void, entity : Entity, dst : *void, src : *void);
-    call_rem_cbk : (fn : *void, entity : Entity, component : *void);
-
-    // Callback generic proc ptrs.
-    add_cbk_fn : *void;
-    rem_cbk_fn : *void;
-    cpy_cbk_fn : *void;
-}
-
-Component_Arena :: struct($T : Type) {
-    #as using base : Component_Arena_Base;
-
-    ADD_CBK :: #type (entity : Entity, cmp : *T);
-    REM_CBK :: #type (entity : Entity, cmp : *T);
-    CPY_CBK :: #type (entity : Entity, dst : *T, src : *T);
-    
-    components : []T;
-}
-
-init :: (using arena : *Component_Arena($T), cap : s64) {
-    array := NewArray(cap, T);
-    data = array.data;
-    capacity = cap;
-    components.data = data;
-    components.count = cap;
-    type = type_info(T);
-    init_sparse_set(*entities, xx MAX_ENTITIES);
-     
-    get = (entity : Entity)             -> *void        { return get_component(T, entity);    }
-    add = (entity : Entity)             -> *void        { return add_component(T, entity);    }
-    has = (entity : Entity)             -> bool         { return has_component(T, entity);    }
-    rem = (entity : Entity)                             {        rem_component(T, entity);    }
-    slz = (entity : Entity)             -> string       { return slz_component(T, entity);    }
-    dlz = (entity : Entity, s : string) -> *void        { return dlz_component(T, entity, s); } 
-
-    #if EDITOR then drw = (entity : Entity) { drw_component(T, entity); }
-
-    log("Initialized % component arena.", arena.type.name);
-}
-
-set_component_callbacks :: (
-    using arena : *Component_Arena($T), 
-    add_proc : Component_Arena(T).ADD_CBK = null, 
-    rem_proc : Component_Arena(T).REM_CBK = null, 
-    cpy_proc : Component_Arena(T).CPY_CBK = null
-)
-{
-    add_cbk_fn = xx add_proc;
-    rem_cbk_fn = xx rem_proc;
-    
-    def_cpy :: (entity : Entity, dst : *T, src : *T) { dst.* = src.*; }
-    cpy_cbk_fn = xx ifx cpy_proc then cpy_proc else def_cpy;
-
-    call_add_cbk = (fn : *void, entity : Entity, cmp : *void) {
-        add_typed := fn.(Component_Arena(T).ADD_CBK);
-        cmp_typed := cmp.(*T);
-        add_typed(entity, cmp_typed);
-    }
-    
-    call_rem_cbk = (fn : *void, entity : Entity, cmp : *void) {
-        rem_typed := fn.(Component_Arena(T).REM_CBK);
-        cmp_typed := cmp.(*T);
-        rem_typed(entity, cmp_typed);
-    }
-
-    call_cpy_cbk = (fn : *void, entity : Entity, src : *void, dst : *void) {
-        cpy_typed := fn.(Component_Arena(T).CPY_CBK);
-        src_typed := src.(*T);
-        dst_typed := dst.(*T);
-        cpy_typed(entity, src, dst);
-    }
-}
-
-deinit :: (using arena : *Component_Arena($T)) {
-    arena_name := copy_string(arena.type.name ,,temp);
-    free(data);
-    deinit_sparse_set(*entities);
-    arena.* = .{};
-    log("Freed % component arena.", arena_name);
-}
+#load "component_arena.jai";
 
 Entity :: u32;
 NULL_ENTITY :: U32_MAX;
@@ -162,8 +64,7 @@ init_entity_storage :: () {
     EntityStorageContext();
     
     // Manually init the info arena.
-    init(*state.info_arena, MAX_ENTITIES);
-    set_component_callbacks(*state.info_arena, cpy_proc = null, add_proc = null, rem_proc = null);
+    init_component_arena(*state.info_arena, MAX_ENTITIES);
     init_generated_component_arenas(*state.generated_component_arenas, *state.component_arenas);
     set_component_callbacks_for_generated_arenas(*state.generated_component_arenas);
     state.uuid_seed = current_time_monotonic().low;
@@ -284,7 +185,7 @@ deinit_entity_storage :: () {
 
     clean_destroyed_entities();
     deinit_generated_component_arenas(*state.generated_component_arenas);
-    deinit(*state.info_arena);
+    deinit_component_arena(*state.info_arena);
     deinit_queue(*state.free_queue);
     deinit(*state.uuid_table);
     array_reset(*state.component_arenas);
@@ -415,8 +316,8 @@ immediate_destroy_entity :: (entity : Entity) {
     rem_all_components :: (entity : Entity) {
         EntityStorageContext();
         for < state.component_arenas {
-            if it.has(entity)
-            then it.rem(entity);
+            if generic_has_component(it.type, entity)
+            then generic_rem_component(it.type, entity);
         }
     }
 
@@ -451,8 +352,8 @@ slz_single_entity :: (entity : Entity) -> string {
     }
 
     component_section :: (builder : *String_Builder, entity : Entity, arena : *Component_Arena_Base) {
-        print_to_builder(builder, "\n@Component(%)\n", arena.type.name);
-        print_to_builder(builder, "%\n", arena.slz(entity));
+        print_to_builder(builder, "\n@Component(%)\n", arena.type.info.name);
+        print_to_builder(builder, "%\n", generic_slz_component(arena.type, entity));
     }
 
     builder : String_Builder;
@@ -461,7 +362,7 @@ slz_single_entity :: (entity : Entity) -> string {
     component_section(*builder, entity, *state.info_arena);
 
     for state.component_arenas {
-        if !it.has(entity)
+        if !generic_has_component(it.type, entity)
         then continue;
         component_section(*builder, entity, it);
     }
@@ -508,7 +409,7 @@ dlz_entity :: (s : string) -> Entity {
         if begins_with(line, "@Entity(") {
 
             if arena != null {
-                arena.dlz(entity, builder_to_string(*builder ,,temp));
+                generic_dlz_component(arena.type, entity, builder_to_string(*builder ,,temp));
                 arena = null;
                 reset(*builder);
             }            
@@ -529,7 +430,7 @@ dlz_entity :: (s : string) -> Entity {
             // If it is the case we add it to the entity and reset the builder.
             
             if arena != null {
-                arena.dlz(entity, builder_to_string(*builder ,,temp));
+                generic_dlz_component(arena.type, entity, builder_to_string(*builder ,,temp));
                 arena = null;
                 reset(*builder);
             }
@@ -545,7 +446,7 @@ dlz_entity :: (s : string) -> Entity {
                 arena = state.info_arena;
             } else {
                 for state.component_arenas {
-                    if it.type.name != expected_component_type
+                    if it.type.info.name != expected_component_type
                     then continue;
                     arena = it;
                     break;
@@ -590,9 +491,8 @@ add_component :: ($T : Type, entity : Entity) -> *T {
     count += 1;
     index := insert_id(*entities, entity);
     component := *components[index]; 
-    if add_cbk_fn != null
-    then call_add_cbk(add_cbk_fn, entity, component);
-    return component;    
+    call_add_component_callback(component_arena.type, entity, component);
+    return component;
 }
 
 add_component_with_data :: (d : $T, entity : Entity) -> *T {
@@ -606,8 +506,7 @@ add_component_with_data :: (d : $T, entity : Entity) -> *T {
     index := insert_id(*entities, entity);
     component := *components[index];
     component.* = d;
-    if add_cbk_fn != null
-    then call_add_cbk(add_cbk_fn, entity, component);
+    call_add_component_callback(component_arena.type, entity, component);
     return component;
 }
 
@@ -616,8 +515,7 @@ rem_component :: ($T : Type, entity : Entity) {
     then return;
     assert(has_component(T, entity));
     using component_arena := get_component_arena(T);
-    if rem_cbk_fn != null
-    then call_rem_cbk(rem_cbk_fn, entity, get_component(T, entity));
+    call_rem_component_callback(component_arena.type, entity, get_component(T, entity));
     count -= 1;
     deleted, last := remove_id(*entities, entity);
     if deleted != last {
@@ -733,10 +631,11 @@ clone_entity :: (entity : Entity) -> Entity {
     res_entity := create_entity();
     set_parent(res_entity, get_parent(entity));
     for arena : state.component_arenas {
-        if !arena.has(entity)
+        if !generic_has_component(arena.type, entity)
         then continue;
-        res_cmp := arena.add(res_entity);
-        arena.call_cpy_cbk(arena.cpy_cbk_fn, res_entity, res_cmp, arena.get(entity));
+        res_cmp := generic_add_component(arena.type, res_entity);
+        src_cmp := generic_get_component(arena.type, entity);
+        call_cpy_component_callback(arena.type, res_entity, res_cmp, src_cmp);
     }
     for get_children(entity) {
         child := resolve_ref(*it);

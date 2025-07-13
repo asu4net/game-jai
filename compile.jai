@@ -70,9 +70,9 @@ Component_Info :: struct {
     type_name  : string;
     max        : s64;
     init_order : s64 = 30100;
-    cpy_proc   := "null";
-    rem_proc   := "null";
-    add_proc   := "null";
+    cpy_proc   : string;
+    rem_proc   : string;
+    add_proc   : string;
 }
 
 collect_component_info :: (structs: [..] *Code_Struct, result : *Table(string, Component_Info)) {
@@ -130,7 +130,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
         max := ifx info.max > 0 then info.max else DEFAULT_COMPONENT_ARENA_COUNT;
 
         print_to_builder(*builder, "%1_arena: Component_Arena(%2);\n", name, info.type_name);
-        print_to_builder(*builder_init, "init(*%1_arena, %2);\n", name, max);
+        print_to_builder(*builder_init, "init_component_arena(*%1_arena, %2);\n", name, max);
         print_to_builder(*builder_init, "array_add(all, *%1_arena);\n", name);
         print_to_builder(*builder_get, "case %1; return *%2_arena;\n", info.type_name, name);
         log("Registered component arena of type: %. Max elements: %. InitOrder: % \n", info.type_name, max, info.init_order);
@@ -138,7 +138,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
 
     for info : info_array {
         name := to_lower_copy(info.type_name);
-        print_to_builder(*builder_deinit, "deinit(*%1_arena);\n", name);
+        print_to_builder(*builder_deinit, "deinit_component_arena(*%1_arena);\n", name);
     }
 
     log("Done generating code.");
@@ -180,7 +180,17 @@ generate_component_callbacks_code :: (info_table: Table(string, Component_Info))
 
     for info, _ : info_table {
         name := to_lower_copy(info.type_name);
-        print_to_builder(*builder, "set_component_callbacks(*%1_arena, add_proc = %2, rem_proc = %3, cpy_proc = %4); \n", name, info.add_proc, info.rem_proc, info.cpy_proc);
+        if info.add_proc.count > 0  {
+            print_to_builder(*builder, "set_add_component_callback(*%1_arena.type, %2, %3);\n", name, info.type_name, info.add_proc);
+        }
+        if info.cpy_proc.count > 0  {
+            print_to_builder(*builder, "set_cpy_component_callback(*%1_arena.type, %2, %3);\n", name, info.type_name, info.cpy_proc);
+        } else {
+            print_to_builder(*builder, "set_cpy_component_callback_default(*%1_arena.type, %2);\n", name, info.type_name);
+        }
+        if info.rem_proc.count > 0  {
+            print_to_builder(*builder, "set_rem_component_callback(*%1_arena.type, %2, %3);\n", name, info.type_name, info.rem_proc);
+        }
     }
     log("Done generating code.");
     return sprint(GENERATED_COMPONENT_CALLBACKS,

@@ -57,6 +57,7 @@ main :: () {
 #import "Input";
 #import "Random";
 #import "Text_File_Handler";
+#import "Enumerated_Array";
 
 #import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
 #import "Queue";
@@ -77,17 +78,5 @@ main :: () {
 #load "entity/entity_pool.jai";
 
 #load "window.jai";
-#load "utils.jai";
-
-#load "entity_pool.jai";
-#load "components/core/2d_movement.jai";
-#load "components/core/2d_transform.jai";
-#load "components/core/timer.jai";
-#load "components/core/2d_collider.jai";
-#load "components/core/blink.jai";
-#load "components/core/sprite.jai";
-#load "components/core/text.jai";
-#load "components/core/flipbook.jai";
-
 #load "draw.jai";
 #load "game.jai";
