@@ -31,7 +31,7 @@ deinit_generated_component_arenas :: (using a : *Generated_Component_Arenas) {
     %3    
 }
 
-get_generated_component_arena :: (using a : *Generated_Component_Arenas, $T : Type) -> *Component_Arena(T) {
+get_generated_component_arena :: (using a : *Generated_Component_Arenas, $T : Type, $N : int) -> *Component_Arena(T, N) {
     #if T == {
         %4
         case; return null;
@@ -45,6 +45,14 @@ get_generated_component_arena_base :: (using a : *Generated_Component_Arenas, t 
     }
 }
 
+get_bucket_size :: ($T : Type) -> int {
+    #if T == {
+        %5
+        case Entity_Info; return 100;
+        case; return 0;
+    }
+}
+
 //#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) Generated_Component_Arenas;
 //#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) init_generated_component_arenas;
 //#poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) deinit_generated_component_arenas;
@@ -53,7 +61,7 @@ get_generated_component_arena_base :: (using a : *Generated_Component_Arenas, t 
 //#if EDITOR && IMGUI
 //then #poke_name (#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES) ) editor_draw_property;
 
-MAX_ENTITIES :: %5;
+MAX_ENTITIES :: %6;
 
 SCOPE
 
@@ -118,6 +126,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
     builder_init : String_Builder;
     builder_deinit : String_Builder;
     builder_get  : String_Builder;
+    builder_get_bucket_size  : String_Builder;
 
     info_array: [..] Component_Info;
     for val, _ : info_table array_add(*info_array, val);
@@ -129,10 +138,11 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
         name := to_lower_copy(info.type_name);
         max := ifx info.max > 0 then info.max else DEFAULT_COMPONENT_ARENA_COUNT;
 
-        print_to_builder(*builder, "%1_arena: Component_Arena(%2);\n", name, info.type_name);
+        print_to_builder(*builder, "%1_arena: Component_Arena(%2, %3);\n", name, info.type_name, max);
         print_to_builder(*builder_init, "init_component_arena(*%1_arena, %2);\n", name, max);
         print_to_builder(*builder_init, "array_add(all, *%1_arena);\n", name);
         print_to_builder(*builder_get, "case %1; return *%2_arena;\n", info.type_name, name);
+        print_to_builder(*builder_get_bucket_size, "case %1; return %2;\n", info.type_name, max);
         log("Registered component arena of type: %. Max elements: %. InitOrder: % \n", info.type_name, max, info.init_order);
     }
 
@@ -147,6 +157,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
         builder_to_string(*builder_init),
         builder_to_string(*builder_deinit),
         builder_to_string(*builder_get),
+        builder_to_string(*builder_get_bucket_size),
         MAX_ENTITIES
     );
 }

@@ -8,12 +8,12 @@ Component_Arena_Base :: struct {
     entities  : Sparse_Set;
 }
 
-Component_Arena :: struct($T : Type) {
+Component_Arena :: struct($T : Type, bucket_size : int) {
     #as using base : Component_Arena_Base;
     components : []T;
 }
 
-init_component_arena :: (using arena : *Component_Arena($T), cap : s64) {
+init_component_arena :: (using arena : *Component_Arena($T, $N), cap : s64) {
     array := NewArray(cap, T);
     data = array.data;
     capacity = cap;
@@ -24,7 +24,7 @@ init_component_arena :: (using arena : *Component_Arena($T), cap : s64) {
     log("Initialized % component arena.", arena.type.info.name);
 }
 
-deinit_component_arena :: (using arena : *Component_Arena($T)) {
+deinit_component_arena :: (using arena : *Component_Arena($T, $N)) {
     arena_name := copy_string(arena.type.info.name ,,temp);
     free(data);
     deinit_sparse_set(*entities);

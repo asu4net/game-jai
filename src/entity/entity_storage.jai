@@ -41,7 +41,7 @@ Entity_Storage :: struct {
     count       : s64;
     initialized : bool;
     
-    info_arena  : Component_Arena(Entity_Info);
+    info_arena  : Component_Arena(Entity_Info, 100);
     uuid_seed   : u64;
     uuid_table  : Table(u64, Entity);
 }
@@ -194,11 +194,11 @@ deinit_entity_storage :: () {
     context.entity_storage = null;
 }
 
-get_component_arena :: ($T : Type) -> *Component_Arena(T) {
+get_component_arena :: ($T : Type, $N : int) -> *Component_Arena(T, N) {
     EntityStorageContext();
     #if T == Entity_Info
     then return *state.info_arena;
-    else return get_generated_component_arena(*state.generated_component_arenas, T);
+    else return get_generated_component_arena(*state.generated_component_arenas, T, N);
 }
 
 get_component_arena_base :: (t : Type) -> *Component_Arena_Base {
@@ -467,14 +467,14 @@ dlz_entity :: (s : string) -> Entity {
 
 has_component :: ($T : Type, entity : Entity) -> bool {
     assert(is_not_cleaned(entity));
-    component_arena := get_component_arena(T);
+    component_arena := get_component_arena(T, #run -> int {return get_bucket_size(T);});
     assert(component_arena != null);
     return test(*component_arena.entities, entity);
 }
 
 get_component :: ($T : Type, entity : Entity) -> *T {
     assert(is_not_cleaned(entity));
-    component_arena := get_component_arena(T);
+    component_arena := get_component_arena(T, #run -> int {return get_bucket_size(T);});
     assert(component_arena != null);
     assert(has_component(T, entity));
     index := search(*component_arena.entities, entity);
@@ -486,7 +486,7 @@ add_component :: ($T : Type, entity : Entity) -> *T {
     then return null;
     assert(is_not_cleaned(entity));
     assert(!has_component(T, entity));
-    using component_arena := get_component_arena(T);
+    using component_arena := get_component_arena(T, #run -> int {return get_bucket_size(T);});
     assert(count < capacity);
     count += 1;
     index := insert_id(*entities, entity);
@@ -500,7 +500,7 @@ add_component_with_data :: (d : $T, entity : Entity) -> *T {
     then return null;
     assert(is_not_cleaned(entity));
     assert(!has_component(T, entity));
-    using component_arena := get_component_arena(T);
+    using component_arena := get_component_arena(T, #run -> int {return get_bucket_size(T);});
     assert(count < capacity);
     count += 1;
     index := insert_id(*entities, entity);
@@ -514,7 +514,7 @@ rem_component :: ($T : Type, entity : Entity) {
     #if T == Entity_Info 
     then return;
     assert(has_component(T, entity));
-    using component_arena := get_component_arena(T);
+    using component_arena := get_component_arena(T, #run -> int {return get_bucket_size(T);});
     call_rem_component_callback(component_arena.type, entity, get_component(T, entity));
     count -= 1;
     deleted, last := remove_id(*entities, entity);
@@ -536,7 +536,7 @@ dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
     success, parsed_data := json_parse_string(s, T);
 
     if has_component(T, entity) {
-        using arena := get_component_arena(T);
+        using arena := get_component_arena(T, #run -> int {return get_bucket_size(T);});
         component := get_component(T, entity);
         //#HACK_asuarez See dlz_entity, the make ref stuff.
         #if T == Entity_Info {
