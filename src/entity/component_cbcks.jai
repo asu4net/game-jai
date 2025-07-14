@@ -38,7 +38,11 @@ call_cpy_component_callback :: inline (t: Component_Type, e : Entity, s : *void,
     using t.cbkcs;
     // Copy must be defined.
     assert(cpy != null);
-    call_cpy(cpy, e, s, d);      
+
+    // hehe
+    if (call_cpy != null) {
+        call_cpy(cpy, e, s, d);
+    }     
 }
 
 set_add_component_callback :: inline (t: *Component_Type, $T : Type, cbck : Component_Callback(T).ADD) {

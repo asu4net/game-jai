@@ -1,4 +1,4 @@
-"size
+
 @Entity(12320152129788292146)
 
 @Component(Entity_Info)
@@ -53,11 +53,6 @@
 	"collides_with": "PLAYER | PLAYER_BULLET"
 }
 
-@Component(DamageSource_Component)
-{
-	"damage": 10
-}
-
 @Component(Sprite_Component)
 {
 	"visible": true,
@@ -81,7 +76,6 @@
 	"flip_y": false,
 	"autosize": true
 }
-
 
 @Component(Kamikaze_Skull)
 {

@@ -30,6 +30,22 @@
 	"ang": 0
 }
 
+@Component(Circle_Collider_Component)
+{
+	"radius": 0.42,
+	"flag": "PLAYER",
+	"collides_with": "ENEMY | ENEMY_BULLET"
+}
+
+@Component(Player_Input)
+{
+	"axis": {
+		"x": 0,
+		"y": 0
+	},
+	"fire": false
+}
+
 @Component(Sprite_Component)
 {
 	"visible": true,
@@ -54,10 +70,12 @@
 	"autosize": true
 }
 
-@Component(DamageTarget_Component)
+@Component(Player_Weapon)
 {
-	"max_life": 100,
-	"life": 100
+	"firerate": 0.1,
+	"time_since_fired": 0,
+	"level": 1,
+	"ammo": 0
 }
 
 @Component(Player_Movement)
@@ -65,21 +83,10 @@
 	"speed": 4
 }
 
-@Component(Player_Input)
+@Component(Damage_Target)
 {
-	"axis": {
-		"x": 0,
-		"y": 0
-	},
-	"fire": false
-}
-
-@Component(Player_Weapon)
-{
-	"firerate": 0.1,
-	"time_since_fired": 0,
-	"level": 1,
-	"ammo": 0
+	"max_life": 1,
+	"life": 1
 }
 
 @Entity(3178532888591834674)

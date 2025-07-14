@@ -12,7 +12,7 @@ Entity_Pool :: struct($N : s64, get_cbk : GET_ENTITY_POOL_ELEMENT_CBK = null, re
 }
 
 init_entity_pool :: (entity_pool : *Entity_Pool, prefab_path : string){
-    init(*entity_pool.available_ids, entity_pool.pool_size);
+    init_queue(*entity_pool.available_ids, entity_pool.pool_size);
 
     for i : 0..entity_pool.pool_size - 1 {
         push_back(*entity_pool.available_ids, xx i);
@@ -28,7 +28,7 @@ init_entity_pool :: (entity_pool : *Entity_Pool, prefab_path : string){
 }
 
 deinit_entity_pool :: (entity_pool : *Entity_Pool) {
-    deinit(*entity_pool.available_ids);
+    deinit_queue(*entity_pool.available_ids);
     destroy_entity(entity_pool.prefab);
     for entity_pool.elements {
         destroy_entity(entity_pool.elements[it_index]);

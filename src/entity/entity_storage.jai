@@ -92,8 +92,17 @@ set_enabled :: (entity : Entity, enabled := true) {
     assert(is_not_destroyed(entity));
     info := get_info(entity);
     is_local_enabled := (.LOCAL_ENABLED & info.flags).(bool);
-    if enabled != is_local_enabled
-    then compute_enabled_iterative(make_ref(entity));
+    if enabled != is_local_enabled {
+        if (enabled) {
+            info.flags += .LOCAL_ENABLED;
+        }
+        else {
+            info.flags -= .LOCAL_ENABLED;
+        }
+        // no ternary operator?
+        //info.flags += enabled ? .LOCAL_ENABLED : -.LOCAL_ENABLED;
+        compute_enabled_iterative(make_ref(entity));
+    }
 }
 
 get_name :: (entity : Entity) -> string {

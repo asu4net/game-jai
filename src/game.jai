@@ -32,6 +32,9 @@ init_game :: () {
     game.player = dlz_entity_from_file("assets/player.prefab");
     game.kamikaze = dlz_entity_from_file("assets/kamikaze.prefab");
     game.homing = dlz_entity_from_file("assets/homing_missile.prefab");
+
+    init_player(game.player);
+
     set_pos(game.homing, UP_2D * 1);
     set_pos(game.kamikaze, UP_2D * 1);
 }
@@ -64,8 +67,7 @@ deinit_game :: () {
     log("Deinit game!");
     assert(is_game_init());
 
-
-    deinit_player(player);
+    deinit_player(context.game_state.player);
 
     destroy_game_entity :: (entity : *Entity) {
         if entity.* != NULL_ENTITY {

@@ -11,7 +11,7 @@ BUILD_FILE      :: "src/main.jai";
 COMPILE_FLAGS   :: (.DEBUG | .IMGUI | .EDITOR).(CompileFlags);
 
 MAX_ENTITIES                  :: 3000;
-DEFAULT_COMPONENT_ARENA_COUNT :: 30;
+DEFAULT_COMPONENT_ARENA_COUNT :: 1000;
 
 ADD_CALLBACK_STR :: "addcomponentcallback";
 REM_CALLBACK_STR :: "removecomponentcallback";

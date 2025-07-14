@@ -31,7 +31,7 @@ Player_Input :: struct @Component @InitOrder(1000) @Max(2)  {
 }
 
 init_player :: (player : Entity) {
-    init_entity_pool(*bullet_pool, "assets/bullet.prefab");
+    init_entity_pool(*bullet_pool, "assets/player_bullet.prefab");
 }
 
 update_player :: (player : Entity) {
@@ -69,7 +69,7 @@ update_input :: (using player_input : *Player_Input) {
         axis = normalize(axis);
     }
 
-    fire = is_key_down(.SPACEBAR);
+    fire = is_key_down(.SPACE);
 }
 
 update_movement :: (player : Entity) {
@@ -85,9 +85,9 @@ update_weapons :: (player : Entity) {
     if !has_component(Transform2D_Component, player) || !has_component(Player_Input, player) || !has_component(Player_Weapon, player) {
         return;
     }
-    using transform2d     := get_component(Transform2D_Component, player);
-    using player_input    := get_component(Player_Input, player);
-    using player_weapon   := get_component(Player_Weapon, player);
+    using transform2d   := get_component(Transform2D_Component, player);
+    using player_input  := get_component(Player_Input, player);
+    using player_weapon := get_component(Player_Weapon, player);
 
 
     time_since_fired += delta_seconds();
@@ -105,18 +105,17 @@ update_weapons :: (player : Entity) {
 
 fire_projectile :: (pos : Vector2, dir : Vector2, damage : u32, speed : f32, radius : f32) {
 
-<<<<<<< HEAD
-    bullet         := get_pool_element(*bullet_pool);
-    transform2d    := get_component(Transform2D_Component, bullet);
-    movement2d     := get_component(Movement2D_Component, bullet);
-    timer          := get_component(Timer_Component, bullet);
+    bullet      := get_pool_element(*bullet_pool);
+    transform2d := get_component(Transform2D_Component, bullet);
+    movement2d  := get_component(Movement2D_Component, bullet);
 
-    transform2d.pos             = pos; 
-    movement2d.dir              = dir;
-    timer.on_timer_finished_cbk = on_bullet_timer_finished;
+    transform2d.pos  = pos; 
+    movement2d.dir   = dir;
+    movement2d.start = true; 
+
+    start_timer_component(bullet, on_bullet_timer_finished);
 
     set_enabled(bullet, true);
-    movement2d.start = true; 
 
     /*
     bullet := dlz_entity_from_file("assets/player_bullet.prefab");

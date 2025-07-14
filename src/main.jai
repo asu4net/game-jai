@@ -59,7 +59,6 @@ main :: () {
 #import "Text_File_Handler";
 #import "Enumerated_Array";
 
-#import "Entity" (EDIT_MODE = EDITOR, MAX_ENTITIES = MAX_ENTITIES);
 #import "Queue";
 #import "Jaison";
 #import "SDL3";
@@ -71,6 +70,7 @@ main :: () {
 #import "Queue";
 
 #if EDITOR #load "editor/editor.jai";
+#load "editor/utils.jai";
 
 #load "components/core/all.jai";
 #load "components/game/all.jai";

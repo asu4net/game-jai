@@ -1,4 +1,4 @@
-"w":
+
 @Entity(7898409673204575282)
 
 @Component(Entity_Info)
@@ -25,29 +25,6 @@
 	"ang": 0
 }
 
-@Component(Movement2D_Component)
-{
-	"start": false,
-	"speed_min": 0,
-	"speed_max": 8,
-	"time_to_max_speed": 0.7,
-	"speed_progress": 0,
-	"target": {
-		"x": 0,
-		"y": 0
-	},
-	"has_target": true,
-	"dir": {
-		"x": 0,
-		"y": 0
-	}
-}
-
-@Component(DamageSource_Component)
-{
-	"damage": 10
-}
-
 @Component(Sprite_Component)
 {
 	"visible": true,
@@ -70,12 +47,6 @@
 	"flip_x": false,
 	"flip_y": false,
 	"autosize": true
-}
-
-@Component(DamageTarget_Component)
-{
-	"max_life": 20,
-	"life": 20
 }
 
 @Component(Homing_Missile_Component)
