@@ -658,6 +658,7 @@ PushItemFlag :: (option: ItemFlags, enabled: bool) -> void #foreign imgui "_ZN5I
 PopItemFlag :: () -> void #foreign imgui "_ZN5ImGui11PopItemFlagEv";
 
 // Parameters stacks (current window)
+PushMultiItemsWidths :: (components: s32, w_full: float) -> void #foreign imgui "_ZN5ImGui20PushMultiItemsWidthsEif";
 PushItemWidth :: (item_width: float) -> void #foreign imgui "_ZN5ImGui13PushItemWidthEf";
 PopItemWidth :: () -> void #foreign imgui "_ZN5ImGui12PopItemWidthEv";
 SetNextItemWidth :: (item_width: float) -> void #foreign imgui "_ZN5ImGui16SetNextItemWidthEf";

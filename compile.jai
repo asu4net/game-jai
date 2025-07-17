@@ -243,15 +243,10 @@ generate_component_callbacks_code :: (info_table: Table(string, Component_Info))
             assert(false);
         }
 
-        //#HACK_asuarez Until linux imgui backends work.
-        #if OS == .LINUX {
-            add_build_string("IMGUI :: false;", w);            
-        } else {
-            if COMPILE_FLAGS & .IMGUI 
-            then add_build_string("IMGUI :: true;", w);
-            else add_build_string("IMGUI :: false;", w);
-        }
-
+        if COMPILE_FLAGS & .IMGUI 
+        then add_build_string("IMGUI :: true;", w);
+        else add_build_string("IMGUI :: false;", w);
+        
         if COMPILE_FLAGS & .EDITOR
         then add_build_string("EDITOR :: IMGUI && true;", w);
         else add_build_string("EDITOR :: IMGUI && false;", w);
