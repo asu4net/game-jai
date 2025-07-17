@@ -67,6 +67,20 @@ draw_entity_hierarchy :: (entity : Entity) {
             ImGui.EndPopup();
         }
 
+        // Clone entity -----------------------------------------------------
+        
+        if ImGui.BeginPopupContextItem() {
+            selected := resolve_ref(*context.editor.selected_ref);
+            if ImGui.MenuItem("Clone Entity") {
+                entity := NULL_ENTITY;
+                if selected != NULL_ENTITY {
+                    entity = clone_entity(selected);
+                    context.editor.selected_ref = make_ref(entity);
+                }
+            }
+            ImGui.EndPopup();
+        }
+
         // Selection management ---------------------------------------------
         
         if ImGui.IsItemClicked(.Left) {

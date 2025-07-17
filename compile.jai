@@ -8,7 +8,7 @@ CompileFlags :: enum_flags {
 EXECUTABLE_NAME :: "game";
 OUTPUT_PATH     :: "bin";
 BUILD_FILE      :: "src/main.jai";
-COMPILE_FLAGS   :: (.DEBUG).(CompileFlags);
+COMPILE_FLAGS   :: (.DEBUG | .IMGUI | .EDITOR).(CompileFlags);
 
 MAX_ENTITIES                  :: 3000;
 DEFAULT_COMPONENT_ARENA_COUNT :: 1000;

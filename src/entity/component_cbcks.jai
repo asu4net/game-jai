@@ -36,13 +36,8 @@ call_rem_component_callback :: inline (t: Component_Type, e : Entity, c : *void)
 
 call_cpy_component_callback :: inline (t: Component_Type, e : Entity, s : *void, d : *void) {
     using t.cbkcs;
-    // Copy must be defined.
-    assert(cpy != null);
-
-    // hehe
-    if (call_cpy != null) {
-        call_cpy(cpy, e, s, d);
-    }     
+    assert(call_cpy != null);
+    call_cpy(cpy, e, s, d);
 }
 
 set_add_component_callback :: inline (t: *Component_Type, $T : Type, cbck : Component_Callback(T).ADD) {
@@ -67,20 +62,22 @@ set_rem_component_callback :: inline (t: *Component_Type, $T : Type, cbck : Comp
 
 set_cpy_component_callback_default :: inline (t: *Component_Type, $T : Type) {
     using t.cbkcs;
-    def_cpy :: (entity : Entity, dst : *T, src : *T) {
-        dst.* = src.*; 
+    
+    call_cpy = (p_proc : *void, e : Entity, p_dst : *void, p_src : *void) {
+        dst := p_dst.(*T);
+        src := p_src.(*T);
+        dst.* = src.*;
     }
-    cpy = xx def_cpy;
 }
 
 set_cpy_component_callback :: inline (t: *Component_Type, $T : Type, cbck : Component_Callback(T).CPY) {
     using t.cbkcs;
     
-    call_cpy = (p_proc : *void, e : Entity, p_src : *void, p_dst : *void) {
+    call_cpy = (p_proc : *void, e : Entity, p_dst : *void, p_src : *void) {
         proc := p_proc.(Component_Callback(T).CPY);
-        src := p_src.(*T);
         dst := p_dst.(*T);
-        proc(e, src, dst);
+        src := p_src.(*T);
+        proc(e, dst, src);
     }
     cpy = xx cbck;
 }
