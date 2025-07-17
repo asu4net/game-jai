@@ -6,3 +6,4 @@
 .build/
 **.ini
 jails.json
+bin/game
