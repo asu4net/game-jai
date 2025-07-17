@@ -69,8 +69,7 @@ main :: () {
 #import "Sparse_Set";
 #import "Queue";
 
-#if EDITOR #load "editor/editor.jai";
-#load "editor/utils.jai";
+#load "editor/editor.jai";
 
 #load "components/core/all.jai";
 #load "components/game/all.jai";

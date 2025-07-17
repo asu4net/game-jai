@@ -162,6 +162,9 @@ save_prefab :: () {
     write_entire_file(tprint("assets/%.prefab", get_name(prefab) ,,temp), builder_to_string(*builder, prefab ,,temp));
 }
 
+} // #if IMGUI && EDITOR
+
+
 #scope_file
 
 #load "editor_props.jai";
@@ -171,5 +174,3 @@ save_prefab :: () {
 // Panels
 #load "panels/hierarchy.jai";
 #load "panels/properties.jai";
-
-} // #if IMGUI && EDITOR

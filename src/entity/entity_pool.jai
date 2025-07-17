@@ -33,7 +33,6 @@ deinit_entity_pool :: (entity_pool : *Entity_Pool) {
     for entity_pool.elements {
         destroy_entity(entity_pool.elements[it_index]);
     }
-    free(entity_pool);
 }
 
 get_pool_element :: (entity_pool : *Entity_Pool) -> Entity {
