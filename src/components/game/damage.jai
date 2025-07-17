@@ -1,9 +1,9 @@
 
-DamageSource_Component :: struct @Component @InitOrder(1000) @Max(MAX_ENTITIES)  {
+DamageSource_Component :: struct @Component @InitOrder(1000)   {
     damage  : u32 = 10;
 }
 
-DamageTarget_Component :: struct @Component @InitOrder(1000) @Max(MAX_ENTITIES)  {
+DamageTarget_Component :: struct @Component @InitOrder(1000)   {
     max_life : u32 = 100;
     life     : u32 = 100;
 }

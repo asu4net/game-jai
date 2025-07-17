@@ -3,7 +3,7 @@ FlipBookKey :: struct {
     time : f32;
 }
 
-FlipBook_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
+FlipBook_Component :: struct @Component @InitOrder(100)  {
     keys            : [..] FlipBookKey;
     key_count       : u32;
     duration        : f32;

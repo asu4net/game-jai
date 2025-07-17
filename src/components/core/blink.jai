@@ -1,4 +1,4 @@
-Blink_Component :: struct @Component @InitOrder(10300) @Max(MAX_ENTITIES) {
+Blink_Component :: struct @Component @InitOrder(10300) {
     enabled    := false;
     start_tint := WHITE;        @Color
     end_tint   := RED;          @Color

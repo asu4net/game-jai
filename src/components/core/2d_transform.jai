@@ -1,4 +1,4 @@
-Transform2D_Component :: struct @Component @InitOrder(0) @Max(MAX_ENTITIES) {
+Transform2D_Component :: struct @Component @InitOrder(0) {
     pos := ZERO_2D;
     scl := ONE_2D;
     ang := (0.0).(f32);

@@ -1,8 +1,8 @@
-Damage_Source :: struct @Component @Max(MAX_ENTITIES) {
+Damage_Source :: struct @Component {
     damage: u32 = 10;    
 }
 
-Damage_Target :: struct @Component @Max(MAX_ENTITIES) {
+Damage_Target :: struct @Component {
     max_life: u32 = 100;
     life: s32 = 0;
 }

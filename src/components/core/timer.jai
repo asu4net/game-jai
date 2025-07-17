@@ -1,7 +1,7 @@
 
 ON_END_CBK :: #type (Entity);
 
-Timer_Component :: struct @Component @InitOrder(1000) @Max(MAX_ENTITIES) {
+Timer_Component :: struct @Component @InitOrder(1000)  {
     started      : bool = false;
     time         : f32;
     current_time : f32  = 0; @JsonIgnore

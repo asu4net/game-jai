@@ -18,14 +18,15 @@
 - Sistema de logs en pantalla, que salgan, vayan fadeandose y se acumulen en una columna.
 
 # Engine
-- Terminar las pools.
-- Componentes de UI.
+- Make more intuitive the sorting order of the components. Use layer names, defined on comp time?
 - Compile time sprite sheet, quitar strings de los sprites.
-- Revisar los flipbook
-- Usar los bucket array para los componentes.
 - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
+- Implementar sistema de picking para imgui
+- Componentes de UI.
+- Implementar sistema de picking para componentes de GUI.
+- Revisar los flipbook.
+- Usar los bucket array para los componentes.
 - Implement a bumb allocator in the renderer. (I think its the pool thing in the modules folder).
-- Picking
 - Sistema de iluminación: Ambient y Point lights
 - Leer shaders de ficheros
 - Poder tener un material component

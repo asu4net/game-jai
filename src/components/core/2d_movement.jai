@@ -5,7 +5,7 @@ Interp_Mode :: enum {
 
 INTERP_PROC :: #type (x: f32, min: f32, max: f32) -> float;
 
-Movement2D_Component :: struct @Component @InitOrder(100) @Max(MAX_ENTITIES) {
+Movement2D_Component :: struct @Component @InitOrder(100) {
     interp_mode        : Interp_Mode;
     start              : bool;
     speed_min          : f32;

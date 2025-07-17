@@ -1,4 +1,4 @@
-Homing_Missile_Component :: struct @Component @InitOrder(1100) @Max(MAX_ENTITIES)  {
+Homing_Missile_Component :: struct @Component @InitOrder(1100)   {
     State :: enum {
         IDLE;
         WAITING;

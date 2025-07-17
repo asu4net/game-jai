@@ -1,4 +1,4 @@
-Sprite_Component :: struct @Component @InitOrder(1000) @Max(MAX_ENTITIES) {
+Sprite_Component :: struct @Component @InitOrder(1000)  {
     visible  := true;
     item     := "";
     tint     := WHITE;       @Color

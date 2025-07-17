@@ -3,7 +3,7 @@ KamikazeState :: enum u32{
     ATTACK;
 }
 
-Kamikaze_Skull :: struct @Component @InitOrder(1000) @Max(MAX_ENTITIES) {
+Kamikaze_Skull :: struct @Component @InitOrder(1000)  {
     state         : KamikazeState = .IDLE;
     idle_time     : f32;
     attack_target : v3;

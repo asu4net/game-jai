@@ -1,4 +1,4 @@
-Text_Component :: struct @Component @InitOrder(2000) @Max(MAX_ENTITIES) {
+Text_Component :: struct @Component @InitOrder(2000)  {
     visible := true;
     text    := "placeholder!";
     blend   := Blend.ALPHA;
