@@ -120,32 +120,32 @@ generate_imgui_bindings :: (args: [] string) -> bool {
         using opts;
 
         #if OS == .WINDOWS {
-            array_add(*libpaths, "windows");
+
+            array_add(*libraries, .{filename="ImGui.static"});
+            array_add(*library_search_paths, "windows");
             output_filename = "windows/windows.jai";
             generate_library_declarations = false;
 
             footer = #string EOF
-#if USE_DYNAMIC_LIB {
-    imgui :: #library "ImGui";
-} else {
-    imgui :: #library,no_dll "ImGui.static";
-}
+imgui :: #library,no_dll "ImGui.static";
 EOF
 
         } else {
+
             #if OS == .LINUX {
-                array_add(*libpaths, "linux");
+                array_add(*library_search_paths, "linux");
             } else #if OS == .MACOS {
-                array_add(*libpaths, "macos");
+                array_add(*library_search_paths, "macos");
             } else {
                 assert(false);
             }
-            output_filename = "unix.jai";
-            generate_library_declarations = false;
+
             footer = FOOTER_UNIX;
+            output_filename = "unix.jai";
+            array_add(*libraries, .{filename="ImGui"});
+            generate_library_declarations = false;
         }
 
-        array_add(*libnames,      "ImGui");
         array_add(*include_paths, IMGUI_PATH);
         array_add(*source_files,  tprint("%/imgui.h", IMGUI_PATH));
         array_add(*extra_clang_arguments, "-x", "c++", "-DWIN32_LEAN_AND_MEAN");
@@ -207,10 +207,16 @@ compile_and_generate_bindings_backend_sdl3_gpu3 :: (compile_debug: bool) -> bool
         run_result :=  run_command("lipo", "-create", "backends/macos/ImGui_x64_sdl3_gpu3.a", "backends/macos/ImGui_arm64_sdl3_gpu3.a", "-output", "backends/macos/ImGui_sdl3_gpu3.a");
         success = (run_result.exit_code == 0);
 
-    } else {
-        log("only Windows/MacOS are currently supported for generating backends, however it should be easy to add more! check '%' for an idea how to add support for more platforms", #procedure_name(), flags=.ERROR);
+    } else #if OS == .LINUX {
 
-        return false;
+        #import "Process";
+
+        make_directory_if_it_does_not_exist("backends/linux");
+
+        // @Hack: Is -fno-threadsafe-statics really the way to go? Without it, we get linker errors when using the static library
+        // due to "__cxa_guard_acquire" et al not being defined. The library users probably need to link agains libc++ or something. But do we really want to enforce that?
+        success = build_cpp_static_lib("backends/linux/ImGui_sdl3_gpu3", ..src_files, extra = .["-std=c++20", "-fno-exceptions", "-fno-rtti", "-fno-threadsafe-statics", tprint("-I%", IMGUI_PATH), tprint("-I%", SDL3_INCLUDE_PATH)], debug=compile_debug);
+        assert(success, "build_cpp_static_lib('backends/linux/ImGui_sdl3_gpu3'");
     }
 
     // Generate bindings
@@ -221,8 +227,8 @@ compile_and_generate_bindings_backend_sdl3_gpu3 :: (compile_debug: bool) -> bool
 
         #if OS == .WINDOWS {
 
-            array_add(*libpaths, "backends/windows");
-            array_add(*libnames, "ImGui_sdl3_gpu3.static");
+            array_add(*library_search_paths, "backends/windows");
+            array_add(*libraries, .{filename="ImGui_sdl3_gpu3.static"});
             output_filename = "backends/windows/windows_sdl3_gpu3.jai";
             generate_library_declarations = false;
 
@@ -236,10 +242,10 @@ EOF
             strip_flags |= .INLINED_FUNCTIONS;
 
             #if OS == .LINUX {
-                array_add(*libpaths, "backends/linux");
+                array_add(*library_search_paths, "backends/linux");
             } else #if OS == .MACOS {
 
-                array_add(*libpaths, "backends/macos");
+                array_add(*library_search_paths, "backends/macos");
 
                 // For some reason generation on macos doesn't find
                 // the library and so strips the functions we want them.
@@ -253,7 +259,7 @@ EOF
                 assert(false);
             }
 
-            array_add(*libnames, "ImGui_sdl3_gpu3");
+            array_add(*libraries, .{filename="ImGui_sdl3_gpu3"});
             output_filename = "backends/unix_sdl3_gpu3.jai";
             generate_library_declarations = false;
             footer = #string END
@@ -348,10 +354,16 @@ compile_and_generate_bindings_backend_sdl3_opengl3 :: (compile_debug: bool) -> b
         run_result :=  run_command("lipo", "-create", "backends/macos/ImGui_x64_sdl3_opengl3.a", "backends/macos/ImGui_arm64_sdl3_opengl3.a", "-output", "backends/macos/ImGui_sdl3_opengl3.a");
         success = (run_result.exit_code == 0);
 
-    } else {
-        log("only Windows/MacOS are currently supported for generating backends, however it should be easy to add more! check '%' for an idea how to add support for more platforms", #procedure_name(), flags=.ERROR);
+    } else #if OS == .LINUX {
 
-        return false;
+        #import "Process";
+
+        make_directory_if_it_does_not_exist("backends/linux");
+
+        // @Hack: Is -fno-threadsafe-statics really the way to go? Without it, we get linker errors when using the static library
+        // due to "__cxa_guard_acquire" et al not being defined. The library users probably need to link agains libc++ or something. But do we really want to enforce that?
+        success = build_cpp_static_lib("backends/linux/ImGui_sdl3_opengl3", ..src_files, extra = .["-std=c++20", "-fno-exceptions", "-fno-rtti", "-fno-threadsafe-statics", tprint("-I%", IMGUI_PATH), tprint("-I%", SDL3_INCLUDE_PATH)], debug=compile_debug);
+        assert(success, "build_cpp_static_lib('backends/linux/ImGui_sdl3_opengl3'");
     }
 
     // Generate bindings
@@ -362,8 +374,8 @@ compile_and_generate_bindings_backend_sdl3_opengl3 :: (compile_debug: bool) -> b
 
         #if OS == .WINDOWS {
 
-            array_add(*libpaths, "backends/windows");
-            array_add(*libnames, "ImGui_sdl3_opengl3.static");
+            array_add(*library_search_paths, "backends/windows");
+            array_add(*libraries, .{filename="ImGui_sdl3_opengl3.static"});
             output_filename = "backends/windows/windows_sdl3_opengl3.jai";
             generate_library_declarations = false;
 
@@ -377,10 +389,10 @@ EOF
             strip_flags |= .INLINED_FUNCTIONS;
 
             #if OS == .LINUX {
-                array_add(*libpaths, "backends/linux");
+                array_add(*library_search_paths, "backends/linux");
             } else #if OS == .MACOS {
 
-                array_add(*libpaths, "backends/macos");
+                array_add(*library_search_paths, "backends/macos");
 
                 // For some reason generation on macos doesn't find
                 // the library and so strips the functions we want them.
@@ -394,7 +406,7 @@ EOF
                 assert(false);
             }
 
-            array_add(*libnames, "ImGui_sdl3_opengl3");
+            array_add(*libraries, .{filename="ImGui_sdl3_opengl3"});
             output_filename = "backends/unix_sdl3_opengl3.jai";
             generate_library_declarations = false;
             footer = #string END
