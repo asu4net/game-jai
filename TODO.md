@@ -22,7 +22,6 @@
 - Compile time sprite sheet, quitar strings de los sprites.
 - Implementar frame buffer y renderizar a una textura (Con esto se pueden meter FX de cámara)
 - Implementar sistema de picking para imgui
-- Componentes de UI.
 - Implementar sistema de picking para componentes de GUI.
 - Revisar los flipbook.
 - Usar los bucket array para los componentes.
