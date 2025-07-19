@@ -11,6 +11,7 @@ can_update_this_frame :: inline () -> bool {
 
 frame_by_frame : bool;
 next_frame     : bool;
+show_colliders : bool;
 
 update_frame_by_frame_mode :: () {
     

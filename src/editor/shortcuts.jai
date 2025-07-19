@@ -1,13 +1,13 @@
 Shortcut :: enum {
-    TOGGLE_PLAY; TOGGLE_PAUSE; NEXT_FRAME; SHOW_COLLIDERS;
+    TOGGLE_PLAY; TOGGLE_PAUSE; NEXT_FRAME; TOGGLE_SHOW_COLLIDERS;
     COUNT;
 }
 
 SHORTCUT_MAP :: Enumerated_Array(Shortcut, []SDL_Scancode).{values=.{
-  TOGGLE_PLAY      = .[.LALT, ._1],
-  TOGGLE_PAUSE     = .[.LALT, ._2],
-  NEXT_FRAME       = .[.LALT, ._3],
-  SHOW_COLLIDERS   = .[.LALT, ._4],
+  TOGGLE_PLAY            = .[.LALT, ._1],
+  TOGGLE_PAUSE           = .[.LALT, ._2],
+  NEXT_FRAME             = .[.LALT, ._3],
+  TOGGLE_SHOW_COLLIDERS  = .[.LALT, ._4],
 }};
 
 is_shortcut_down :: (s : Shortcut) -> bool {
