@@ -126,6 +126,19 @@ fire_projectile :: (pos : Vector2, dir : Vector2, damage : u32, speed : f32, rad
     */
 }
 
+Player_Bullet_Component :: struct @Component {
+}
+
+process_bullet_collisions :: () {
+    using context.collisions2d;
+    for collision_enter_events {
+        source := resolve_ref(*it.source); 
+        success := return_pool_element(*bullet_pool, source);     
+        if success
+        then set_enabled(source, false);
+    }
+}
+
 on_bullet_timer_finished :: (bullet : Entity) {
     
     set_enabled(bullet, false);
@@ -144,4 +157,5 @@ process_player_damage :: () {
         }
         break;
     }
+    process_bullet_collisions();
 }

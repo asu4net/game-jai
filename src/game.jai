@@ -60,7 +60,6 @@ update_game :: () {
     query_2d_collisions();
     query_damage_collisions();
     process_player_damage();
-    process_projectile_collisions();
 }
 
 deinit_game :: () {

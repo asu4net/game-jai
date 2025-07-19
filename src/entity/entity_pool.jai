@@ -43,7 +43,7 @@ get_pool_element :: (entity_pool : *Entity_Pool) -> Entity {
     return entity_pool.elements[index];
 }
 
-return_pool_element :: (entity_pool : *Entity_Pool, entity : Entity) {
+return_pool_element :: (entity_pool : *Entity_Pool, entity : Entity) -> bool {
     index := 0;
     found := false;
     for entity_pool.elements {
@@ -53,10 +53,11 @@ return_pool_element :: (entity_pool : *Entity_Pool, entity : Entity) {
             break;
         }
     }
-    if(!found) return;
+    if(!found) return false;
 
     if(entity_pool.remove_element_cbk) {
         entity_pool.remove_element_cbk(entity);
     }
     push_back(*entity_pool.available_ids, xx index);
+    return true;
 }

@@ -81,7 +81,7 @@ _mode": "NONE
 	"time": 3
 }
 
-@Component(Projectile_Component)
+@Component(Player_Bullet_Component)
 {
 }
 
