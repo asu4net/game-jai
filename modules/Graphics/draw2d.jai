@@ -65,12 +65,13 @@ QuadFlag :: enum_flags u16 {
 DEFAULT_QUAD_FLAGS :: QuadFlag.AUTOSIZE;
 
 GUIQuadFlag :: enum_flags u16 {
+    NONE;
     FLIP_X;
     FLIP_Y;
     USE_SUBTEX;
 }
 
-DEFAULT_GUI_QUAD_FLAGS :: 0;
+DEFAULT_GUI_QUAD_FLAGS :: GUIQuadFlag.NONE;
 
 Draw2D_Settings :: struct {
     viewport_width  : s32 = DEF_SCREEN_WIDTH;
@@ -460,9 +461,7 @@ draw_circle :: (
 }
 
 draw_gui_quad :: (
-    pos    : v2          = ZERO_2D,
-    ang    : f32         = 0,
-    scl    : v2          = ONE_2D,
+    mat    : m4          = IDENTITY,
     tex    : *Texture    = null,
     tiling : v2          = ONE_2D,
     size   : v2          = ONE_2D,
@@ -509,8 +508,7 @@ draw_gui_quad :: (
     vertex_positions[2] = .{ p.x, 0.0, 0.0, 1.0 };
     vertex_positions[3] = .{ 0.0, 0.0, 0.0, 1.0 };
     
-    transform := make_transform(pos * coef, ang, scl);
-    for *vertex_positions it.* = transform * it.*;
+    for *vertex_positions it.* = mat * it.*;
     
     slot := assign_tex_slot(tex);
 

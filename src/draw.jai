@@ -15,6 +15,16 @@ draw_frame :: () {
         view := get_entity_view(Transform2D_Component, Sprite_Component);
         for view draw_sprite_entity(it, *sheet);
     }
+    // Sprites.
+    {
+        view := get_entity_view(Transform2D_Component, GUI_Sprite_Component);
+        for view draw_gui_sprite_entity(it, *sheet);
+    }
+    // Texts.
+    {
+        view := get_entity_view(Transform2D_Component, GUI_Text_Component);
+        for view draw_text_entity(it, *font);
+    }
     // Collisions.
     #if EDITOR {
         if is_shortcut_pressed(.TOGGLE_SHOW_COLLIDERS) {

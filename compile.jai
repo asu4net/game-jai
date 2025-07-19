@@ -267,10 +267,11 @@ generate_component_callbacks_code :: (info_table: Table(string, Component_Info))
                 for m.structs array_add(*structs, it.expression);
                 for m.procedure_headers {
                     found := false;
+                    name := it.expression.name;
                     for it.expression.notes {
                         if to_lower_copy(it.text) == ADD_CALLBACK_STR || to_lower_copy(it.text) == REM_CALLBACK_STR || to_lower_copy(it.text) == CPY_CALLBACK_STR {
                             found = true;
-                            log("Collected callback procedure %", it.text);
+                            log("Collected callback procedure %", name);
                         } 
 
                     }

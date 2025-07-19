@@ -1,4 +1,5 @@
 sheet : Spritesheet;
+font : Font;
 
 main :: () {
     //---------------------------
@@ -20,6 +21,9 @@ main :: () {
     init_spritesheet(*sheet);
     defer deinit_spritesheet(*sheet);
 
+    init_font(*font);
+    defer deinit_font(*font);
+    
     set_clear_color(DARK_GREY);
 
     #if !EDITOR

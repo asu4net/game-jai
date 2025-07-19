@@ -19,7 +19,7 @@ is_font_init :: (font : *Font) -> bool {
 }
 
 init_font :: (font : *Font, path : string = DEF_FONT_PATH) {
-    assert(!font_is_init(font));
+    assert(!is_font_init(font));
     
     file, success := file_open(path);
     if !success {
@@ -104,8 +104,8 @@ fill_glyph :: (font : *Font, glyph : *Glyph, c : u8) {
 }
 
 deinit_font :: (font : *Font) {
-    assert(font_is_init(font));
-    deinit(*font.atlas);
+    assert(is_font_init(font));
+    deinit_texture(*font.atlas);
     deinit(*font.glyphs);
     font.* = .{};
 }
