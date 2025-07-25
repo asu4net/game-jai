@@ -19,7 +19,7 @@ ImDrawCallback :: #type (parent_list: *ImDrawList, cmd: *ImDrawCmd) #c_call;
 
 #if OS == {
     case .WINDOWS;  #load "backends/windows/windows_sdl3_opengl3.jai";
-    case .LINUX;    #load "backends/unix_sdl3_opengl3.jai";
+    case .LINUX;    #load "backends/linux/unix_sdl3_opengl3.jai";
     case .MACOS;    #load "backends/macos/macos_sdl3_opengl3.jai";
 }
 
