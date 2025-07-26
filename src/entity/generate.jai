@@ -13,7 +13,7 @@ entity_process_compiler_message :: (w : Workspace, msg : *Message) {
                 found := false;
                 name  := it.expression.name;
                 for it.expression.notes {
-                    note := to_lower_copy(it.text); 
+                    note := String.to_lower_copy(it.text); 
                     if note == ADD_CALLBACK_STR || note == REM_CALLBACK_STR || note == CPY_CALLBACK_STR {
                         found = true;
                         log("Collected callback procedure %", name);
@@ -44,6 +44,9 @@ entity_process_compiler_message :: (w : Workspace, msg : *Message) {
 }
 
 #scope_file
+
+#import "Hash_Table";
+Sort :: #import "Sort";
 
 // State
 generated_code := false;
@@ -107,31 +110,31 @@ Component_Info :: struct {
 collect_component_info :: (structs: [..] *Code_Struct, result : *Table(string, Component_Info)) {
     for s : structs {
         for note_obj : s.notes {
-            note := to_lower_copy(note_obj.text);
+            note := String.to_lower_copy(note_obj.text);
 
             if note == "component" {
                 info := Component_Info.{ type_name = s.defined_type.name };
                 table_add(result, info.type_name, info);
             }
 
-            if begins_with(note, "initorder(") {
+            if String.begins_with(note, "initorder(") {
                 info := table_find_pointer(result, s.defined_type.name);
                 if !info continue;
 
-                parsed, ok := parse_int(*slice(note, 10, note.count-11));
+                parsed, ok := String.parse_int(*String.slice(note, 10, note.count-11));
                 if ok info.init_order = parsed;
             }
 
-            if begins_with(note, "max(") {
+            if String.begins_with(note, "max(") {
 
-                parsed_text := slice(note, 4, note.count-5);
+                parsed_text := String.slice(note, 4, note.count-5);
                 found, info := table_find_new(result, s.defined_type.name);
                 if !found continue;
 
                 if parsed_text == "max_entities" {
                     info.max = MAX_ENTITIES;
                 } else {
-                    parsed, ok := parse_int(*parsed_text);
+                    parsed, ok := String.parse_int(*parsed_text);
                     if ok info.max = parsed;
                 }
 
@@ -151,11 +154,11 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
     info_array: [..] Component_Info;
     for val, _ : info_table array_add(*info_array, val);
 
-    quick_sort(info_array, x => x.init_order);
+    Sort.quick_sort(info_array, x => x.init_order);
 
     for info : info_array {
 
-        name := to_lower_copy(info.type_name);
+        name := String.to_lower_copy(info.type_name);
         max := ifx info.max > 0 then info.max else DEFAULT_COMPONENT_ARENA_COUNT;
 
         print_to_builder(*builder, "%1_arena: Component_Arena(%2);\n", name, info.type_name);
@@ -166,7 +169,7 @@ generate_component_arenas_code :: (info_table: Table(string, Component_Info)) ->
     }
 
     for info : info_array {
-        name := to_lower_copy(info.type_name);
+        name := String.to_lower_copy(info.type_name);
         print_to_builder(*builder_deinit, "deinit_component_arena(*%1_arena);\n", name);
     }
 
@@ -184,7 +187,7 @@ assign_component_callbacks :: (procs: [..] *Code_Procedure_Header, info_table: *
     
     for p : procs {
         for note_obj : p.notes {
-            note := to_lower_copy(note_obj.text);
+            note := String.to_lower_copy(note_obj.text);
             if note != CPY_CALLBACK_STR && note != REM_CALLBACK_STR && note != ADD_CALLBACK_STR
             then continue;
             for arg : p.arguments {
@@ -208,7 +211,7 @@ generate_component_callbacks_code :: (info_table: Table(string, Component_Info))
     builder : String_Builder;
 
     for info, _ : info_table {
-        name := to_lower_copy(info.type_name);
+        name := String.to_lower_copy(info.type_name);
         if info.add_proc.count > 0  {
             print_to_builder(*builder, "set_add_component_callback(*%1_arena.type, %2, %3);\n", name, info.type_name, info.add_proc);
         }
