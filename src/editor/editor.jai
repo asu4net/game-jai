@@ -24,6 +24,8 @@ Editor :: struct {
 
 draw_editor :: () {
     using context.editor;
+    
+    update_shortcuts();
 
     if ImGui.BeginMenuBar()  {
         if ImGui.BeginMenu("ImGui") {

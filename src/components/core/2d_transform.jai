@@ -4,12 +4,12 @@ Transform2D_Component :: struct @Component @InitOrder(0) {
     ang := (0.0).(f32);
 }
 
-get_pos :: inline (entity : Entity) -> v2 {
+get_pos :: inline (entity : Entity) -> Vector2 {
     transform := get_component(Transform2D_Component, entity);
     return transform.pos;
 }
 
-get_scl :: inline (entity : Entity) -> v2 {
+get_scl :: inline (entity : Entity) -> Vector2 {
     transform := get_component(Transform2D_Component, entity);
     return transform.scl;
 }
@@ -19,12 +19,12 @@ get_ang :: inline (entity : Entity) -> f32 {
     return transform.ang;
 }
 
-set_pos :: inline (entity : Entity, pos : v2) {
+set_pos :: inline (entity : Entity, pos : Vector2) {
     transform := get_component(Transform2D_Component, entity);
     transform.pos = pos;
 }
 
-set_scl :: inline (entity : Entity, scl : v2) {
+set_scl :: inline (entity : Entity, scl : Vector2) {
     transform := get_component(Transform2D_Component, entity);
     transform.scl = scl;
 }
@@ -34,10 +34,10 @@ set_ang :: inline (entity : Entity, ang : f32) {
     transform.ang = ang;
 }
 
-get_matrix :: (entity : Entity) -> m4 {
+get_matrix :: (entity : Entity) -> Matrix4 {
     
     transform := get_component(Transform2D_Component, entity);
-    child_matrix := make_transform(transform.pos, transform.ang, transform.scl);
+    child_matrix := make_matrix(transform.pos, transform.ang, transform.scl);
     
     if !is_not_destroyed(entity)
     then return child_matrix;
@@ -67,5 +67,5 @@ get_matrix :: (entity : Entity) -> m4 {
         current_entity = parent;
     }
 
-    return make_transform(child_pos, child_ang, child_scl);
+    return make_matrix(child_pos, child_ang, child_scl);
 }

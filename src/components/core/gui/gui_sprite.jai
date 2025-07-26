@@ -31,7 +31,8 @@ draw_gui_sprite_entity :: (entity : Entity, sheet : *Spritesheet) {
     then update_blink(get_component(Blink_Component, entity), *tint);
     
     tex := ifx item.count > 0 then *sheet.tex else null;
-    flags := ifx item.count > 0 then DEFAULT_GUI_QUAD_FLAGS | .USE_SUBTEX else DEFAULT_GUI_QUAD_FLAGS;
+    flags : GUIQuadFlag;
+    if item.count then flags |= GUIQuadFlag.USE_SUBTEX;
     
     if flip_x   then flags |= .FLIP_X;
     if flip_y   then flags |= .FLIP_Y;

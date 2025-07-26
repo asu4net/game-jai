@@ -6,7 +6,7 @@ Blink_Component :: struct @Component @InitOrder(10300) {
     progress   := (0.0).(f32);
 }
 
-update_blink :: (using blink : *Blink_Component, tint : *v4) {
+update_blink :: (using blink : *Blink_Component, tint : *Vector4) {
     if enabled && tint {
 
         progress += delta_seconds();

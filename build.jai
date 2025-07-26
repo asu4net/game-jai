@@ -21,7 +21,7 @@ Build_Args :: struct {
 
 #run {
     set_build_options_dc(.{do_output=false});
-    //clone_dependencies();
+    clone_dependencies();
     build_args : Build_Args;
     collect_build_args(*build_args);
     w := setup_workspace(build_args);
@@ -46,10 +46,15 @@ clone_dependencies :: () {
     scope_set_working_directory("modules");
     
     // Depencencies
-    try_clone_dependency("Tuki"        ,"https://github.com/asu4net/Tuki");
-    try_clone_dependency("SDL3"        ,"https://github.com/asu4net/jai-sdl3");
-    try_clone_dependency("ImGui"       ,"https://github.com/asu4net/ImGui");
-    try_clone_dependency("StbTrueType" ,"https://github.com/asu4net/StbTrueType");
+    try_clone_dependency("Tuki"             ,"https://github.com/asu4net/Tuki");
+    try_clone_dependency("ImGui"            ,"https://github.com/asu4net/ImGui");
+    try_clone_dependency("SDL3"             ,"https://github.com/asu4net/jai-sdl3");
+    try_clone_dependency("StbTrueType"      ,"https://github.com/asu4net/StbTrueType");
+    try_clone_dependency("Enumerated_Array" ,"https://github.com/rezich/Enumerated_Array");
+    try_clone_dependency("Queue"            ,"https://github.com/asu4net/Queue");
+    try_clone_dependency("Sparse_Set"       ,"https://github.com/asu4net/Sparse_Set");
+    try_clone_dependency("Math"             ,"https://github.com/asu4net/Math");
+    try_clone_dependency("Jaison"           ,"https://github.com/rluba/jaison");
     
     copy_file("SDL3/windows/bin/x64/SDL3.dll", "../bin/SDL3.dll");
     copy_file("StbTrueType/libstbtruetype.dll", "../bin/libstbtruetype.dll");

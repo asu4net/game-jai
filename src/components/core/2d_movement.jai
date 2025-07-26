@@ -14,7 +14,7 @@ Movement2D_Component :: struct @Component @InitOrder(100) {
     speed_progress     : f32;
     target             : Vector2;
     has_target         : bool = true;
-    dir                : v2;
+    dir                : Vector2;
     interp_proc        : INTERP_PROC; @JsonIgnore
 }
 

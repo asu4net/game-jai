@@ -6,7 +6,7 @@ KamikazeState :: enum u32{
 Kamikaze_Skull :: struct @Component @InitOrder(1000)  {
     state         : KamikazeState = .IDLE;
     idle_time     : f32;
-    attack_target : v3;
+    attack_target : Vector3;
     attack_cd     : f32;
     saw_speed     : f32;
 }
@@ -40,7 +40,7 @@ update_kamikaze :: (kamikaze : Entity) {
     }
 }
 
-get_player_pos :: () -> v2 {
+get_player_pos :: () -> Vector2 {
     view := get_entity_view(Player_Input);
     for view {
         return get_component(Transform2D_Component, it).pos;

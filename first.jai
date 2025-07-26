@@ -5,15 +5,9 @@ main :: () {
     //---------------------------
     //:INITIALIZATION
     //---------------------------
-    
-    defer report_memory_leaks();
-    set_working_directory(path_strip_filename(get_path_of_running_executable()));
-    
-    init_window("Game");
-    defer deinit_window();
-    
-    init_draw2d();
-    defer deinit_draw2d();
+
+    Tuki.run("Game");
+    defer Tuki.shutdown();
 
     init_entity_storage();
     defer deinit_entity_storage();
@@ -24,8 +18,6 @@ main :: () {
     init_font(*font);
     defer deinit_font(*font);
     
-    set_clear_color(DARK_GREY);
-
     #if !EDITOR
     then init_game();
     defer if is_game_init() then deinit_game();
@@ -34,7 +26,7 @@ main :: () {
     //:MAIN LOOP
     //---------------------------
 
-    while keep_window_opened() {   
+    while Tuki.keep_running() {   
 
         if can_update_this_frame()
         then update_game();
@@ -68,10 +60,12 @@ main :: () {
 #import "SDL3";
 #if IMGUI ImGui :: #import "ImGui";
 
-#import "Graphics" (DUMP_ERRORS = DEBUG);
-#import "Time";
+
 #import "Sparse_Set";
 #import "Queue";
+
+Tuki :: #import "Tuki" (DEBUG = DEBUG, IMGUI = IMGUI);
+        #import "Tuki" (DEBUG = DEBUG, IMGUI = IMGUI);
 
 #load "src/editor/editor.jai";
 
@@ -80,6 +74,5 @@ main :: () {
 #load "src/entity/entity_storage.jai";
 #load "src/entity/entity_pool.jai";
 
-#load "src/window.jai";
 #load "src/draw.jai";
 #load "src/game.jai";

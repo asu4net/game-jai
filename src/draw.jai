@@ -4,7 +4,6 @@ draw_frame :: () {
     //:DRAW ENTITIES 2D
     //---------------------------
     
-    draw2d_begin(.{context.window.width, context.window.height});
     // FlipBook.
     {
         view := get_entity_view(FlipBook_Component);
@@ -47,15 +46,12 @@ draw_frame :: () {
             }
         }
     }
-    draw2d_end();
 
     //---------------------------
     //:DRAW IMGUI
     //---------------------------
 
     #if IMGUI {
-        begin_draw_imgui();
         draw_editor();
-        end_draw_imgui();
     }
 }

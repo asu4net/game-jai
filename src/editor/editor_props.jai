@@ -40,11 +40,11 @@ editor_draw_property :: (name_c: *u8, data: *void, info:*Type_Info) {
                         }
                         if !ignore {
                             member_data := data + member.offset_in_bytes;
-                            if member.type == type_info(v2) {
+                            if member.type == type_info(Vector2) {
                                 editor_draw_drag_vector2(member.name, member_data, ZERO_2D, 0.1);
-                            } else if member.type == type_info(v3) {
+                            } else if member.type == type_info(Vector3) {
                                 editor_draw_drag_vector3(member.name, member_data, ZERO_3D, 0.1);
-                            } else if member.type == type_info(v4) {
+                            } else if member.type == type_info(Vector4) {
                                 if !is_color {
                                     editor_draw_drag_vector4(member.name, member_data, ZERO_4D, 0.1);
                                 } else {
@@ -209,9 +209,9 @@ editor_draw_drag_f32_with_button :: (label: string, value: *f32, reset_color: Ve
     ImGui.PushID(label);
 
     line_height: f32 = ImGui.GetFontSize() + ImGui.GetStyle().FramePadding.y * 2.0;
-    button_size := v2.{ line_height + 3.0, line_height };
+    button_size := Vector2.{ line_height + 3.0, line_height };
 
-    ImGui.PushStyleColor(.Button, v4.{reset_color.x, reset_color.y, reset_color.z, reset_color.w});
+    ImGui.PushStyleColor(.Button, Vector4.{reset_color.x, reset_color.y, reset_color.z, reset_color.w});
     reset := ImGui.Button(to_c_string(label ,,temp), button_size);
     ImGui.PopStyleColor();
 
@@ -297,12 +297,12 @@ editor_should_ignore_struct :: (t : *Type_Info) -> bool {
 
 COLUMN_WIDTH :: 120;
 
-ITEM_SPACING :: v2.{0, 6 };
+ITEM_SPACING :: Vector2.{0, 6 };
 
-COLOR_X :: v4.{1.000, 0.300, 0.300, 1.000};
-COLOR_Y :: v4.{0.368, 0.737, 0.521, 1.000};
-COLOR_Z :: v4.{0.300, 0.300, 1.000, 1.000};
-COLOR_W :: v4.{0.430, 0.258, 0.960, 1.000};
+COLOR_X :: Vector4.{1.000, 0.300, 0.300, 1.000};
+COLOR_Y :: Vector4.{0.368, 0.737, 0.521, 1.000};
+COLOR_Z :: Vector4.{0.300, 0.300, 1.000, 1.000};
+COLOR_W :: Vector4.{0.430, 0.258, 0.960, 1.000};
 
 in_property_context := true;
 

@@ -26,7 +26,7 @@ Player_Weapon :: struct @Component @InitOrder(1000) @Max(2) {
 }
 
 Player_Input :: struct @Component @InitOrder(1000) @Max(2)  {
-    axis               : v2;
+    axis               : Vector2;
     fire               : bool;
 }
 

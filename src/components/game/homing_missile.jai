@@ -6,7 +6,7 @@ Homing_Missile_Component :: struct @Component @InitOrder(1100)   {
     }
 
     state              : State;
-    attack_dir         : v2;
+    attack_dir         : Vector2;
     wait_timer         : f32;
 
     distance_to_attack : f32 = 2;
@@ -14,8 +14,8 @@ Homing_Missile_Component :: struct @Component @InitOrder(1100)   {
     blink_time         : f32 = 0.5; 
     approach_speed     : f32 = 2; 
     attack_speed       : f32 = 4;
-    line_start_color   : v4  = RED;   @Color
-    line_end_color     : v4  = WHITE; @Color
+    line_start_color   : Vector4  = RED;   @Color
+    line_end_color     : Vector4  = WHITE; @Color
 }
 
 /*
