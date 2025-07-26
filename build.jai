@@ -9,7 +9,7 @@ CompileFlags :: enum_flags {
 
 EXECUTABLE_NAME :: "game";
 OUTPUT_PATH     :: "bin";
-BUILD_FILE      :: "src/main.jai";
+BUILD_FILE      :: "first.jai";
 COMPILE_FLAGS   :: (.DEBUG | .IMGUI | .EDITOR).(CompileFlags);
 
 #run {

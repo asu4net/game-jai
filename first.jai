@@ -5,7 +5,7 @@ main :: () {
     //---------------------------
     //:INITIALIZATION
     //---------------------------
-
+    
     defer report_memory_leaks();
     set_working_directory(path_strip_filename(get_path_of_running_executable()));
     
@@ -73,13 +73,13 @@ main :: () {
 #import "Sparse_Set";
 #import "Queue";
 
-#load "editor/editor.jai";
+#load "src/editor/editor.jai";
 
-#load "components/core/all.jai";
-#load "components/game/all.jai";
-#load "entity/entity_storage.jai";
-#load "entity/entity_pool.jai";
+#load "src/components/core/all.jai";
+#load "src/components/game/all.jai";
+#load "src/entity/entity_storage.jai";
+#load "src/entity/entity_pool.jai";
 
-#load "window.jai";
-#load "draw.jai";
-#load "game.jai";
+#load "src/window.jai";
+#load "src/draw.jai";
+#load "src/game.jai";
