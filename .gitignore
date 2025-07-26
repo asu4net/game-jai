@@ -2,6 +2,7 @@
 **.raddbg_project
 **.rdi
 **.exe
+**.dll
 **.pdb
 **.rdbg
 **.code-workspace
