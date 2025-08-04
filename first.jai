@@ -5,7 +5,7 @@ main :: () {
     //:INITIALIZATION
     //---------------------------
 
-    engine_run("Game");
+    engine_run(app_name = "Game");
     defer engine_shutdown();
 
     init_entity_storage();
