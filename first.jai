@@ -28,7 +28,7 @@ main :: () {
         then update_game();
         
         clear_screen();
-        draw_frame();
+        draw_game_frame();
 
         clean_destroyed_entities();
         reset_temporary_storage();
