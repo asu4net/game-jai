@@ -23,13 +23,9 @@ main :: () {
     //---------------------------
 
     while engine_keep_running() {   
-
         if can_update_this_frame()
         then update_game();
-        
-        clear_screen();
         draw_game_frame();
-
         clean_destroyed_entities();
         reset_temporary_storage();
     }
