@@ -1,3 +1,10 @@
+#load "game/draw.jai";
+#load "game/editor/editor.jai";
+#load "game/components/core/all.jai";
+#load "game/components/game/all.jai";
+#load "game/entity/entity_storage.jai";
+#load "game/entity/entity_pool.jai";
+
 //---------------------------
 //:GAME
 //---------------------------

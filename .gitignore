@@ -1,14 +1,14 @@
-**.temp
-**.raddbg_project
-**.rdi
+# Jai ignore folders
+.build/
+modules/
+
+# Generated assets
+atlas/
+
+# Generated binary extensions
 **.exe
 **.dll
 **.pdb
-**.rdbg
-**.code-workspace
-**.vscode
-.build/
-**.ini
-jails.json
-bin/game
-modules/
+
+# ImGui specific
+imgui.ini

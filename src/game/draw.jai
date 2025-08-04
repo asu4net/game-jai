@@ -4,20 +4,20 @@ draw_frame :: () {
     //:DRAW ENTITIES 2D
     //---------------------------
     
-    // FlipBook.
-    {
-        view := get_entity_view(FlipBook_Component);
-        for view update_flipbook_entity(it);
-    }
+    // // FlipBook.
+    // {
+    //     view := get_entity_view(FlipBook_Component);
+    //     for view update_flipbook_entity(it);
+    // }
     // Sprites.
     {
         view := get_entity_view(Transform2D_Component, Sprite_Component);
-        for view draw_sprite_entity(it, *sheet);
+        for view draw_sprite_entity(it);
     }
     // Sprites.
     {
         view := get_entity_view(Transform2D_Component, GUI_Sprite_Component);
-        for view draw_gui_sprite_entity(it, *sheet);
+        for view draw_gui_sprite_entity(it);
     }
     // Texts.
     {

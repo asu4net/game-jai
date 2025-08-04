@@ -394,7 +394,7 @@ slz_entity :: (builder : *String_Builder, entity : Entity) {
 
 //#NOTE_asuarez: It allocates the string on the temp storage
 dlz_entity_from_file :: inline (path : string) -> Entity {
-    entity_str, success := read_entire_file(path ,,temp);
+    entity_str, success := File.read_entire_file(path ,,temp);
     if !success
     then return NULL_ENTITY;
     else return dlz_entity(entity_str);
@@ -538,11 +538,11 @@ rem_component :: ($T : Type, entity : Entity) {
 slz_component :: ($T : Type, entity : Entity) -> string {
     EntityStorageContext();
     c := get_component(T, entity);
-    return json_write_string(c);
+    return Jaison.json_write_string(c);
 }
 
 dlz_component :: ($T : Type, entity : Entity, s : string) -> *T {
-    success, parsed_data := json_parse_string(s, T);
+    success, parsed_data := Jaison.json_parse_string(s, T);
 
     if has_component(T, entity) {
         using arena := get_component_arena(T);

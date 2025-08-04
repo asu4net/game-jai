@@ -47,7 +47,7 @@ draw_editor :: () {
             }
             if ImGui.BeginMenu("Load") {
                 // Load all the prefabs
-                visit_files("assets", true, null, (info: *File_Visit_Info, *void) {
+                File_Utils.visit_files("assets", true, null, (info: *File_Utils.File_Visit_Info, *void) {
                     path, basename, ext := path_decomp(info.full_name ,,temp);
                     if ext != "prefab" {
                         return;
@@ -161,7 +161,7 @@ save_prefab :: () {
     assert(prefab != NULL_ENTITY);
     builder : String_Builder;
     slz_entity(*builder, prefab ,,temp);
-    write_entire_file(tprint("assets/%.prefab", get_name(prefab) ,,temp), builder_to_string(*builder, prefab ,,temp));
+    File.write_entire_file(tprint("assets/%.prefab", get_name(prefab) ,,temp), builder_to_string(*builder, prefab ,,temp));
 }
 
 } // #if IMGUI && EDITOR

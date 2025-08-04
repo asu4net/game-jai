@@ -1,0 +1,28 @@
+{
+  "version": "2.0.0",
+  "command": "",
+  "args": [],
+  "tasks": [
+      {
+        "label": "build",
+        "command": "jai",
+        "args": ["build.jai", "-", "-n", "-i", "-e", "game"],
+        "presentation": {
+          "reveal": "always",
+          "clear": true
+        },
+        "group": {
+          "kind": "build", 
+          "isDefault": true
+        }
+      },
+      {
+        "label": "run",
+        "command": "${workspaceFolder}/bin/game.exe",
+        "presentation": {
+          "reveal": "always",
+          "clear": true
+        }
+      }
+  ]
+}

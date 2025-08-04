@@ -28,7 +28,7 @@
 @Component(Sprite_Component)
 {
 	"visible": true,
-	"item": "kamikaze_skull",
+	"image": "KAMIKAZE_SKULL",
 	"tint": {
 		"x": 1,
 		"y": 1,

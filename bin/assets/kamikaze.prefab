@@ -56,7 +56,7 @@
 @Component(Sprite_Component)
 {
 	"visible": true,
-	"item": "kamikaze_skull",
+	"image": "KAMIKAZE_SKULL",
 	"tint": {
 		"x": 1,
 		"y": 1,
@@ -130,7 +130,7 @@
 @Component(Sprite_Component)
 {
 	"visible": true,
-	"item": "kazmikaze_saw",
+	"image": "KAMIKAZE_SAW",
 	"tint": {
 		"x": 1,
 		"y": 1,

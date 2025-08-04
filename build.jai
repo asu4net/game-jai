@@ -3,7 +3,7 @@
 #import "File";
 String :: #import "String";
 
-#load "src/entity/generate.jai";
+#load "src/game/entity/generate.jai";
 
 Build_Flags :: enum_flags {
     DEBUG;
@@ -46,14 +46,12 @@ clone_dependencies :: () {
     scope_set_working_directory("modules");
     
     // Depencencies
-    try_clone_dependency("Tuki"             ,"https://github.com/asu4net/Tuki");
     try_clone_dependency("ImGui"            ,"https://github.com/asu4net/ImGui");
     try_clone_dependency("SDL3"             ,"https://github.com/asu4net/jai-sdl3");
     try_clone_dependency("StbTrueType"      ,"https://github.com/asu4net/StbTrueType");
     try_clone_dependency("Enumerated_Array" ,"https://github.com/rezich/Enumerated_Array");
     try_clone_dependency("Queue"            ,"https://github.com/asu4net/Queue");
     try_clone_dependency("Sparse_Set"       ,"https://github.com/asu4net/Sparse_Set");
-    try_clone_dependency("Math"             ,"https://github.com/asu4net/Math");
     try_clone_dependency("Jaison"           ,"https://github.com/rluba/jaison");
     
     copy_file("SDL3/windows/bin/x64/SDL3.dll", "../bin/SDL3.dll");

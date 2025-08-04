@@ -54,7 +54,7 @@ _mode": "NONE
 @Component(Sprite_Component)
 {
 	"visible": true,
-	"item": "player_bullet",
+	"image": "PLAYER_BULLET",
 	"tint": {
 		"x": 1,
 		"y": 1,
