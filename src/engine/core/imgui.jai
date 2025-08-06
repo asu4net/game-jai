@@ -1,3 +1,5 @@
+ImGui :: #import "ImGui";
+
 ImGui_State :: struct {
     ctx: ImGui.ImGuiContext; 
     drawing: bool;
@@ -33,6 +35,7 @@ imgui_deinit :: () {
     using imgui := context.imgui;
     if !imgui then return;
     context.imgui = null;
+    ImGui.ImplOpenGL3_Shutdown();
     ImGui.ImplSDL3_Shutdown();
     free(imgui);
 }

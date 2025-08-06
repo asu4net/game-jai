@@ -131,6 +131,30 @@ save_image_atlas :: (atlas: Image_Atlas, location: string, flip := false) -> boo
     ok = save_image(atlas.image, location, flip);
     if !ok then return false;
     atlas_location := String.join(location, "/", atlas.image.name, ".json");
-    #if JAISON then ok = Jaison.json_write_file(atlas_location, atlas);
-    return ok;
+    return Jaison.json_write_file(atlas_location, atlas);;
+}
+
+Atlas_Animation :: struct {
+    playing: bool = true;
+    current: Atlas_Image = 0; 
+    start: Atlas_Image = 0;
+    end: Atlas_Image = xx (Atlas_Image.COUNT.(s32) - 1);
+    time: f32 = 0;
+    step: f32 = 0.1;
+    loop: bool = false;
+}
+
+atlas_animation_step :: (using animation: *Atlas_Animation) {
+    if !playing then return;
+    time += delta_seconds();
+    if time < step return;
+    time = 0;
+    next := (current.(s32) + 1).(Atlas_Image);
+    finish := (end.(s32) + 1).(Atlas_Image);
+    if next != .COUNT && next != finish then {
+        current = next;
+        return;
+    }
+    current = start;
+    playing = loop;
 }

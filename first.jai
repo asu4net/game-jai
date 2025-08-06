@@ -1,10 +1,7 @@
-font : Font;
+#load "src/engine.jai";
+#load "src/game.jai";
 
 main :: () {
-    //---------------------------
-    //:INITIALIZATION
-    //---------------------------
-
     engine_run(app_name = "Game");
     defer engine_shutdown();
 
@@ -18,10 +15,6 @@ main :: () {
     then init_game();
     defer if is_game_init() then deinit_game();
 
-    //---------------------------
-    //:MAIN LOOP
-    //---------------------------
-
     while engine_keep_running() {   
         if can_update_this_frame()
         then update_game();
@@ -30,16 +23,3 @@ main :: () {
         reset_temporary_storage();
     }
 }
-
-//---------------------------
-//:DEPENDENCIES
-//---------------------------
-
-#load "src/engine.jai";
-#load "src/game.jai";
-
-#import "Random";
-#import "Text_File_Handler";
-#import "Enumerated_Array";
-#import "Sparse_Set";
-#import "Queue";

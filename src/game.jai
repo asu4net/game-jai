@@ -4,6 +4,12 @@
 #load "game/entity/entity_storage.jai";
 #load "game/entity/entity_pool.jai";
 
+#import "Random";
+#import "Text_File_Handler";
+#import "Enumerated_Array";
+#import "Sparse_Set";
+#import "Queue";
+
 //---------------------------
 //:GAME
 //---------------------------
@@ -13,6 +19,9 @@ Game_State :: struct {
     kamikaze : Entity;
     homing  : Entity;
 }
+
+//@TODO: remove this from here.
+font: Font;
 
 #add_context game_state: *Game_State;
 

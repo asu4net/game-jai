@@ -12,8 +12,8 @@ Renderer2D :: struct {
     camera           : Camera;
     curr_blend       : Blend;
     curr_primitive   : Primitive_Type;
-    gui_width        : int;
-    gui_height       : int;
+    gui_width        : int = 1920;
+    gui_height       : int = 1080;
     
     // Quad
     quad_ibo         : Index_Buffer;
@@ -40,20 +40,15 @@ init_renderer2d :: () {
     context.renderer2d = New(Renderer2D);
     using state := context.renderer2d;
 
-    gui_width  = DEF_SCREEN_WIDTH;
-    gui_height = DEF_SCREEN_HEIGHT;
-
     set_blend_mode(.ALPHA);
-    
+
     init_white_texture(*white_texture);
 
     textures_to_bind[Default_Texture_Slots.WHITE] = *white_texture;
     last_tex_slot = xx Default_Texture_Slots.COUNT;
 
-    #if COMP_TIME_ATLAS {
-        if ATLAS_FILE_LOCATION.count > 0 {
-            init_texture(*atlas_texture, ATLAS_FILE_LOCATION, .NEAREST, .NEAREST);
-        }
+    if ATLAS_FILE_LOCATION.count > 0 {
+        init_texture(*atlas_texture, ATLAS_FILE_LOCATION, .NEAREST, .NEAREST);
     }
 
     for i : 0..MAX_TEXTURE_SLOTS - 1 {
@@ -127,11 +122,9 @@ deinit_renderer2d :: () {
     context.renderer2d = null;
     
     deinit_texture(*white_texture);
-
-    #if COMP_TIME_ATLAS {
-        if ATLAS_FILE_LOCATION.count > 0 {
-            deinit_texture(*atlas_texture);
-        }
+    
+    if ATLAS_FILE_LOCATION.count > 0 {
+        deinit_texture(*atlas_texture);
     }
 
     array_free(quad_batch);

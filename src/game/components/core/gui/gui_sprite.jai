@@ -26,5 +26,5 @@ draw_gui_sprite_entity :: (entity : Entity) {
     if flip_x          then flags |= .FLIP_X;
     if flip_y          then flags |= .FLIP_Y;
 
-    draw_atlas_gui_quad(get_matrix(entity), image, tiling, size, blend, tint, entity, flags);
+    //draw_atlas_gui_quad(get_matrix(entity), image, tiling, size, blend, tint, entity, flags);
 }

@@ -1,3 +1,5 @@
+DEF_FONT_PATH :: "assets/fonts/AlbertSans-VariableFont_wght.ttf"; 
+
 Glyph :: struct {
     quad           : AlignedQuad;
     x_pos, y_pos   : f32;
@@ -43,7 +45,7 @@ init_font :: (font : *Font, path : string = DEF_FONT_PATH) {
     PIXELS_ALPHA_LENGTH :: HEIGHT * WIDTH;
     PIXELS_RGB_LENGTH   :: PIXELS_ALPHA_LENGTH * 4;
     font.pixel_height = PIXEL_HEIGHT;
-
+    
     array_resize(*font.atlas.pixels, PIXELS_RGB_LENGTH ); //pending free
     pixels_rgb := font.atlas.pixels;
 

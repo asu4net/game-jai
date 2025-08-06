@@ -52,15 +52,13 @@ generate_comp_time_atlas :: () -> string {
     ATLAS_JSON_SRC  :: #run, stallable String.join(ATLAS_DST_DIR, "/", ATLAS_NAME, ".json");
     ATLAS_IMAGE_SRC :: #run, stallable String.join(ATLAS_DST_DIR, "/", ATLAS_NAME, ".png");
     
-    #if JAISON {
-        log("Looking for atlas in [%] [%]", ATLAS_JSON_SRC, ATLAS_IMAGE_SRC);
-        if File_Utils.file_exists(ATLAS_IMAGE_SRC) && File_Utils.file_exists(ATLAS_JSON_SRC) {
-            log("Atlas found.");
-            atlas_str := File.read_entire_file(ATLAS_JSON_SRC);
-            ok, res := Jaison.json_parse_string(atlas_str, Image_Atlas);
-            if ok then {
-                atlas = res;
-            }
+    log("Looking for atlas in [%] [%]", ATLAS_JSON_SRC, ATLAS_IMAGE_SRC);
+    if File_Utils.file_exists(ATLAS_IMAGE_SRC) && File_Utils.file_exists(ATLAS_JSON_SRC) {
+        log("Atlas found.");
+        atlas_str := File.read_entire_file(ATLAS_JSON_SRC);
+        ok, res := Jaison.json_parse_string(atlas_str, Image_Atlas);
+        if ok then {
+            atlas = res;
         }
     }
     

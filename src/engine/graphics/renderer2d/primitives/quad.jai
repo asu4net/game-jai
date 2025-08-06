@@ -13,21 +13,12 @@ QuadFlag :: enum_flags u16 {
     USE_SUBTEX;
 }
 
-#if COMP_TIME_ATLAS {
-    draw_atlas_quad :: (mat := IDENTITY, img := Atlas_Image.COUNT, tiling := ONE_2D, size := ONE_2D, blend := Blend.ALPHA, tint := WHITE, id := (0).(u32), flags := QuadFlag.AUTOSIZE | QuadFlag.USE_SUBTEX) {
-        #if ATLAS_FILE_LOCATION.count <= 0 then return;
-        if img == .COUNT return;
-        rect := get_atlas_rect(img);
-        state := context.renderer2d;
-        draw_quad(mat, *state.atlas_texture, tiling, size, blend, rect, tint, id, flags);
-    }
-    draw_atlas_gui_quad :: (mat := IDENTITY, img := Atlas_Image.COUNT, tiling := ONE_2D, size := ONE_2D, blend := Blend.ALPHA, tint := WHITE, id := (0).(u32), flags := GUIQuadFlag.USE_SUBTEX) {
-        #if ATLAS_FILE_LOCATION.count <= 0 then return;
-        if img == .COUNT return;
-        rect := get_atlas_rect(img);
-        state := context.renderer2d;
-        draw_gui_quad(mat, *state.atlas_texture, tiling, size, blend, rect, tint, id, flags);
-    }
+draw_atlas_quad :: (mat := IDENTITY, img := Atlas_Image.COUNT, tiling := ONE_2D, size := ONE_2D, blend := Blend.ALPHA, tint := WHITE, id := (0).(u32), flags := QuadFlag.AUTOSIZE | QuadFlag.USE_SUBTEX) {
+    #if ATLAS_FILE_LOCATION.count <= 0 then return;
+    if img == .COUNT return;
+    rect := get_atlas_rect(img);
+    state := context.renderer2d;
+    draw_quad(mat, *state.atlas_texture, tiling, size, blend, rect, tint, id, flags);
 }
 
 draw_quad :: (mat := IDENTITY, tex: *Texture = null, tiling := ONE_2D, size := ONE_2D, blend := Blend.ALPHA, rect := Rect.{}, tint := WHITE, id := (0).(u32), flags := QuadFlag.AUTOSIZE) {

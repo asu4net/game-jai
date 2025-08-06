@@ -6,8 +6,8 @@ CameraMode :: enum {
 
 Camera :: struct {
     mode       := CameraMode.ORTHO_SCREEN;
-    viewport_w := DEF_SCREEN_WIDTH;
-    viewport_h := DEF_SCREEN_HEIGHT;
+    viewport_w := 0;
+    viewport_h := 0;
     eye        := ZERO_3D;
     near       := (-1).(f32);
     far        := (+1).(f32);
